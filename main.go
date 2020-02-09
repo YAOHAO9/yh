@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"reflect"
+	"trial/util"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,19 +14,15 @@ const (
 	// TextMessage denotes a text data message. The text message payload is
 	// interpreted as UTF-8 encoded text data.
 	TextMessage = 1
-
 	// BinaryMessage denotes a binary data message.
 	BinaryMessage = 2
-
 	// CloseMessage denotes a close control message. The optional message
 	// payload contains a numeric code and text. Use the FormatCloseMessage
 	// function to format a close message payload.
 	CloseMessage = 8
-
 	// PingMessage denotes a ping control message. The optional message payload
 	// is UTF-8 encoded text.
 	PingMessage = 9
-
 	// PongMessage denotes a pong control message. The optional message payload
 	// is UTF-8 encoded text.
 	PongMessage = 10
@@ -71,22 +67,24 @@ func main() {
 			return
 		}
 
+		if oldConnInfo, ok := connMap[id]; ok {
+			oldConnInfo.conn.Close()
+			oldConnInfo.conn.CloseHandler()
+		}
+
 		connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
 		connMap[id] = connInfo
-		// fmt.Println("Closed", <-close)
-		// time.Sleep(time.Second)
+
 		// 开始接收消息
 		for {
 			_, data, err := conn.ReadMessage()
 			if err != nil {
-				v := reflect.ValueOf(err)
-				if v.Kind() == reflect.Ptr {
-					v = v.Elem()
-				}
-				code := v.FieldByName("Code")
-				if code.IsValid() && code.Int() == 1001 {
-					fmt.Println("Websocket连接断开")
-					break
+				data, ok := util.GetValue(err, "Code")
+				if ok {
+					if data == 1001 {
+						fmt.Println("Websocket连接断开")
+						break
+					}
 				}
 
 				fmt.Println("Error: ", err.Error())
