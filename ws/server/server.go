@@ -34,6 +34,8 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	conn.SetCloseHandler(func(code int, text string) error {
 		delete(ConnMap, id)
+		conn.Close()
+		fmt.Println("CloseHandler: ", text)
 		return nil
 	})
 
@@ -46,13 +48,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("发送认证失败消息失败: ", err.Error())
 		}
-		conn.Close()
+		conn.CloseHandler()(0, "认证失败")
 		return
 	}
 
 	if oldConnInfo, ok := ConnMap[id]; ok {
-		oldConnInfo.conn.Close()
-		oldConnInfo.conn.CloseHandler()
+		oldConnInfo.conn.CloseHandler()(0, "关闭重复连接")
 	}
 
 	connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
@@ -62,11 +63,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, data, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Websocket连接断开(ReadMessage failed): ", err.Error())
+			conn.CloseHandler()(0, err.Error())
 			break
 		}
 		// connInfo.data <- data
 		fmt.Println(string(data))
-		conn.WriteMessage(msgtype.TextMessage, []byte("哈哈哈"))
+		conn.WriteMessage(msgtype.TextMessage, data)
 	}
 }

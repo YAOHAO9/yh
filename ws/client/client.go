@@ -3,7 +3,6 @@ package client
 import (
 	"fmt"
 	"net/url"
-	"time"
 	"trial/ws/msgtype"
 
 	"github.com/gorilla/websocket"
@@ -34,17 +33,26 @@ func Start() {
 		for {
 			_, data, err := clientConn.ReadMessage()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("ReadMessage error: ", err)
+				clientConn.Close()
+				clientConn.CloseHandler()(0, "")
 				break
 			}
 			fmt.Println(string(data))
 		}
 	}()
-	Send([]byte("我来也"))
-	time.Sleep(time.Hour)
+	for i := 0; i < 100; i++ {
+		Send([]byte(fmt.Sprint(i)))
+	}
+
 }
 
 // Send message
 func Send(msg []byte) {
 	clientConn.WriteMessage(msgtype.TextMessage, msg)
+}
+
+// OnClose set listener for close
+func OnClose(h func(code int, text string) error) {
+	clientConn.SetCloseHandler(h)
 }
