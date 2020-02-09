@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"trial/config"
 	WsServer "trial/ws/server"
 )
 
 func main() {
+
+	serverConfig := config.InitServerConfig("./config/server.json")
 
 	// Handler
 	http.HandleFunc("/ws", WsServer.WebSocketHandler)
@@ -15,8 +18,8 @@ func main() {
 	})
 
 	// ListenAndServe
-	port := "8080"
-	fmt.Println("Server started http://localhost:" + port)
-	err := http.ListenAndServe(":"+port, nil)
+	fmt.Println("Server started " + serverConfig.Host + ":" + serverConfig.Port)
+	err := http.ListenAndServe(":"+serverConfig.Port, nil)
 	fmt.Println(err.Error())
+
 }
