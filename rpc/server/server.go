@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"trial/ws/msgtype"
+	"trial/rpc/msgtype"
 
 	"github.com/gorilla/websocket"
 )
