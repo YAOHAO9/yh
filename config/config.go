@@ -13,8 +13,8 @@ var serverCOnfig *ServerConfig
 // ServerConfig 服务器配置 配置文件
 type ServerConfig struct {
 	SystemName string
+	ID         string
 	Type       string
-	Name       string
 	Host       string
 	Port       string
 	Token      string

@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 	"trial/config"
 	WsServer "trial/ws/server"
 )
 
 func main() {
 
+	rand.Seed(time.Now().UnixNano())
 	serverConfig := config.InitServerConfig("./config/server.json")
 
 	// Handler
