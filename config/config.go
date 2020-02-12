@@ -1,10 +1,5 @@
 package config
 
-import (
-	"encoding/json"
-	"io/ioutil"
-)
-
 // ==========================================
 // ServerConfig
 // ==========================================
@@ -20,15 +15,9 @@ type ServerConfig struct {
 	Token      string
 }
 
-// InitServerConfig 获取服务器配置
-func InitServerConfig(path string) *ServerConfig {
-	serverCOnfig = &ServerConfig{}
-	r, e := ioutil.ReadFile(path)
-	if e != nil {
-		panic(e)
-	}
-	json.Unmarshal(r, serverCOnfig)
-	return serverCOnfig
+// SetServerConfig 保存服务器配置
+func SetServerConfig(sc *ServerConfig) {
+	serverCOnfig = sc
 }
 
 // GetServerConfig 获取服务器配置
@@ -47,15 +36,9 @@ type ZkConfig struct {
 	Port string
 }
 
-// InitZkConfig 初始化
-func InitZkConfig(path string) *ZkConfig {
-	zkConfig = &ZkConfig{}
-	r, e := ioutil.ReadFile(path)
-	if e != nil {
-		panic(e)
-	}
-	json.Unmarshal(r, zkConfig)
-	return zkConfig
+// SetZkConfig 配置zookeeper配置
+func SetZkConfig(zc *ZkConfig) {
+	zkConfig = zc
 }
 
 // GetZkConfig 获取zk配置

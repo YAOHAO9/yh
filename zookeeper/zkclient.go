@@ -29,3 +29,8 @@ func (zkClient ZkClient) create(path string, data []byte, flags int32, acl []zk.
 func (zkClient ZkClient) set(path string, data []byte, version int32) {
 	zkClient.client.Set(path, data, version)
 }
+
+// Close zk client
+func (zkClient ZkClient) Close() {
+	zkClient.Close()
+}
