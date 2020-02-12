@@ -55,9 +55,10 @@ func parseFlag() bool {
 	// 服务器配置
 	flag.StringVar(&serverConfig.SystemName, "s", "dwc", "System name")
 	flag.StringVar(&serverConfig.ID, "i", "connector-1", "Server id")
-	flag.StringVar(&serverConfig.Type, "k", "connector", "Server kind")
+	flag.StringVar(&serverConfig.Kind, "k", "connector", "Server kind")
 	flag.StringVar(&serverConfig.Host, "H", "127.0.0.1", "Server host")
-	flag.StringVar(&serverConfig.Port, "p", "3010", "server port")
+	flag.StringVar(&serverConfig.Port, "p", "3110", "server port")
+	flag.StringVar(&serverConfig.Port, "P", "", "Client port")
 	flag.StringVar(&serverConfig.Token, "t", "ksYNdrAo", "System token")
 
 	// Zookeeper 配置

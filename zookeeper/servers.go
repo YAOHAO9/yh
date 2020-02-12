@@ -13,7 +13,7 @@ func GetServersByType(kind string) []*config.ServerConfig {
 	servers := make([]*config.ServerConfig, 0)
 
 	for _, server := range servers {
-		if server.Type == kind {
+		if server.Kind == kind {
 			servers = append(servers, server)
 		}
 	}
@@ -37,7 +37,7 @@ func GetRandServerByType(kind string) *config.ServerConfig {
 	servers := make([]*config.ServerConfig, 0)
 
 	for _, server := range servers {
-		if server.Type == kind {
+		if server.Kind == kind {
 			servers = append(servers, server)
 		}
 	}

@@ -44,7 +44,7 @@ func initNode() {
 	}
 
 	// 检查子节点是否存在，不存在则创建
-	subPath := fmt.Sprint(rootPath, "/", serverConfig.Type)
+	subPath := fmt.Sprint(rootPath, "/", serverConfig.Kind)
 	if !zkClient.exists(subPath) {
 		zkClient.create(subPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
 	}
@@ -69,7 +69,7 @@ func initNode() {
 func watch() {
 	// 服务器配置
 	serverConfig := config.GetServerConfig()
-	path := fmt.Sprint("/", serverConfig.SystemName, "/", serverConfig.Type)
+	path := fmt.Sprint("/", serverConfig.SystemName, "/", serverConfig.Kind)
 
 	for {
 		// 遍历所有的serverID

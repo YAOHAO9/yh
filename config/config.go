@@ -9,9 +9,10 @@ var serverCOnfig *ServerConfig
 type ServerConfig struct {
 	SystemName string
 	ID         string
-	Type       string
+	Kind       string
 	Host       string
 	Port       string
+	ClientPort string
 	Token      string
 }
 

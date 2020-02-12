@@ -1,8 +1,0 @@
-{
-    "SystemName": "dwc",
-    "Type": "connector",
-    "Id": "server1",
-    "Host": "localhost",
-    "Port": "8080",
-    "Token": "123456"
-}
