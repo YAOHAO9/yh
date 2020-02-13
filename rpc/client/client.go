@@ -3,25 +3,26 @@ package client
 import (
 	"fmt"
 	"net/url"
-	"trial/rpc/msgtype"
+	"trial/config"
 
 	"github.com/gorilla/websocket"
 )
 
-var clientConn *websocket.Conn
-
 // Start websocket client
-func Start() {
-
+func Start(serverConfig *config.ServerConfig) (clientConn *websocket.Conn) {
 	// Dialer
 	dialer := websocket.Dialer{}
-	urlString := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws", RawQuery: "id=456&token=哈哈哈"}
-
+	urlString := url.URL{
+		Scheme:   "ws",
+		Host:     fmt.Sprint(serverConfig.Host, ":", serverConfig.Port),
+		Path:     "/rpc",
+		RawQuery: fmt.Sprint("token=", serverConfig.Token),
+	}
+	fmt.Println(urlString.String())
 	// 建立连接
 	conn, _, e := dialer.Dial(urlString.String(), nil)
 	if e != nil {
-		fmt.Println(e.Error())
-		return
+		panic(e)
 	}
 
 	// 连接成功！！！
@@ -33,26 +34,23 @@ func Start() {
 		for {
 			_, data, err := clientConn.ReadMessage()
 			if err != nil {
-				fmt.Println("ReadMessage error: ", err)
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
-				break
+				panic(err)
 			}
 			fmt.Println(string(data))
 		}
 	}()
-	for i := 0; i < 100; i++ {
-		Send([]byte(fmt.Sprint(i)))
-	}
 
+	return clientConn
 }
 
 // Send message
-func Send(msg []byte) {
-	clientConn.WriteMessage(msgtype.TextMessage, msg)
-}
+// func Send(msg []byte) {
+// 	clientConn.WriteMessage(msgtype.TextMessage, msg)
+// }
 
-// OnClose set listener for close
-func OnClose(h func(code int, text string) error) {
-	clientConn.SetCloseHandler(h)
-}
+// // OnClose set listener for close
+// func OnClose(h func(code int, text string) error) {
+// 	clientConn.SetCloseHandler(h)
+// }

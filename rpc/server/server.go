@@ -3,25 +3,40 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
+	"trial/config"
+	"trial/connector"
 	"trial/rpc/msgtype"
+	"trial/rpc/zookeeper"
 
 	"github.com/gorilla/websocket"
 )
 
-// ConnInfo 用户连接信息
-type ConnInfo struct {
-	id   int
-	conn *websocket.Conn
-	data chan interface{}
-}
-
-// ConnMap socket connection map
-var ConnMap = make(map[string]*ConnInfo)
-
 var upgrader = websocket.Upgrader{}
 
+// Start rpc server
+func Start() {
+
+	// 注册到zookeeper
+	go registToZk()
+
+	// 获取服务器配置
+	serverConfig := config.GetServerConfig()
+	// RPC server启动
+	fmt.Println("Rpc server started ws://" + serverConfig.Host + ":" + serverConfig.Port)
+	http.HandleFunc("/rpc", webSocketHandler)
+
+	// 对客户端暴露的ws接口
+	if serverConfig.IsConnector {
+		http.HandleFunc("/", connector.WebSocketHandler)
+	}
+	// 开启并监听
+	err := http.ListenAndServe(":"+serverConfig.Port, nil)
+	fmt.Println("Rpc server start fail: ", err.Error())
+}
+
 // WebSocketHandler deal with ws request
-func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
+func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 建立连接
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -31,9 +46,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 断开连接自动清除连接信息
-	id := r.URL.Query().Get("id")
 	conn.SetCloseHandler(func(code int, text string) error {
-		delete(ConnMap, id)
 		conn.Close()
 		fmt.Println("CloseHandler: ", text)
 		return nil
@@ -41,23 +54,13 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 用户认证
 	token := r.URL.Query().Get("token")
-	fmt.Println("Id: ", id, " Token: ", token)
-	if id == "" || token == "" {
+
+	// token校验
+	if token != config.GetServerConfig().Token {
 		fmt.Println("用户校验失败!!!")
-		err := conn.WriteMessage(msgtype.TextMessage, []byte("认证失败"))
-		if err != nil {
-			fmt.Println("发送认证失败消息失败: ", err.Error())
-		}
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}
-
-	if oldConnInfo, ok := ConnMap[id]; ok {
-		oldConnInfo.conn.CloseHandler()(0, "关闭重复连接")
-	}
-
-	connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
-	ConnMap[id] = connInfo
 
 	// 开始接收消息
 	for {
@@ -70,4 +73,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(string(data))
 		conn.WriteMessage(msgtype.TextMessage, data)
 	}
+}
+
+// 注册到zookeeper
+func registToZk() {
+
+	time.Sleep(time.Millisecond * 100)
+	zookeeper.Start()
 }

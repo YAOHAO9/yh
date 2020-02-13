@@ -7,13 +7,13 @@ var serverCOnfig *ServerConfig
 
 // ServerConfig 服务器配置 配置文件
 type ServerConfig struct {
-	SystemName string
-	ID         string
-	Kind       string
-	Host       string
-	Port       string
-	ClientPort string
-	Token      string
+	SystemName  string
+	ID          string
+	Kind        string
+	Host        string
+	Port        string
+	IsConnector bool
+	Token       string
 }
 
 // SetServerConfig 保存服务器配置
