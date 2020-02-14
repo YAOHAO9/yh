@@ -48,7 +48,6 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 断开连接自动清除连接信息
 	conn.SetCloseHandler(func(code int, text string) error {
 		conn.Close()
-		fmt.Println("CloseHandler: ", text)
 		return nil
 	})
 

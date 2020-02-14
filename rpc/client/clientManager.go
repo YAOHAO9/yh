@@ -1,9 +1,12 @@
 package client
 
 import (
-	"github.com/gorilla/websocket"
+	"fmt"
+	"time"
 	"trial/config"
 	"trial/rpc/msgtype"
+
+	"github.com/gorilla/websocket"
 )
 
 // RPCClientInfo websocket client 连接信息
@@ -30,8 +33,15 @@ func DelClientByID(id string) {
 }
 
 // CreateClient create client
-func CreateClient(serverConfig *config.ServerConfig) {
-	clientConn := Start(serverConfig)
+func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) {
+	defer func() {
+		data := recover()
+		if data != nil {
+			fmt.Println("Recover data:", data)
+			delete(rpcClientMap, serverConfig.ID)
+		}
+	}()
+	clientConn := StartClient(serverConfig, zkSessionTimeout)
 	rpcClientMap[serverConfig.ID] = &RPCClientInfo{clientConn: clientConn, serverConfig: serverConfig}
 }
 
