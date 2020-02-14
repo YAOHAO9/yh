@@ -1,16 +1,39 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
 	"trial/config"
+	"trial/rpc/msg"
+	"trial/rpc/msgtype"
 
 	"github.com/gorilla/websocket"
 )
 
+var requestMap = make(map[int]func(data []byte))
+
+// RPCClient websocket client 连接信息
+type RPCClient struct {
+	clientConn   *websocket.Conn
+	serverConfig *config.ServerConfig
+}
+
+// SendRPCNotify send rpc message
+func (client RPCClient) SendRPCNotify(data []byte) {
+	client.clientConn.WriteMessage(msgtype.TextMessage, data)
+}
+
+// SendRPCRequest send rpc message
+func (client RPCClient) SendRPCRequest(msgIndex int, data []byte, cb func(data []byte)) {
+	client.clientConn.WriteMessage(msgtype.TextMessage, data)
+	requestMap[msgIndex] = cb
+}
+
 // StartClient websocket client
-func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) (clientConn *websocket.Conn) {
+func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) *RPCClient {
+
 	// Dialer
 	dialer := websocket.Dialer{}
 	urlString := url.URL{
@@ -19,14 +42,15 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 		Path:     "/rpc",
 		RawQuery: fmt.Sprint("token=", serverConfig.Token),
 	}
-	var e error
 
+	var e error
 	// 当前尝试次数
 	tryTimes := 0
 	// 最大尝试次数
 	maxTryTimes := int(50 + zkSessionTimeout/100/time.Millisecond)
 
 	// 尝试建立连接
+	var clientConn *websocket.Conn
 	for tryTimes = 0; tryTimes < maxTryTimes; tryTimes++ {
 
 		clientConn, _, e = dialer.Dial(urlString.String(), nil)
@@ -54,6 +78,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 	go func() {
 		for {
 			_, data, err := clientConn.ReadMessage()
+
 			if err != nil {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
@@ -61,9 +86,27 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				fmt.Println("服务", serverConfig.ID, "掉线")
 				break
 			}
-			fmt.Println(string(data))
+
+			responseMessage := &msg.ResponseMessage{}
+			err = json.Unmarshal(data, responseMessage)
+			if err != nil {
+				fmt.Println("Rpc request's response body parse fail")
+				continue
+			}
+			if responseMessage.Index != 0 {
+				requestFunc, ok := requestMap[responseMessage.Index]
+				if ok {
+					delete(requestMap, responseMessage.Index)
+					requestFunc(data)
+				}
+				continue
+			}
+			fmt.Println("Notify消息:", string(data))
 		}
 	}()
 
-	return clientConn
+	return &RPCClient{
+		clientConn:   clientConn,
+		serverConfig: serverConfig,
+	}
 }

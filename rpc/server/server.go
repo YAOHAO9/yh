@@ -1,12 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 	"trial/config"
 	"trial/connector"
-	"trial/rpc/msgtype"
+	"trial/rpc/msg"
 	"trial/rpc/zookeeper"
 
 	"github.com/gorilla/websocket"
@@ -68,15 +69,25 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			conn.CloseHandler()(0, err.Error())
 			break
 		}
+		// 解析消息
+		connectorMessage := &msg.Message{}
+		err = json.Unmarshal(data, connectorMessage)
+
+		if err != nil {
+			// 不想写两遍，这里复用connector的SendFailMessage方法
+			connector.SendFailMessage(conn, connectorMessage.Index, "无效的消息类型")
+			continue
+		}
 		// connInfo.data <- data
-		fmt.Println(string(data))
-		conn.WriteMessage(msgtype.TextMessage, data)
+		fmt.Println(config.GetServerConfig().ID, "收到消息", string(data))
+		if connectorMessage.Index != 0 {
+			connector.SendSuccessfulMessage(conn, connectorMessage.Index, fmt.Sprint(config.GetServerConfig().ID, "收到消息", string(data)))
+		}
 	}
 }
 
 // 注册到zookeeper
 func registToZk() {
-
 	time.Sleep(time.Millisecond * 100)
 	zookeeper.Start()
 }

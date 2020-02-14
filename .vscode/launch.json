@@ -11,7 +11,12 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {},
-            "args": []
+            "args": [
+                "-c",
+                "-p=3110",
+                "-k=connector",
+                "-i=connector-1"
+            ]
         },
         {
             "name": "Test",

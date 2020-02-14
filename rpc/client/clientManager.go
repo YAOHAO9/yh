@@ -2,28 +2,39 @@ package client
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 	"trial/config"
 	"trial/rpc/msgtype"
-
-	"github.com/gorilla/websocket"
 )
 
-// RPCClientInfo websocket client 连接信息
-type RPCClientInfo struct {
-	clientConn   *websocket.Conn
-	serverConfig *config.ServerConfig
-}
-
-var rpcClientMap = make(map[string]*RPCClientInfo)
+var rpcClientMap = make(map[string]*RPCClient)
 
 // GetClientByID get rpc client by id
-func GetClientByID(id string) (c *RPCClientInfo) {
+func GetClientByID(id string) (c *RPCClient) {
 	c, b := rpcClientMap[id]
 	if !b {
 		return nil
 	}
 	return
+}
+
+// GetRandClientByKind get rpc client by rand num
+func GetRandClientByKind(kind string) (c *RPCClient) {
+
+	clients := make([]*RPCClient, 0)
+
+	for _, rpcClientInfo := range rpcClientMap {
+		if rpcClientInfo.serverConfig.Kind == kind {
+			clients = append(clients, rpcClientInfo)
+		}
+	}
+
+	if len(clients) == 0 {
+		return nil
+	}
+
+	return clients[rand.Intn(len(clients))]
 }
 
 // DelClientByID get rpc client by id
@@ -41,8 +52,10 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 			delete(rpcClientMap, serverConfig.ID)
 		}
 	}()
-	clientConn := StartClient(serverConfig, zkSessionTimeout)
-	rpcClientMap[serverConfig.ID] = &RPCClientInfo{clientConn: clientConn, serverConfig: serverConfig}
+	rpcClient := StartClient(serverConfig, zkSessionTimeout)
+	if rpcClient != nil {
+		rpcClientMap[serverConfig.ID] = rpcClient
+	}
 }
 
 // SendMessageByID send message to specified server

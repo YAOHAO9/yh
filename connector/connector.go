@@ -1,8 +1,12 @@
 package connector
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"trial/config"
+	"trial/rpc/client"
+	"trial/rpc/msg"
 	"trial/rpc/msgtype"
 
 	"github.com/gorilla/websocket"
@@ -42,6 +46,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 用户认证
 	token := r.URL.Query().Get("token")
 	fmt.Println("Id: ", id, " Token: ", token)
+
 	if id == "" || token == "" {
 		fmt.Println("用户校验失败!!!")
 		err := conn.WriteMessage(msgtype.TextMessage, []byte("认证失败"))
@@ -52,10 +57,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 防止重复连接
 	if oldConnInfo, ok := ConnMap[id]; ok {
 		oldConnInfo.conn.CloseHandler()(0, "关闭重复连接")
 	}
 
+	// 保存连接信息
 	connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
 	ConnMap[id] = connInfo
 
@@ -66,8 +73,86 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			conn.CloseHandler()(0, err.Error())
 			break
 		}
-		// connInfo.data <- data
-		fmt.Println(string(data))
-		conn.WriteMessage(msgtype.TextMessage, data)
+		// 解析消息
+		connectorMessage := &msg.Message{}
+		err = json.Unmarshal(data, connectorMessage)
+
+		if err != nil {
+			SendFailMessage(conn, connectorMessage.Index, "无效的消息类型")
+			continue
+		}
+
+		// 获取RPCCLint
+		var connInfo *client.RPCClient
+		if connectorMessage.ServerID != "" {
+			connInfo = client.GetClientByID(connectorMessage.ServerID)
+		} else if connectorMessage.ServerID == config.GetServerConfig().ID || connectorMessage.Kind == "connector" {
+			// Connector 消息
+			dealMessage(conn, connectorMessage)
+		} else {
+			connInfo = client.GetRandClientByKind(connectorMessage.Kind)
+		}
+
+		if connInfo == nil {
+			SendFailMessage(conn, connectorMessage.Index, fmt.Sprint("服务器不存在,Kind:", connectorMessage.Kind, "ServerID:", connectorMessage.ServerID))
+			continue
+		}
+
+		if connectorMessage.Index == 0 {
+			// 转发Notify
+			connInfo.SendRPCNotify(data)
+		} else {
+			// 转发Request
+			connInfo.SendRPCRequest(connectorMessage.Index, data, func(data []byte) {
+				conn.WriteMessage(msgtype.TextMessage, data)
+			})
+		}
+	}
+}
+
+// SendFailMessage 消息发送失败
+func SendFailMessage(conn *websocket.Conn, index int, data interface{}) {
+	fmt.Println(data)
+	// Notify的消息，不通知成功
+	if index == 0 {
+		return
+	}
+
+	response := msg.ResponseMessage{
+		Index: index,
+		Code:  msg.StatusCode().Fail,
+		Data:  data,
+	}
+
+	err := conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// SendSuccessfulMessage 消息发送成功
+func SendSuccessfulMessage(conn *websocket.Conn, index int, data interface{}) {
+
+	// Notify的消息，不通知成功
+	if index == 0 {
+		return
+	}
+
+	response := msg.ResponseMessage{
+		Index: index,
+		Code:  msg.StatusCode().Successful,
+		Data:  data,
+	}
+
+	err := conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+func dealMessage(conn *websocket.Conn, connectorMessage *msg.Message) {
+	data, _ := json.Marshal(connectorMessage)
+	err := conn.WriteMessage(msgtype.TextMessage, data)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
