@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"trial/config"
 	"trial/rpc/client"
+	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/msgtype"
+	"trial/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
@@ -74,81 +75,48 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		connectorMessage := &msg.Message{}
-		err = json.Unmarshal(data, connectorMessage)
+		message := &msg.Message{}
+		err = json.Unmarshal(data, message)
 
 		if err != nil {
-			SendFailMessage(conn, connectorMessage.Index, "无效的消息类型")
+			response.SendFailMessage(conn, message.Index, "消息解析失败，请发送json消息")
+			continue
+		}
+
+		if message.Handler == "" {
+			response.SendFailMessage(conn, message.Index, "Hanler不能为空")
 			continue
 		}
 
 		// 获取RPCCLint
 		var connInfo *client.RPCClient
-		if connectorMessage.ServerID != "" {
-			connInfo = client.GetClientByID(connectorMessage.ServerID)
-		} else if connectorMessage.ServerID == config.GetServerConfig().ID || connectorMessage.Kind == "connector" {
+		if message.ServerID != "" {
+			connInfo = client.GetClientByID(message.ServerID)
+		} else if message.ServerID == config.GetServerConfig().ID || message.Kind == "connector" {
 			// Connector 消息
-			dealMessage(conn, connectorMessage)
+			dealMessage(conn, message)
 		} else {
-			connInfo = client.GetRandClientByKind(connectorMessage.Kind)
+			connInfo = client.GetRandClientByKind(message.Kind)
 		}
 
 		if connInfo == nil {
-			SendFailMessage(conn, connectorMessage.Index, fmt.Sprint("服务器不存在,Kind:", connectorMessage.Kind, "ServerID:", connectorMessage.ServerID))
+			response.SendFailMessage(conn, message.Index, fmt.Sprint("服务器不存在,Kind:", message.Kind, "ServerID:", message.ServerID))
 			continue
 		}
 
-		if connectorMessage.Index == 0 {
+		if message.Index == 0 {
 			// 转发Notify
-			connInfo.SendRPCNotify(data)
+			connInfo.SendHandlerNotify(message)
 		} else {
 			// 转发Request
-			connInfo.SendRPCRequest(connectorMessage.Index, data, func(data []byte) {
+			connInfo.SendHandlerRequest(message.Index, message, func(data []byte) {
 				conn.WriteMessage(msgtype.TextMessage, data)
 			})
 		}
 	}
 }
 
-// SendFailMessage 消息发送失败
-func SendFailMessage(conn *websocket.Conn, index int, data interface{}) {
-	fmt.Println(data)
-	// Notify的消息，不通知成功
-	if index == 0 {
-		return
-	}
-
-	response := msg.ResponseMessage{
-		Index: index,
-		Code:  msg.StatusCode().Fail,
-		Data:  data,
-	}
-
-	err := conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-// SendSuccessfulMessage 消息发送成功
-func SendSuccessfulMessage(conn *websocket.Conn, index int, data interface{}) {
-
-	// Notify的消息，不通知成功
-	if index == 0 {
-		return
-	}
-
-	response := msg.ResponseMessage{
-		Index: index,
-		Code:  msg.StatusCode().Successful,
-		Data:  data,
-	}
-
-	err := conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
-	if err != nil {
-		fmt.Println(err)
-	}
-}
+// dealMessage 消息处理
 func dealMessage(conn *websocket.Conn, connectorMessage *msg.Message) {
 	data, _ := json.Marshal(connectorMessage)
 	err := conn.WriteMessage(msgtype.TextMessage, data)

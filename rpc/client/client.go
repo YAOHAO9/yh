@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"sync"
 	"time"
-	"trial/config"
+	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/msgtype"
 
@@ -13,6 +14,7 @@ import (
 )
 
 var requestMap = make(map[int]func(data []byte))
+var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
 type RPCClient struct {
@@ -20,15 +22,34 @@ type RPCClient struct {
 	serverConfig *config.ServerConfig
 }
 
+// SendHandlerNotify send handler message
+func (client RPCClient) SendHandlerNotify(message *msg.Message) {
+	fm := msg.ForwardMessage{IsRPC: false, Msg: message}
+	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+}
+
 // SendRPCNotify send rpc message
-func (client RPCClient) SendRPCNotify(data []byte) {
-	client.clientConn.WriteMessage(msgtype.TextMessage, data)
+func (client RPCClient) SendRPCNotify(message *msg.Message) {
+	fm := msg.ForwardMessage{IsRPC: true, Msg: message}
+	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+}
+
+// SendHandlerRequest send handler message
+func (client RPCClient) SendHandlerRequest(msgIndex int, message *msg.Message, cb func(data []byte)) {
+	fm := msg.ForwardMessage{IsRPC: false, Msg: message}
+	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	lock.Lock()
+	requestMap[msgIndex] = cb
+	lock.Unlock()
 }
 
 // SendRPCRequest send rpc message
-func (client RPCClient) SendRPCRequest(msgIndex int, data []byte, cb func(data []byte)) {
-	client.clientConn.WriteMessage(msgtype.TextMessage, data)
+func (client RPCClient) SendRPCRequest(msgIndex int, message *msg.Message, cb func(data []byte)) {
+	fm := msg.ForwardMessage{IsRPC: true, Msg: message}
+	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	lock.Lock()
 	requestMap[msgIndex] = cb
+	lock.Unlock()
 }
 
 // StartClient websocket client
@@ -79,6 +100,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 		for {
 			_, data, err := clientConn.ReadMessage()
 
+			// 掉线检查
 			if err != nil {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
@@ -86,19 +108,23 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				fmt.Println("服务", serverConfig.ID, "掉线")
 				break
 			}
-
+			// 解析消息
 			responseMessage := &msg.ResponseMessage{}
 			err = json.Unmarshal(data, responseMessage)
 			if err != nil {
 				fmt.Println("Rpc request's response body parse fail")
 				continue
 			}
+
+			// 如果是request消息，则调用回调函数
 			if responseMessage.Index != 0 {
+				lock.Lock()
 				requestFunc, ok := requestMap[responseMessage.Index]
 				if ok {
 					delete(requestMap, responseMessage.Index)
 					requestFunc(data)
 				}
+				lock.Unlock()
 				continue
 			}
 			fmt.Println("Notify消息:", string(data))

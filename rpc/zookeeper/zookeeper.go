@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"trial/config"
 	"trial/rpc/client"
+	"trial/rpc/config"
 
 	"github.com/samuel/go-zookeeper/zk"
 )

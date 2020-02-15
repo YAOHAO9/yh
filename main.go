@@ -6,8 +6,13 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"trial/config"
+	"trial/rpc/app"
+	"trial/rpc/config"
+	"trial/rpc/msg"
+	"trial/rpc/response"
 	RpcServer "trial/rpc/server"
+
+	"github.com/gorilla/websocket"
 )
 
 func init() {
@@ -20,6 +25,7 @@ func main() {
 	if parseFlag() {
 		return
 	}
+	register()
 	// 启动RPC server
 	RpcServer.Start()
 }
@@ -67,4 +73,13 @@ func parseFlag() bool {
 	config.SetZkConfig(&zkConfig)
 
 	return help
+}
+
+func register() {
+	app.RegisterHandler("handler", func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
+		response.SendSuccessfulMessage(conn, forwardMessage.Msg.Index, config.GetServerConfig().ID+": 收到Handler消息")
+	})
+	app.RegisterRPC("rpc", func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
+		response.SendSuccessfulMessage(conn, forwardMessage.Msg.Index, config.GetServerConfig().ID+": 收到Rpc消息")
+	})
 }

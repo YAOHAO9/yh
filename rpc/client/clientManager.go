@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"trial/config"
+	"trial/rpc/config"
 	"trial/rpc/msgtype"
 )
 
