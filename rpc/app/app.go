@@ -2,8 +2,8 @@ package app
 
 import (
 	"trial/rpc/handler"
+	"trial/rpc/handler/rpchandler"
 	"trial/rpc/msg"
-	"trial/rpc/rpchandler"
 
 	"github.com/gorilla/websocket"
 )

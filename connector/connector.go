@@ -67,6 +67,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
 	ConnMap[id] = connInfo
 
+	session := &msg.Session{UID: id}
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -79,12 +80,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, message)
 
 		if err != nil {
-			response.SendFailMessage(conn, message.Index, "消息解析失败，请发送json消息")
+			response.SendFailMessage(conn, false, message.Index, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if message.Handler == "" {
-			response.SendFailMessage(conn, message.Index, "Hanler不能为空")
+			response.SendFailMessage(conn, false, message.Index, "Hanler不能为空")
 			continue
 		}
 
@@ -100,17 +101,22 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if connInfo == nil {
-			response.SendFailMessage(conn, message.Index, fmt.Sprint("服务器不存在,Kind:", message.Kind, "ServerID:", message.ServerID))
+			response.SendFailMessage(conn, false, message.Index, fmt.Sprint("服务器不存在,Kind:", message.Kind, "ServerID:", message.ServerID))
 			continue
 		}
 
 		if message.Index == 0 {
 			// 转发Notify
-			connInfo.SendHandlerNotify(message)
+			connInfo.SendHandlerNotify(session, message)
 		} else {
 			// 转发Request
-			connInfo.SendHandlerRequest(message.Index, message, func(data []byte) {
-				conn.WriteMessage(msgtype.TextMessage, data)
+			connInfo.SendHandlerRequest(session, message.Index, message, func(rm *msg.ResponseMessage) {
+				data, err := json.Marshal(rm)
+				if err != nil {
+					fmt.Println("Invalid message")
+				} else {
+					conn.WriteMessage(msgtype.TextMessage, data)
+				}
 			})
 		}
 	}

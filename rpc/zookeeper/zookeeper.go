@@ -22,8 +22,8 @@ func Start() {
 	zkConfig := config.GetZkConfig()
 
 	// 建立连接
-	client, _, err := zk.Connect([]string{zkConfig.Host}, zkSessionTimeout)
-	zkClient = &ZkClient{client: client}
+	conn, _, err := zk.Connect([]string{zkConfig.Host}, zkSessionTimeout)
+	zkClient = &ZkClient{conn: conn}
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +85,7 @@ func watch() {
 
 	for {
 		// 遍历所有的serverID
-		serverIDs, _, eventChan, err := zkClient.client.ChildrenW(path)
+		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(path)
 		if err != nil {
 			panic(err)
 		}
@@ -101,7 +101,7 @@ func watch() {
 
 				for i := 0; i < 30; i++ {
 					path := fmt.Sprint(path, "/", serverID)
-					isExists, _, err := zkClient.client.Exists(path)
+					isExists, _, err := zkClient.conn.Exists(path)
 					if err != nil {
 						panic(err)
 					}
@@ -112,7 +112,7 @@ func watch() {
 					}
 
 					// 监听服务器变化
-					data, _, err := zkClient.client.Get(path)
+					data, _, err := zkClient.conn.Get(path)
 					if err != nil {
 						client.DelClientByID(serverID)
 						fmt.Println(err.Error())

@@ -7,13 +7,15 @@ import (
 	"sync"
 	"time"
 	"trial/rpc/config"
+	"trial/rpc/filter"
+	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/msg"
 	"trial/rpc/msgtype"
 
 	"github.com/gorilla/websocket"
 )
 
-var requestMap = make(map[int]func(data []byte))
+var requestMap = make(map[int]func(rm *msg.ResponseMessage))
 var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
@@ -23,33 +25,46 @@ type RPCClient struct {
 }
 
 // SendHandlerNotify send handler message
-func (client RPCClient) SendHandlerNotify(message *msg.Message) {
-	fm := msg.ForwardMessage{IsRPC: false, Msg: message}
-	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Message) {
+	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
+	// 执行 Before filter
+	if filter.BeforeFilterManager().Exec(client.clientConn, fm) {
+		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	}
 }
 
 // SendRPCNotify send rpc message
-func (client RPCClient) SendRPCNotify(message *msg.Message) {
-	fm := msg.ForwardMessage{IsRPC: true, Msg: message}
-	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message) {
+	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
+	// 执行 Before RPC filter
+	if rpcfilter.BeforeFilterManager().Exec(client.clientConn, fm) {
+		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	}
+
 }
 
 // SendHandlerRequest send handler message
-func (client RPCClient) SendHandlerRequest(msgIndex int, message *msg.Message, cb func(data []byte)) {
-	fm := msg.ForwardMessage{IsRPC: false, Msg: message}
-	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
-	lock.Lock()
-	requestMap[msgIndex] = cb
-	lock.Unlock()
+func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
+	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
+	// 执行 Before filter
+	if filter.BeforeFilterManager().Exec(client.clientConn, fm) {
+		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		lock.Lock()
+		requestMap[msgIndex] = cb
+		lock.Unlock()
+	}
 }
 
 // SendRPCRequest send rpc message
-func (client RPCClient) SendRPCRequest(msgIndex int, message *msg.Message, cb func(data []byte)) {
-	fm := msg.ForwardMessage{IsRPC: true, Msg: message}
-	client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
-	lock.Lock()
-	requestMap[msgIndex] = cb
-	lock.Unlock()
+func (client RPCClient) SendRPCRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
+	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
+	// 执行 Before RPC filter
+	if rpcfilter.BeforeFilterManager().Exec(client.clientConn, fm) {
+		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		lock.Lock()
+		requestMap[msgIndex] = cb
+		lock.Unlock()
+	}
 }
 
 // StartClient websocket client
@@ -122,7 +137,12 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				requestFunc, ok := requestMap[responseMessage.Index]
 				if ok {
 					delete(requestMap, responseMessage.Index)
-					requestFunc(data)
+					if responseMessage.IsRPC {
+						rpcfilter.AfterFilterManagerOfRequest().Exec(responseMessage)
+					} else {
+						filter.AfterFilterManagerOfRequest().Exec(responseMessage)
+					}
+					requestFunc(responseMessage)
 				}
 				lock.Unlock()
 				continue

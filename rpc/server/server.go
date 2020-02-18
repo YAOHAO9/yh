@@ -8,9 +8,9 @@ import (
 	"trial/connector"
 	"trial/rpc/config"
 	"trial/rpc/handler"
+	"trial/rpc/handler/rpchandler"
 	"trial/rpc/msg"
 	"trial/rpc/response"
-	"trial/rpc/rpchandler"
 	"trial/rpc/zookeeper"
 
 	"github.com/gorilla/websocket"
@@ -77,8 +77,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, message)
 
 		if err != nil {
-			// 不想写两遍，这里复用connector的SendFailMessage方法
-			response.SendFailMessage(conn, message.Msg.Index, "无效的消息类型")
+			response.SendFailMessage(conn, message.IsRPC, message.Msg.Index, "无效的消息类型")
 			continue
 		}
 

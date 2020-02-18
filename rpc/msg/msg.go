@@ -27,8 +27,18 @@ func (m Message) ToBytes() (data []byte) {
 
 // Session of connection
 type Session struct {
-	uid  string
+	UID  string
 	data map[string]interface{}
+}
+
+// Get a value from session
+func (s Session) Get(key string) interface{} {
+	return s.data[key]
+}
+
+// Set a value to session
+func (s Session) Set(key string, v interface{}) {
+	s.data[key] = v
 }
 
 // ========================================================
@@ -37,9 +47,9 @@ type Session struct {
 
 // ForwardMessage 转发消息结构
 type ForwardMessage struct {
-	IsRPC bool
-	Msg   *Message
-	Session
+	IsRPC   bool
+	Msg     *Message
+	Session *Session
 }
 
 // ToBytes To []byte
@@ -54,6 +64,7 @@ func (m ForwardMessage) ToBytes() (data []byte) {
 
 // ResponseMessage 服务端推送的消息
 type ResponseMessage struct {
+	IsRPC bool
 	Index int
 	Code  int
 	Event string
