@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"trial/rpc/client"
-	"trial/rpc/config"
+	"trial/rpc/client/clientmanager"
 	"trial/rpc/msg"
 	"trial/rpc/msgtype"
 	"trial/rpc/response"
@@ -92,12 +92,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		// 获取RPCCLint
 		var connInfo *client.RPCClient
 		if message.ServerID != "" {
-			connInfo = client.GetClientByID(message.ServerID)
-		} else if message.ServerID == config.GetServerConfig().ID || message.Kind == "connector" {
-			// Connector 消息
-			dealMessage(conn, message)
+			connInfo = clientmanager.GetClientByID(message.ServerID)
 		} else {
-			connInfo = client.GetRandClientByKind(message.Kind)
+			connInfo = clientmanager.GetRandClientByKind(message.Kind)
 		}
 
 		if connInfo == nil {
@@ -119,14 +116,5 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			})
 		}
-	}
-}
-
-// dealMessage 消息处理
-func dealMessage(conn *websocket.Conn, connectorMessage *msg.Message) {
-	data, _ := json.Marshal(connectorMessage)
-	err := conn.WriteMessage(msgtype.TextMessage, data)
-	if err != nil {
-		fmt.Println(err)
 	}
 }

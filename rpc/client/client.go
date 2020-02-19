@@ -20,16 +20,16 @@ var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
 type RPCClient struct {
-	clientConn   *websocket.Conn
-	serverConfig *config.ServerConfig
+	Conn         *websocket.Conn
+	ServerConfig *config.ServerConfig
 }
 
 // SendHandlerNotify send handler message
 func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Message) {
 	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(client.clientConn, fm) {
-		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -37,8 +37,8 @@ func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Mes
 func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message) {
 	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(client.clientConn, fm) {
-		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 
 }
@@ -47,8 +47,8 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message
 func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
 	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(client.clientConn, fm) {
-		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
 		requestMap[msgIndex] = cb
 		lock.Unlock()
@@ -59,8 +59,8 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, m
 func (client RPCClient) SendRPCRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
 	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(client.clientConn, fm) {
-		client.clientConn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
 		requestMap[msgIndex] = cb
 		lock.Unlock()
@@ -68,7 +68,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, msgIndex int, messa
 }
 
 // StartClient websocket client
-func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) *RPCClient {
+func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
 
 	// Dialer
 	dialer := websocket.Dialer{}
@@ -119,7 +119,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			if err != nil {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
-				DelClientByID(serverConfig.ID)
+				closeFunc(serverConfig.ID)
 				fmt.Println("服务", serverConfig.ID, "掉线")
 				break
 			}
@@ -152,7 +152,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 	}()
 
 	return &RPCClient{
-		clientConn:   clientConn,
-		serverConfig: serverConfig,
+		Conn:         clientConn,
+		ServerConfig: serverConfig,
 	}
 }

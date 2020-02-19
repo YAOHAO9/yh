@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"trial/rpc/client"
+	"trial/rpc/client/clientmanager"
 	"trial/rpc/config"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -92,7 +92,7 @@ func watch() {
 		// 监听每个server的情况
 		for _, serverID := range serverIDs {
 
-			if client.GetClientByID(serverID) != nil {
+			if clientmanager.GetClientByID(serverID) != nil {
 				// 如果已经建立果监听则跳过
 				continue
 			}
@@ -114,7 +114,7 @@ func watch() {
 					// 监听服务器变化
 					data, _, err := zkClient.conn.Get(path)
 					if err != nil {
-						client.DelClientByID(serverID)
+						clientmanager.DelClientByID(serverID)
 						fmt.Println(err.Error())
 						break
 					}
@@ -125,7 +125,7 @@ func watch() {
 						fmt.Println(err.Error())
 					}
 					// 创建客户端，并于改服务器连接
-					client.CreateClient(serverConfig, zkSessionTimeout)
+					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
 					break
 				}
 			}(serverID)
