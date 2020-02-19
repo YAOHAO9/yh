@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
+            "name": "Connector",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -13,6 +13,19 @@
             "env": {},
             "args": [
                 "-c",
+                "-p=3110",
+                "-k=connector",
+                "-i=connector-1"
+            ]
+        },
+        {
+            "name": "Ddz",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {},
+            "args": [
                 "-p=3120",
                 "-k=ddz",
                 "-i=ddz-1"

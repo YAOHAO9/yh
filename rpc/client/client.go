@@ -138,9 +138,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				if ok {
 					delete(requestMap, responseMessage.Index)
 					if responseMessage.IsRPC {
-						rpcfilter.AfterFilterManagerOfRequest().Exec(responseMessage)
+						rpcfilter.AfterFilterManager().Exec(responseMessage)
 					} else {
-						filter.AfterFilterManagerOfRequest().Exec(responseMessage)
+						filter.AfterFilterManager().Exec(responseMessage)
 					}
 					requestFunc(responseMessage)
 				}

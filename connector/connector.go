@@ -101,7 +101,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if connInfo == nil {
-			response.SendFailMessage(conn, false, message.Index, fmt.Sprint("服务器不存在,Kind:", message.Kind, "ServerID:", message.ServerID))
+			response.SendFailMessage(conn, false, message.Index, fmt.Sprint("服务器不存在, Kind: ", message.Kind, ", ServerID: ", message.ServerID))
 			continue
 		}
 

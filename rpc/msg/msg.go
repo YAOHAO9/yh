@@ -64,7 +64,7 @@ func (m ForwardMessage) ToBytes() (data []byte) {
 
 // ResponseMessage 服务端推送的消息
 type ResponseMessage struct {
-	IsRPC bool
+	IsRPC bool `json:",omitempty"`
 	Index int
 	Code  int
 	Event string

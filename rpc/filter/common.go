@@ -6,12 +6,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//===================================================
+// Before
+//===================================================
+
 // BeforeFilterSlice map
 type BeforeFilterSlice []func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)
 
 // Register filter
-func (slice BeforeFilterSlice) Register(f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)) {
-	slice = append(slice, f)
+func (slice *BeforeFilterSlice) Register(f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)) {
+	*slice = append(*slice, f)
 }
 
 // Exec filter
@@ -25,12 +29,16 @@ func (slice BeforeFilterSlice) Exec(conn *websocket.Conn, forwardMessage *msg.Fo
 	return true
 }
 
+//===================================================
+// After
+//===================================================
+
 // AfterFilterSlice map
 type AfterFilterSlice []func(rm *msg.ResponseMessage) (next bool)
 
 // Register filter
-func (slice AfterFilterSlice) Register(f func(rm *msg.ResponseMessage) (next bool)) {
-	slice = append(slice, f)
+func (slice *AfterFilterSlice) Register(f func(rm *msg.ResponseMessage) (next bool)) {
+	*slice = append(*slice, f)
 }
 
 // Exec filter

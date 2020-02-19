@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 	"trial/connector"
 	"trial/rpc/config"
 	"trial/rpc/handler"
@@ -91,6 +90,5 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // 注册到zookeeper
 func registToZk() {
-	time.Sleep(time.Millisecond * 100)
 	zookeeper.Start()
 }
