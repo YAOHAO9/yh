@@ -48,6 +48,7 @@ func (s Session) Set(key string, v interface{}) {
 // ForwardMessage 转发消息结构
 type ForwardMessage struct {
 	Kind    int
+	Index   int
 	Msg     *Message
 	Session *Session
 }

@@ -81,7 +81,9 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if message.Kind == msgkind.RPC {
+		if message.Kind == msgkind.SYS {
+			rpchandler.Manager().Exec(conn, message)
+		} else if message.Kind == msgkind.RPC {
 			rpchandler.Manager().Exec(conn, message)
 		} else if message.Kind == msgkind.HANDLER {
 			handler.Manager().Exec(conn, message)
