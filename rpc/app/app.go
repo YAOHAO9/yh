@@ -11,17 +11,17 @@ import (
 )
 
 // RegisterHandler 注册Handler
-func RegisterHandler(name string, f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage)) {
+func RegisterHandler(name string, f func(respConn *websocket.Conn, fm *msg.ForwardMessage)) {
 	handler.Manager().Register(name, f)
 }
 
 // RegisterRPCHandler 注册Handler
-func RegisterRPCHandler(name string, f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage)) {
+func RegisterRPCHandler(name string, f func(respConn *websocket.Conn, fm *msg.ForwardMessage)) {
 	rpchandler.Manager().Register(name, f)
 }
 
 // RegisterHandlerBeforeFilter 注册before filter of handler
-func RegisterHandlerBeforeFilter(f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)) {
+func RegisterHandlerBeforeFilter(f func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)) {
 	filter.BeforeFilterManager().Register(f)
 }
 
@@ -31,7 +31,7 @@ func RegisterHandlerAfterFilter(f func(rm *msg.ResponseMessage) (next bool)) {
 }
 
 // RegisterRPCBeforeFilter 注册before filter of rpc
-func RegisterRPCBeforeFilter(f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)) {
+func RegisterRPCBeforeFilter(f func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)) {
 	rpcfilter.BeforeFilterManager().Register(f)
 }
 

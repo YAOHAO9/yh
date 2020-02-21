@@ -77,13 +77,13 @@ func parseFlag() bool {
 
 func register() {
 
-	app.RegisterHandler("handler", func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
-		fmt.Println("UID:", forwardMessage.Session.UID)
-		response.SendSuccessfulMessage(conn, false, forwardMessage.Msg.Index, config.GetServerConfig().ID+": 收到Handler消息")
+	app.RegisterHandler("handler", func(respConn *websocket.Conn, fm *msg.ForwardMessage) {
+		fmt.Println("UID:", fm.Session.UID)
+		response.SendSuccessfulMessage(respConn, false, fm.Msg.Index, config.GetServerConfig().ID+": 收到Handler消息")
 	})
 
-	app.RegisterRPCHandler("rpc", func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
-		response.SendSuccessfulMessage(conn, true, forwardMessage.Msg.Index, config.GetServerConfig().ID+": 收到Rpc消息")
+	app.RegisterRPCHandler("rpc", func(respConn *websocket.Conn, fm *msg.ForwardMessage) {
+		response.SendSuccessfulMessage(respConn, true, fm.Msg.Index, config.GetServerConfig().ID+": 收到Rpc消息")
 	})
 
 	app.RegisterRPCAfterFilter(func(rm *msg.ResponseMessage) (next bool) {

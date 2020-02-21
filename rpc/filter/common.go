@@ -11,17 +11,17 @@ import (
 //===================================================
 
 // BeforeFilterSlice map
-type BeforeFilterSlice []func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)
+type BeforeFilterSlice []func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)
 
 // Register filter
-func (slice *BeforeFilterSlice) Register(f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool)) {
+func (slice *BeforeFilterSlice) Register(f func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)) {
 	*slice = append(*slice, f)
 }
 
 // Exec filter
-func (slice BeforeFilterSlice) Exec(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) (next bool) {
+func (slice BeforeFilterSlice) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool) {
 	for _, f := range slice {
-		next = f(conn, forwardMessage)
+		next = f(respConn, fm)
 		if !next {
 			return false
 		}

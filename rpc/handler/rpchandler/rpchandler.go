@@ -20,12 +20,12 @@ func Manager() handler.Map {
 }
 
 // Exec 执行handler
-func (rpchandlerMap Map) Exec(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
+func (rpchandlerMap Map) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) {
 
-	f, ok := rpchandlerMap[forwardMessage.Msg.Handler]
+	f, ok := rpchandlerMap[fm.Msg.Handler]
 	if ok {
-		f(conn, forwardMessage)
+		f(respConn, fm)
 	} else {
-		response.SendFailMessage(conn, true, forwardMessage.Msg.Index, fmt.Sprintf("RPCHandler %v 不存在", forwardMessage.Msg.Handler))
+		response.SendFailMessage(respConn, true, fm.Msg.Index, fmt.Sprintf("RPCHandler %v 不存在", fm.Msg.Handler))
 	}
 }

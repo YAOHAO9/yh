@@ -9,20 +9,20 @@ import (
 )
 
 // Map map
-type Map map[string]func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage)
+type Map map[string]func(respConn *websocket.Conn, fm *msg.ForwardMessage)
 
 // Register handler
-func (handlerMap Map) Register(name string, f func(conn *websocket.Conn, forwardMessage *msg.ForwardMessage)) {
+func (handlerMap Map) Register(name string, f func(respConn *websocket.Conn, fm *msg.ForwardMessage)) {
 	handlerMap[name] = f
 }
 
 // Exec 执行handler
-func (handlerMap Map) Exec(conn *websocket.Conn, forwardMessage *msg.ForwardMessage) {
+func (handlerMap Map) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) {
 
-	f, ok := handlerMap[forwardMessage.Msg.Handler]
+	f, ok := handlerMap[fm.Msg.Handler]
 	if ok {
-		f(conn, forwardMessage)
+		f(respConn, fm)
 	} else {
-		response.SendFailMessage(conn, false, forwardMessage.Msg.Index, fmt.Sprintf("Handler %v 不存在", forwardMessage.Msg.Handler))
+		response.SendFailMessage(respConn, false, fm.Msg.Index, fmt.Sprintf("Handler %v 不存在", fm.Msg.Handler))
 	}
 }
