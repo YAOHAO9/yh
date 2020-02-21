@@ -64,7 +64,6 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}
-	var count int
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -76,13 +75,14 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		fm := &msg.RPCMessage{}
 		err = json.Unmarshal(data, fm)
 
-		if err != nil {
-			response.SendFailMessage(conn, fm.Kind, fm.Index, "无效的消息类型")
-			continue
-		}
 		respCtx := &response.RespCtx{
 			Conn: conn,
 			Fm:   fm,
+		}
+
+		if err != nil {
+			respCtx.SendFailMessage("无效的消息类型")
+			continue
 		}
 
 		if fm.Kind == msgkind.Sys {
@@ -90,8 +90,6 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		} else if fm.Kind == msgkind.RPC {
 			rpchandler.Manager().Exec(respCtx)
 		} else if fm.Kind == msgkind.Handler {
-			count++
-			fmt.Println(count)
 			handler.Manager().Exec(respCtx)
 		}
 	}

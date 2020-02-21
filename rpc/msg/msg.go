@@ -25,6 +25,7 @@ func (m ClientMessage) ToBytes() (data []byte) {
 type ClientResp struct {
 	Index   int    `json:",omitempty"`
 	Handler string `json:",omitempty"`
+	Code    int    `json:",omitempty"`
 	Data    interface{}
 }
 
@@ -41,17 +42,17 @@ func (m ClientResp) ToBytes() (data []byte) {
 // Session of connection
 type Session struct {
 	UID  string
-	data map[string]interface{}
+	Data map[string]interface{}
 }
 
 // Get a value from session
 func (s Session) Get(key string) interface{} {
-	return s.data[key]
+	return s.Data[key]
 }
 
 // Set a value to session
 func (s Session) Set(key string, v interface{}) {
-	s.data[key] = v
+	s.Data[key] = v
 }
 
 // ========================================================

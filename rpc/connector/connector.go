@@ -8,21 +8,10 @@ import (
 	"trial/rpc/client/clientmanager"
 	"trial/rpc/msg"
 	"trial/rpc/msg/msgkind"
-	"trial/rpc/msgtype"
-	"trial/rpc/response"
+	"trial/rpc/msg/msgtype"
 
 	"github.com/gorilla/websocket"
 )
-
-// ConnInfo 用户连接信息
-type ConnInfo struct {
-	id   int
-	conn *websocket.Conn
-	data chan interface{}
-}
-
-// ConnMap socket connection map
-var ConnMap = make(map[string]*ConnInfo)
 
 var upgrader = websocket.Upgrader{}
 
@@ -65,10 +54,13 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 保存连接信息
-	connInfo := &ConnInfo{id: 1, conn: conn, data: make(chan interface{})}
+	connInfo := &ConnInfo{id: 1, conn: conn}
 	ConnMap[id] = connInfo
 
-	session := &msg.Session{UID: id}
+	session := &msg.Session{
+		UID:  id,
+		Data: connInfo.data,
+	}
 
 	// 开始接收消息
 	for {
@@ -82,12 +74,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, cm)
 
 		if err != nil {
-			response.SendFailMessage(conn, msgkind.Handler, cm.Index, "消息解析失败，请发送json消息")
+			sendFailMessage(conn, msgkind.Handler, cm.Index, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if cm.Handler == "" {
-			response.SendFailMessage(conn, msgkind.Handler, cm.Index, "Hanler不能为空")
+			sendFailMessage(conn, msgkind.Handler, cm.Index, "Hanler不能为空")
 			continue
 		}
 
@@ -100,7 +92,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if connInfo == nil {
-			response.SendFailMessage(conn, msgkind.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
+			sendFailMessage(conn, msgkind.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
 			continue
 		}
 
@@ -123,5 +115,25 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			})
 		}
+	}
+}
+
+// sendFailMessage 消息发送失败
+func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interface{}) {
+	fmt.Println(data)
+	// Notify的消息，不通知成功
+	if index == 0 {
+		return
+	}
+
+	rpcResp := msg.ClientResp{
+		Index: index,
+		Code:  msg.StatusCode().Fail,
+		Data:  data,
+	}
+
+	err := respConn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
+	if err != nil {
+		fmt.Println(err)
 	}
 }

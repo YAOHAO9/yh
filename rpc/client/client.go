@@ -11,20 +11,20 @@ import (
 	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/msg"
 	"trial/rpc/msg/msgkind"
-	"trial/rpc/msgtype"
+	"trial/rpc/msg/msgtype"
 	"trial/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
 
-var requestIndex int
+var requestIndex = 1
 
 var maxInt64Value = 1<<63 - 1
 
 func getRequestIndex() int {
 	requestIndex++
 	if requestIndex >= maxInt64Value {
-		requestIndex = 0
+		requestIndex = 1
 	}
 	return requestIndex
 }
@@ -163,7 +163,6 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 
 	// 连接成功！！！
 	fmt.Println("连接到", serverConfig.ID, "成功！！！")
-	var count int
 	// 接收消息
 	go func() {
 		for {
@@ -189,8 +188,6 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				lock.Lock()
 				requestFunc, ok := requestMap[rpcResp.Index]
 				if ok {
-					count++
-					fmt.Println(count)
 					delete(requestMap, rpcResp.Index)
 					if rpcResp.Kind == msgkind.RPC {
 						rpcfilter.AfterFilterManager().Exec(rpcResp)

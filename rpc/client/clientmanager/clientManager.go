@@ -6,7 +6,7 @@ import (
 	"time"
 	"trial/rpc/client"
 	"trial/rpc/config"
-	"trial/rpc/msgtype"
+	"trial/rpc/msg/msgtype"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
