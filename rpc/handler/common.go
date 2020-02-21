@@ -2,28 +2,24 @@ package handler
 
 import (
 	"fmt"
-	"trial/rpc/msg"
-	"trial/rpc/msg/msgkind"
 	"trial/rpc/response"
-
-	"github.com/gorilla/websocket"
 )
 
 // Map map
-type Map map[string]func(respConn *websocket.Conn, fm *msg.ForwardMessage)
+type Map map[string]func(respCtx *response.RespCtx)
 
 // Register handler
-func (handlerMap Map) Register(name string, f func(respConn *websocket.Conn, fm *msg.ForwardMessage)) {
+func (handlerMap Map) Register(name string, f func(respCtx *response.RespCtx)) {
 	handlerMap[name] = f
 }
 
 // Exec 执行handler
-func (handlerMap Map) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) {
+func (handlerMap Map) Exec(respCtx *response.RespCtx) {
 
-	f, ok := handlerMap[fm.Msg.Handler]
+	f, ok := handlerMap[respCtx.Fm.Handler]
 	if ok {
-		f(respConn, fm)
+		f(respCtx)
 	} else {
-		response.SendFailMessage(respConn, msgkind.HANDLER, fm.Msg.Index, fmt.Sprintf("Handler %v 不存在", fm.Msg.Handler))
+		respCtx.SendFailMessage(fmt.Sprintf("Handler %v 不存在", respCtx.Fm.Handler))
 	}
 }

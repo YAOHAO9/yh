@@ -16,7 +16,7 @@ func SendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 		return
 	}
 
-	response := msg.ResponseMessage{
+	response := msg.RPCResp{
 		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Fail,
@@ -37,7 +37,7 @@ func SendSuccessfulMessage(respConn *websocket.Conn, Kind int, index int, data i
 		return
 	}
 
-	response := msg.ResponseMessage{
+	response := msg.RPCResp{
 		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Successful,

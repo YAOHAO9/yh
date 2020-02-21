@@ -2,8 +2,7 @@ package filter
 
 import (
 	"trial/rpc/msg"
-
-	"github.com/gorilla/websocket"
+	"trial/rpc/response"
 )
 
 //===================================================
@@ -11,17 +10,17 @@ import (
 //===================================================
 
 // BeforeFilterSlice map
-type BeforeFilterSlice []func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)
+type BeforeFilterSlice []func(respCtx *response.RespCtx) (next bool)
 
 // Register filter
-func (slice *BeforeFilterSlice) Register(f func(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool)) {
+func (slice *BeforeFilterSlice) Register(f func(respCtx *response.RespCtx) (next bool)) {
 	*slice = append(*slice, f)
 }
 
 // Exec filter
-func (slice BeforeFilterSlice) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) (next bool) {
+func (slice BeforeFilterSlice) Exec(respCtx *response.RespCtx) (next bool) {
 	for _, f := range slice {
-		next = f(respConn, fm)
+		next = f(respCtx)
 		if !next {
 			return false
 		}
@@ -34,15 +33,15 @@ func (slice BeforeFilterSlice) Exec(respConn *websocket.Conn, fm *msg.ForwardMes
 //===================================================
 
 // AfterFilterSlice map
-type AfterFilterSlice []func(rm *msg.ResponseMessage) (next bool)
+type AfterFilterSlice []func(rm *msg.RPCResp) (next bool)
 
 // Register filter
-func (slice *AfterFilterSlice) Register(f func(rm *msg.ResponseMessage) (next bool)) {
+func (slice *AfterFilterSlice) Register(f func(rm *msg.RPCResp) (next bool)) {
 	*slice = append(*slice, f)
 }
 
 // Exec filter
-func (slice AfterFilterSlice) Exec(rm *msg.ResponseMessage) (next bool) {
+func (slice AfterFilterSlice) Exec(rm *msg.RPCResp) (next bool) {
 	for _, f := range slice {
 		next = f(rm)
 		if !next {

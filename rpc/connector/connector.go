@@ -77,43 +77,49 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		message := &msg.Message{}
-		err = json.Unmarshal(data, message)
+		cm := &msg.ClientMessage{}
+		err = json.Unmarshal(data, cm)
 
 		if err != nil {
-			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, "消息解析失败，请发送json消息")
+			response.SendFailMessage(conn, msgkind.Handler, cm.Index, "消息解析失败，请发送json消息")
 			continue
 		}
 
-		if message.Handler == "" {
-			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, "Hanler不能为空")
+		if cm.Handler == "" {
+			response.SendFailMessage(conn, msgkind.Handler, cm.Index, "Hanler不能为空")
 			continue
 		}
 
 		// 获取RPCCLint
 		var connInfo *client.RPCClient
-		if message.ServerID != "" {
-			connInfo = clientmanager.GetClientByID(message.ServerID)
+		if cm.ServerID != "" {
+			connInfo = clientmanager.GetClientByID(cm.ServerID)
 		} else {
-			connInfo = clientmanager.GetRandClientByKind(message.Kind)
+			connInfo = clientmanager.GetRandClientByKind(cm.Kind)
 		}
 
 		if connInfo == nil {
-			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, fmt.Sprint("服务器不存在, Kind: ", message.Kind, ", ServerID: ", message.ServerID))
+			response.SendFailMessage(conn, msgkind.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
 			continue
 		}
 
-		if message.Index == 0 {
+		if cm.Index == 0 {
 			// 转发Notify
-			connInfo.SendHandlerNotify(session, message)
+			connInfo.SendHandlerNotify(session, cm)
 		} else {
 			// 转发Request
-			connInfo.SendHandlerRequest(session, message.Index, message, func(rm *msg.ResponseMessage) {
-				data, err := json.Marshal(rm)
+			connInfo.SendHandlerRequest(session, cm, func(data interface{}) {
+
+				clientResp := msg.ClientResp{
+					Index: cm.Index,
+					Data:  data,
+				}
+
+				bytes, err := json.Marshal(clientResp)
 				if err != nil {
 					fmt.Println("Invalid message")
 				} else {
-					conn.WriteMessage(msgtype.TextMessage, data)
+					conn.WriteMessage(msgtype.TextMessage, bytes)
 				}
 			})
 		}

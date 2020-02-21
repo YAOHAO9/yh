@@ -3,11 +3,7 @@ package rpchandler
 import (
 	"fmt"
 	"trial/rpc/handler"
-	"trial/rpc/msg"
-	"trial/rpc/msg/msgkind"
 	"trial/rpc/response"
-
-	"github.com/gorilla/websocket"
 )
 
 // Map of rpc
@@ -21,12 +17,12 @@ func Manager() handler.Map {
 }
 
 // Exec 执行handler
-func (rpchandlerMap Map) Exec(respConn *websocket.Conn, fm *msg.ForwardMessage) {
+func (rpchandlerMap Map) Exec(respCtx *response.RespCtx) {
 
-	f, ok := rpchandlerMap[fm.Msg.Handler]
+	f, ok := rpchandlerMap[respCtx.Fm.Handler]
 	if ok {
-		f(respConn, fm)
+		f(respCtx)
 	} else {
-		response.SendFailMessage(respConn, msgkind.RPC, fm.Msg.Index, fmt.Sprintf("RPCHandler %v 不存在", fm.Msg.Handler))
+		respCtx.SendFailMessage(fmt.Sprintf("RPCHandler %v 不存在", respCtx.Fm.Handler))
 	}
 }

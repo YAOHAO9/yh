@@ -6,8 +6,8 @@ import "encoding/json"
 // Message
 // ========================================================
 
-// Message 客户端发过来的消息的基本格式
-type Message struct {
+// ClientMessage 客户端发过来的消息的基本格式
+type ClientMessage struct {
 	ServerID string
 	Kind     string
 	Handler  string
@@ -16,7 +16,19 @@ type Message struct {
 }
 
 // ToBytes To []byte
-func (m Message) ToBytes() (data []byte) {
+func (m ClientMessage) ToBytes() (data []byte) {
+	data, _ = json.Marshal(m)
+	return
+}
+
+// ClientResp client message response
+type ClientResp struct {
+	Index int
+	Data  interface{}
+}
+
+// ToBytes To []byte
+func (m ClientResp) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }
@@ -45,16 +57,17 @@ func (s Session) Set(key string, v interface{}) {
 // ForwardMessage
 // ========================================================
 
-// ForwardMessage 转发消息结构
-type ForwardMessage struct {
+// RPCMessage 转发消息结构
+type RPCMessage struct {
 	Kind    int
 	Index   int
-	Msg     *Message
+	Handler string
+	Data    interface{}
 	Session *Session
 }
 
 // ToBytes To []byte
-func (m ForwardMessage) ToBytes() (data []byte) {
+func (m RPCMessage) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }
@@ -63,8 +76,8 @@ func (m ForwardMessage) ToBytes() (data []byte) {
 // ResponseMessage
 // ========================================================
 
-// ResponseMessage 服务端推送的消息
-type ResponseMessage struct {
+// RPCResp 服务端推送的消息
+type RPCResp struct {
 	Kind  int
 	Index int
 	Code  int
@@ -73,7 +86,7 @@ type ResponseMessage struct {
 }
 
 // ToBytes To []byte
-func (m ResponseMessage) ToBytes() (data []byte) {
+func (m RPCResp) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }

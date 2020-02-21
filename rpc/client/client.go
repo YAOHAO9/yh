@@ -12,11 +12,24 @@ import (
 	"trial/rpc/msg"
 	"trial/rpc/msg/msgkind"
 	"trial/rpc/msgtype"
+	"trial/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
 
-var requestMap = make(map[int]func(rm *msg.ResponseMessage))
+var requestIndex int
+
+var maxInt64Value = 1<<63 - 1
+
+func getRequestIndex() int {
+	requestIndex++
+	if requestIndex >= maxInt64Value {
+		requestIndex = 0
+	}
+	return requestIndex
+}
+
+var requestMap = make(map[int]func(data interface{}))
 var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
@@ -26,44 +39,84 @@ type RPCClient struct {
 }
 
 // SendHandlerNotify send handler message
-func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Message) {
-	fm := &msg.ForwardMessage{Kind: msgkind.HANDLER, Msg: message, Session: session}
+func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
+	fm := &msg.RPCMessage{
+		Kind:    msgkind.Handler,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
+	if filter.BeforeFilterManager().Exec(respCtx) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 }
 
 // SendRPCNotify send rpc message
-func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message) {
-	fm := &msg.ForwardMessage{Kind: msgkind.RPC, Msg: message, Session: session}
+func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
+	fm := &msg.RPCMessage{
+		Kind:    msgkind.RPC,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
+	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 
 }
 
 // SendHandlerRequest send handler message
-func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
-	fm := &msg.ForwardMessage{Kind: msgkind.HANDLER, Msg: message, Session: session}
+func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+	requestIndex := getRequestIndex()
+	fm := &msg.RPCMessage{
+		Index:   requestIndex,
+		Kind:    msgkind.Handler,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
+	if filter.BeforeFilterManager().Exec(respCtx) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
-		requestMap[msgIndex] = cb
+		requestMap[requestIndex] = cb
 		lock.Unlock()
 	}
 }
 
 // SendRPCRequest send rpc message
-func (client RPCClient) SendRPCRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
-	fm := &msg.ForwardMessage{Kind: msgkind.RPC, Msg: message, Session: session}
+func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+	requestIndex := getRequestIndex()
+	fm := &msg.RPCMessage{
+		Index:   requestIndex,
+		Kind:    msgkind.RPC,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
+	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
-		requestMap[msgIndex] = cb
+		requestMap[requestIndex] = cb
 		lock.Unlock()
 	}
 }
@@ -125,7 +178,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				break
 			}
 			// 解析消息
-			responseMessage := &msg.ResponseMessage{}
+			responseMessage := &msg.RPCResp{}
 			err = json.Unmarshal(data, responseMessage)
 			if err != nil {
 				fmt.Println("Rpc request's response body parse fail")
@@ -140,10 +193,10 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 					delete(requestMap, responseMessage.Index)
 					if responseMessage.Kind == msgkind.RPC {
 						rpcfilter.AfterFilterManager().Exec(responseMessage)
-					} else if responseMessage.Kind == msgkind.HANDLER {
+					} else if responseMessage.Kind == msgkind.Handler {
 						filter.AfterFilterManager().Exec(responseMessage)
 					}
-					requestFunc(responseMessage)
+					requestFunc(responseMessage.Data)
 				}
 				lock.Unlock()
 				continue
