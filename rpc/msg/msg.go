@@ -47,7 +47,7 @@ func (s Session) Set(key string, v interface{}) {
 
 // ForwardMessage 转发消息结构
 type ForwardMessage struct {
-	IsRPC   bool
+	Kind    int
 	Msg     *Message
 	Session *Session
 }
@@ -64,7 +64,7 @@ func (m ForwardMessage) ToBytes() (data []byte) {
 
 // ResponseMessage 服务端推送的消息
 type ResponseMessage struct {
-	IsRPC bool `json:",omitempty"`
+	Kind  int
 	Index int
 	Code  int
 	Event string

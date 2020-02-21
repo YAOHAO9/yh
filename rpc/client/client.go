@@ -10,6 +10,7 @@ import (
 	"trial/rpc/filter"
 	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/msg"
+	"trial/rpc/msg/msgkind"
 	"trial/rpc/msgtype"
 
 	"github.com/gorilla/websocket"
@@ -26,7 +27,7 @@ type RPCClient struct {
 
 // SendHandlerNotify send handler message
 func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Message) {
-	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
+	fm := &msg.ForwardMessage{Kind: msgkind.HANDLER, Msg: message, Session: session}
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
@@ -35,7 +36,7 @@ func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Mes
 
 // SendRPCNotify send rpc message
 func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message) {
-	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
+	fm := &msg.ForwardMessage{Kind: msgkind.RPC, Msg: message, Session: session}
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
@@ -45,7 +46,7 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.Message
 
 // SendHandlerRequest send handler message
 func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
-	fm := &msg.ForwardMessage{IsRPC: false, Msg: message, Session: session}
+	fm := &msg.ForwardMessage{Kind: msgkind.HANDLER, Msg: message, Session: session}
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(client.Conn, fm) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
@@ -57,7 +58,7 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, msgIndex int, m
 
 // SendRPCRequest send rpc message
 func (client RPCClient) SendRPCRequest(session *msg.Session, msgIndex int, message *msg.Message, cb func(data *msg.ResponseMessage)) {
-	fm := &msg.ForwardMessage{IsRPC: true, Msg: message, Session: session}
+	fm := &msg.ForwardMessage{Kind: msgkind.RPC, Msg: message, Session: session}
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(client.Conn, fm) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
@@ -137,9 +138,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				requestFunc, ok := requestMap[responseMessage.Index]
 				if ok {
 					delete(requestMap, responseMessage.Index)
-					if responseMessage.IsRPC {
+					if responseMessage.Kind == msgkind.RPC {
 						rpcfilter.AfterFilterManager().Exec(responseMessage)
-					} else {
+					} else if responseMessage.Kind == msgkind.HANDLER {
 						filter.AfterFilterManager().Exec(responseMessage)
 					}
 					requestFunc(responseMessage)

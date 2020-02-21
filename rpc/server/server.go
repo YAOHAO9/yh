@@ -9,6 +9,7 @@ import (
 	"trial/rpc/handler"
 	"trial/rpc/handler/rpchandler"
 	"trial/rpc/msg"
+	"trial/rpc/msg/msgkind"
 	"trial/rpc/response"
 	"trial/rpc/zookeeper"
 
@@ -76,13 +77,13 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, message)
 
 		if err != nil {
-			response.SendFailMessage(conn, message.IsRPC, message.Msg.Index, "无效的消息类型")
+			response.SendFailMessage(conn, message.Kind, message.Msg.Index, "无效的消息类型")
 			continue
 		}
 
-		if message.IsRPC {
+		if message.Kind == msgkind.RPC {
 			rpchandler.Manager().Exec(conn, message)
-		} else {
+		} else if message.Kind == msgkind.HANDLER {
 			handler.Manager().Exec(conn, message)
 		}
 	}

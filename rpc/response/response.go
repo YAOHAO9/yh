@@ -9,7 +9,7 @@ import (
 )
 
 // SendFailMessage 消息发送失败
-func SendFailMessage(respConn *websocket.Conn, isRPC bool, index int, data interface{}) {
+func SendFailMessage(respConn *websocket.Conn, Kind int, index int, data interface{}) {
 	fmt.Println(data)
 	// Notify的消息，不通知成功
 	if index == 0 {
@@ -17,7 +17,7 @@ func SendFailMessage(respConn *websocket.Conn, isRPC bool, index int, data inter
 	}
 
 	response := msg.ResponseMessage{
-		IsRPC: isRPC,
+		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Fail,
 		Data:  data,
@@ -30,7 +30,7 @@ func SendFailMessage(respConn *websocket.Conn, isRPC bool, index int, data inter
 }
 
 // SendSuccessfulMessage 消息发送成功
-func SendSuccessfulMessage(respConn *websocket.Conn, isRPC bool, index int, data interface{}) {
+func SendSuccessfulMessage(respConn *websocket.Conn, Kind int, index int, data interface{}) {
 
 	// Notify的消息，不通知成功
 	if index == 0 {
@@ -38,7 +38,7 @@ func SendSuccessfulMessage(respConn *websocket.Conn, isRPC bool, index int, data
 	}
 
 	response := msg.ResponseMessage{
-		IsRPC: isRPC,
+		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Successful,
 		Data:  data,

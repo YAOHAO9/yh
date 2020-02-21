@@ -7,6 +7,7 @@ import (
 	"trial/rpc/client"
 	"trial/rpc/client/clientmanager"
 	"trial/rpc/msg"
+	"trial/rpc/msg/msgkind"
 	"trial/rpc/msgtype"
 	"trial/rpc/response"
 
@@ -80,12 +81,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, message)
 
 		if err != nil {
-			response.SendFailMessage(conn, false, message.Index, "消息解析失败，请发送json消息")
+			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if message.Handler == "" {
-			response.SendFailMessage(conn, false, message.Index, "Hanler不能为空")
+			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, "Hanler不能为空")
 			continue
 		}
 
@@ -98,7 +99,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if connInfo == nil {
-			response.SendFailMessage(conn, false, message.Index, fmt.Sprint("服务器不存在, Kind: ", message.Kind, ", ServerID: ", message.ServerID))
+			response.SendFailMessage(conn, msgkind.HANDLER, message.Index, fmt.Sprint("服务器不存在, Kind: ", message.Kind, ", ServerID: ", message.ServerID))
 			continue
 		}
 
