@@ -69,6 +69,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	ConnMap[id] = connInfo
 
 	session := &msg.Session{UID: id}
+
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -109,7 +110,6 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// 转发Request
 			connInfo.SendHandlerRequest(session, cm, func(data interface{}) {
-
 				clientResp := msg.ClientResp{
 					Index: cm.Index,
 					Data:  data,

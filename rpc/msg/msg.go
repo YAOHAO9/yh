@@ -8,10 +8,10 @@ import "encoding/json"
 
 // ClientMessage 客户端发过来的消息的基本格式
 type ClientMessage struct {
-	ServerID string
-	Kind     string
+	ServerID string `json:",omitempty"`
+	Kind     string `json:",omitempty"` // server kind
 	Handler  string
-	Index    int
+	Index    int `json:",omitempty"`
 	Data     interface{}
 }
 
@@ -23,8 +23,9 @@ func (m ClientMessage) ToBytes() (data []byte) {
 
 // ClientResp client message response
 type ClientResp struct {
-	Index int
-	Data  interface{}
+	Index   int    `json:",omitempty"`
+	Handler string `json:",omitempty"`
+	Data    interface{}
 }
 
 // ToBytes To []byte
@@ -59,11 +60,11 @@ func (s Session) Set(key string, v interface{}) {
 
 // RPCMessage 转发消息结构
 type RPCMessage struct {
-	Kind    int
-	Index   int
+	Kind    int `json:",omitempty"` // message kind
+	Index   int `json:",omitempty"`
 	Handler string
 	Data    interface{}
-	Session *Session
+	Session *Session `json:",omitempty"`
 }
 
 // ToBytes To []byte
@@ -78,10 +79,9 @@ func (m RPCMessage) ToBytes() (data []byte) {
 
 // RPCResp 服务端推送的消息
 type RPCResp struct {
-	Kind  int
-	Index int
+	Kind  int `json:",omitempty"` // response kind
+	Index int `json:",omitempty"`
 	Code  int
-	Event string
 	Data  interface{}
 }
 

@@ -16,14 +16,14 @@ func SendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 		return
 	}
 
-	response := msg.RPCResp{
+	rpcResp := msg.RPCResp{
 		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Fail,
 		Data:  data,
 	}
 
-	err := respConn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	err := respConn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -37,14 +37,14 @@ func SendSuccessfulMessage(respConn *websocket.Conn, Kind int, index int, data i
 		return
 	}
 
-	response := msg.RPCResp{
+	rpcResp := msg.RPCResp{
 		Kind:  Kind,
 		Index: index,
 		Code:  msg.StatusCode().Successful,
 		Data:  data,
 	}
 
-	err := respConn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	err := respConn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

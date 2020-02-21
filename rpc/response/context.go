@@ -21,14 +21,14 @@ func (rc RespCtx) SendFailMessage(data interface{}) {
 		return
 	}
 
-	response := msg.RPCResp{
+	rpcResp := msg.RPCResp{
 		Kind:  rc.Fm.Kind + 10000,
 		Index: rc.Fm.Index,
 		Code:  msg.StatusCode().Fail,
 		Data:  data,
 	}
 
-	err := rc.Conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	err := rc.Conn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -42,14 +42,14 @@ func (rc RespCtx) SendSuccessfulMessage(data interface{}) {
 		return
 	}
 
-	response := msg.RPCResp{
+	rpcResp := msg.RPCResp{
 		Kind:  rc.Fm.Kind + 10000,
 		Index: rc.Fm.Index,
 		Code:  msg.StatusCode().Successful,
 		Data:  data,
 	}
 
-	err := rc.Conn.WriteMessage(msgtype.TextMessage, response.ToBytes())
+	err := rc.Conn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

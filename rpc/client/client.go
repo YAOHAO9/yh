@@ -91,10 +91,10 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.Cl
 	}
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
 		requestMap[requestIndex] = cb
 		lock.Unlock()
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -114,10 +114,10 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 	}
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 		lock.Lock()
 		requestMap[requestIndex] = cb
 		lock.Unlock()
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -163,12 +163,11 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 
 	// 连接成功！！！
 	fmt.Println("连接到", serverConfig.ID, "成功！！！")
-
+	var count int
 	// 接收消息
 	go func() {
 		for {
 			_, data, err := clientConn.ReadMessage()
-
 			// 掉线检查
 			if err != nil {
 				clientConn.Close()
@@ -178,25 +177,27 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				break
 			}
 			// 解析消息
-			responseMessage := &msg.RPCResp{}
-			err = json.Unmarshal(data, responseMessage)
+			rpcResp := &msg.RPCResp{}
+			err = json.Unmarshal(data, rpcResp)
 			if err != nil {
 				fmt.Println("Rpc request's response body parse fail")
 				continue
 			}
 
 			// 如果是request消息，则调用回调函数
-			if responseMessage.Index != 0 {
+			if rpcResp.Index != 0 {
 				lock.Lock()
-				requestFunc, ok := requestMap[responseMessage.Index]
+				requestFunc, ok := requestMap[rpcResp.Index]
 				if ok {
-					delete(requestMap, responseMessage.Index)
-					if responseMessage.Kind == msgkind.RPC {
-						rpcfilter.AfterFilterManager().Exec(responseMessage)
-					} else if responseMessage.Kind == msgkind.Handler {
-						filter.AfterFilterManager().Exec(responseMessage)
+					count++
+					fmt.Println(count)
+					delete(requestMap, rpcResp.Index)
+					if rpcResp.Kind == msgkind.RPC {
+						rpcfilter.AfterFilterManager().Exec(rpcResp)
+					} else if rpcResp.Kind == msgkind.Handler {
+						filter.AfterFilterManager().Exec(rpcResp)
 					}
-					requestFunc(responseMessage.Data)
+					requestFunc(rpcResp.Data)
 				}
 				lock.Unlock()
 				continue
