@@ -8,6 +8,7 @@ import (
 	"trial/rpc/connector"
 	"trial/rpc/handler"
 	"trial/rpc/handler/rpchandler"
+	"trial/rpc/handler/syshandler"
 	"trial/rpc/msg"
 	"trial/rpc/msg/msgkind"
 	"trial/rpc/response"
@@ -72,12 +73,12 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		fm := &msg.RPCMessage{}
-		err = json.Unmarshal(data, fm)
+		rc := &msg.RPCMessage{}
+		err = json.Unmarshal(data, rc)
 
 		respCtx := &response.RespCtx{
 			Conn: conn,
-			Fm:   fm,
+			Fm:   rc,
 		}
 
 		if err != nil {
@@ -85,11 +86,11 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if fm.Kind == msgkind.Sys {
+		if rc.Kind == msgkind.Sys {
+			syshandler.Manager().Exec(respCtx)
+		} else if rc.Kind == msgkind.RPC {
 			rpchandler.Manager().Exec(respCtx)
-		} else if fm.Kind == msgkind.RPC {
-			rpchandler.Manager().Exec(respCtx)
-		} else if fm.Kind == msgkind.Handler {
+		} else if rc.Kind == msgkind.Handler {
 			handler.Manager().Exec(respCtx)
 		}
 	}

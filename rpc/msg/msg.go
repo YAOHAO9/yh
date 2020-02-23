@@ -41,7 +41,8 @@ func (m ClientResp) ToBytes() (data []byte) {
 
 // Session of connection
 type Session struct {
-	UID  string
+	UID  string // User id
+	CID  string // Connector id
 	Data map[string]interface{}
 }
 

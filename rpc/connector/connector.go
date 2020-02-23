@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"trial/rpc/client"
 	"trial/rpc/client/clientmanager"
+	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/msg/msgkind"
 	"trial/rpc/msg/msgtype"
@@ -57,11 +58,6 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	connInfo := &ConnInfo{id: 1, conn: conn}
 	ConnMap[id] = connInfo
 
-	session := &msg.Session{
-		UID:  id,
-		Data: connInfo.data,
-	}
-
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -77,31 +73,37 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			sendFailMessage(conn, msgkind.Handler, cm.Index, "消息解析失败，请发送json消息")
 			continue
 		}
-
+		fmt.Println(cm.Data)
 		if cm.Handler == "" {
 			sendFailMessage(conn, msgkind.Handler, cm.Index, "Hanler不能为空")
 			continue
 		}
 
 		// 获取RPCCLint
-		var connInfo *client.RPCClient
+		var rpcClient *client.RPCClient
 		if cm.ServerID != "" {
-			connInfo = clientmanager.GetClientByID(cm.ServerID)
+			rpcClient = clientmanager.GetClientByID(cm.ServerID)
 		} else {
-			connInfo = clientmanager.GetRandClientByKind(cm.Kind)
+			rpcClient = clientmanager.GetRandClientByKind(cm.Kind)
 		}
 
-		if connInfo == nil {
+		if rpcClient == nil {
 			sendFailMessage(conn, msgkind.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
 			continue
 		}
 
+		session := &msg.Session{
+			UID:  id,
+			CID:  config.GetServerConfig().ID,
+			Data: connInfo.data,
+		}
+
 		if cm.Index == 0 {
 			// 转发Notify
-			connInfo.SendHandlerNotify(session, cm)
+			rpcClient.SendHandlerNotify(session, cm)
 		} else {
 			// 转发Request
-			connInfo.SendHandlerRequest(session, cm, func(data interface{}) {
+			rpcClient.SendHandlerRequest(session, cm, func(data interface{}) {
 				clientResp := msg.ClientResp{
 					Index: cm.Index,
 					Data:  data,

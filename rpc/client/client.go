@@ -38,57 +38,44 @@ type RPCClient struct {
 	ServerConfig *config.ServerConfig
 }
 
-// SendHandlerNotify send handler message
-func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
+// SendSysNotify send handler message
+func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientMessage) {
+
 	fm := &msg.RPCMessage{
-		Kind:    msgkind.Handler,
+		Kind:    msgkind.Sys,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
 	}
+
 	respCtx := &response.RespCtx{
 		Conn: client.Conn,
 		Fm:   fm,
 	}
+
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
 		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
 	}
 }
 
-// SendRPCNotify send rpc message
-func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
-	fm := &msg.RPCMessage{
-		Kind:    msgkind.RPC,
-		Handler: message.Handler,
-		Data:    message.Data,
-		Session: session,
-	}
-	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
-	}
-	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
-	}
+// SendSysRequest send handler message
+func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
 
-}
-
-// SendHandlerRequest send handler message
-func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
 		Index:   requestIndex,
-		Kind:    msgkind.Handler,
+		Kind:    msgkind.Sys,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
 	}
+
 	respCtx := &response.RespCtx{
 		Conn: client.Conn,
 		Fm:   fm,
 	}
+
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
 		lock.Lock()
@@ -98,8 +85,77 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.Cl
 	}
 }
 
+// SendHandlerNotify send handler message
+func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
+
+	fm := &msg.RPCMessage{
+		Kind:    msgkind.Handler,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
+
+	// 执行 Before filter
+	if filter.BeforeFilterManager().Exec(respCtx) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	}
+}
+
+// SendHandlerRequest send handler message
+func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+
+	requestIndex := getRequestIndex()
+	fm := &msg.RPCMessage{
+		Index:   requestIndex,
+		Kind:    msgkind.Handler,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
+
+	// 执行 Before filter
+	if filter.BeforeFilterManager().Exec(respCtx) {
+		lock.Lock()
+		requestMap[requestIndex] = cb
+		lock.Unlock()
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	}
+}
+
+// SendRPCNotify send rpc message
+func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
+
+	fm := &msg.RPCMessage{
+		Kind:    msgkind.RPC,
+		Handler: message.Handler,
+		Data:    message.Data,
+		Session: session,
+	}
+
+	respCtx := &response.RespCtx{
+		Conn: client.Conn,
+		Fm:   fm,
+	}
+
+	// 执行 Before RPC filter
+	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
+		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+	}
+}
+
 // SendRPCRequest send rpc message
 func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
 		Index:   requestIndex,
@@ -108,10 +164,12 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 		Data:    message.Data,
 		Session: session,
 	}
+
 	respCtx := &response.RespCtx{
 		Conn: client.Conn,
 		Fm:   fm,
 	}
+
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
 		lock.Lock()

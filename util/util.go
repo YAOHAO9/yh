@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -92,4 +93,16 @@ func CallMethod(any interface{}, method string, params ...interface{}) (results 
 		results = append(results, reflectValue.Interface())
 	}
 	return
+}
+
+// MapToSturct MapToSturct
+func MapToSturct(sourceMap interface{}, destStruct interface{}) {
+	bytes, err := json.Marshal(sourceMap)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	err = json.Unmarshal(bytes, destStruct)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
