@@ -14,7 +14,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	// 解决跨域问题
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 // WebSocketHandler deal with ws request
 func WebSocketHandler(w http.ResponseWriter, r *http.Request) {

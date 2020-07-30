@@ -13,9 +13,9 @@
             "env": {},
             "args": [
                 "-c",
-                "-p=3110",
+                "-p=3113",
                 "-k=connector",
-                "-i=connector-1"
+                "-i=connector-3"
             ]
         },
         {
