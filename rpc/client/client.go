@@ -27,7 +27,7 @@ func getRequestIndex() int {
 	return requestIndex
 }
 
-var requestMap = make(map[int]func(data interface{}))
+var requestMap = make(map[int]func(rpcResp *msg.RPCResp))
 var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
@@ -58,15 +58,15 @@ func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientM
 }
 
 // SendSysRequest send handler message
-func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
-		Index:   requestIndex,
-		Kind:    msg.KindEnum.Sys,
-		Handler: message.Handler,
-		Data:    message.Data,
-		Session: session,
+		RequestID: requestIndex,
+		Kind:      msg.KindEnum.Sys,
+		Handler:   message.Handler,
+		Data:      message.Data,
+		Session:   session,
 	}
 
 	respCtx := &response.RespCtx{
@@ -83,8 +83,8 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 	}
 }
 
-// SendHandlerNotify send handler message
-func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
+// ForwardHandlerNotify send handler message
+func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
 		Kind:    msg.KindEnum.Handler,
@@ -104,16 +104,16 @@ func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Cli
 	}
 }
 
-// SendHandlerRequest send handler message
-func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+// ForwardHandlerRequest send handler message
+func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
-		Index:   requestIndex,
-		Kind:    msg.KindEnum.Handler,
-		Handler: message.Handler,
-		Data:    message.Data,
-		Session: session,
+		RequestID: requestIndex,
+		Kind:      msg.KindEnum.Handler,
+		Handler:   message.Handler,
+		Data:      message.Data,
+		Session:   session,
 	}
 
 	respCtx := &response.RespCtx{
@@ -152,15 +152,15 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 }
 
 // SendRPCRequest send rpc message
-func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(data interface{})) {
+func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
-		Index:   requestIndex,
-		Kind:    msg.KindEnum.RPC,
-		Handler: message.Handler,
-		Data:    message.Data,
-		Session: session,
+		RequestID: requestIndex,
+		Kind:      msg.KindEnum.RPC,
+		Handler:   message.Handler,
+		Data:      message.Data,
+		Session:   session,
 	}
 
 	respCtx := &response.RespCtx{
@@ -240,17 +240,17 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			}
 
 			// 如果是request消息，则调用回调函数
-			if rpcResp.Index != 0 {
+			if rpcResp.RequestID != 0 {
 				lock.Lock()
-				requestFunc, ok := requestMap[rpcResp.Index]
+				requestFunc, ok := requestMap[rpcResp.RequestID]
 				if ok {
-					delete(requestMap, rpcResp.Index)
+					delete(requestMap, rpcResp.RequestID)
 					if rpcResp.Kind == msg.KindEnum.RPC {
 						rpcfilter.AfterFilterManager().Exec(rpcResp)
 					} else if rpcResp.Kind == msg.KindEnum.Handler {
 						filter.AfterFilterManager().Exec(rpcResp)
 					}
-					requestFunc(rpcResp.Data)
+					requestFunc(rpcResp)
 				}
 				lock.Unlock()
 				continue

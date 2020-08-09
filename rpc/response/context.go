@@ -16,15 +16,15 @@ type RespCtx struct {
 // SendFailMessage 消息发送失败
 func (rc RespCtx) SendFailMessage(data interface{}) {
 	// Notify的消息，不通知成功
-	if rc.Fm.Index == 0 {
+	if rc.Fm.RequestID == 0 {
 		return
 	}
 
 	rpcResp := msg.RPCResp{
-		Kind:  rc.Fm.Kind + 10000,
-		Index: rc.Fm.Index,
-		Code:  msg.StatusCode.Fail,
-		Data:  data,
+		Kind:      rc.Fm.Kind + 10000,
+		RequestID: rc.Fm.RequestID,
+		Code:      msg.StatusCode.Fail,
+		Data:      data,
 	}
 
 	err := rc.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
@@ -37,15 +37,15 @@ func (rc RespCtx) SendFailMessage(data interface{}) {
 func (rc RespCtx) SendSuccessfulMessage(data interface{}) {
 
 	// Notify的消息，不通知成功
-	if rc.Fm.Index == 0 {
+	if rc.Fm.RequestID == 0 {
 		return
 	}
 
 	rpcResp := msg.RPCResp{
-		Kind:  rc.Fm.Kind + 10000,
-		Index: rc.Fm.Index,
-		Code:  msg.StatusCode.Successful,
-		Data:  data,
+		Kind:      rc.Fm.Kind + 10000,
+		RequestID: rc.Fm.RequestID,
+		Code:      msg.StatusCode.Successful,
+		Data:      data,
 	}
 
 	err := rc.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())

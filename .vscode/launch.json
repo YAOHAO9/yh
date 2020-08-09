@@ -32,6 +32,19 @@
             ]
         },
         {
+            "name": "Qznn",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {},
+            "args": [
+                "-p=3150",
+                "-k=qznn",
+                "-i=qznn-1"
+            ]
+        },
+        {
             "name": "Test",
             "type": "go",
             "request": "launch",

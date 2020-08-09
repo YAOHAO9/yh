@@ -4,11 +4,11 @@ import "encoding/json"
 
 // RPCMessage 转发消息结构
 type RPCMessage struct {
-	Kind    int `json:",omitempty"` // message kind
-	Index   int `json:",omitempty"`
-	Handler string
-	Data    interface{}
-	Session *Session `json:",omitempty"`
+	Kind      int `json:",omitempty"` // message kind
+	RequestID int `json:",omitempty"`
+	Handler   string
+	Data      interface{}
+	Session   *Session `json:",omitempty"`
 }
 
 // ToBytes To []byte

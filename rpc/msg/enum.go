@@ -9,12 +9,12 @@ var KindEnum = struct {
 	HandlerResponse int
 	RPCResponse     int
 }{
-	Sys:             1, // 系统rpc
-	Handler:         2, // 客户端调用 Handler
-	RPC:             3, //  RPC
-	SysResponse:     4, // 系统消息的response
-	HandlerResponse: 5, // handler request的response
-	RPCResponse:     6, // rpc 的response
+	Sys:             1,     // 系统rpc
+	Handler:         2,     // 客户端调用 Handler
+	RPC:             3,     //  RPC
+	SysResponse:     10001, // 系统消息的response
+	HandlerResponse: 10002, // handler request的response
+	RPCResponse:     10003, // rpc 的response
 }
 
 // TypeEnum 消息类型枚举

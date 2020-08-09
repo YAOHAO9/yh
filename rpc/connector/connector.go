@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"trial/rpc/client"
 	"trial/rpc/client/clientmanager"
 	"trial/rpc/config"
@@ -73,25 +74,39 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, cm)
 
 		if err != nil {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, "消息解析失败，请发送json消息")
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
 			continue
 		}
 		fmt.Println(cm.Data)
 		if cm.Handler == "" {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, "Hanler不能为空")
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
 			continue
 		}
+
+		handlerInfos := strings.Split(cm.Handler, ".")
+		serverKind := handlerInfos[0] // 解析出服务器类型
+		cm.Handler = handlerInfos[1]  // 真正的handler
 
 		// 获取RPCCLint
 		var rpcClient *client.RPCClient
 		if cm.ServerID != "" {
+			// 转发到指定的后端服务器
 			rpcClient = clientmanager.GetClientByID(cm.ServerID)
 		} else {
-			rpcClient = clientmanager.GetRandClientByKind(cm.Kind)
+			// 根据类型转发
+			rpcClient = clientmanager.GetRandClientByKind(serverKind)
 		}
 
 		if rpcClient == nil {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
+
+			tip := ""
+			if cm.ServerID == "" {
+				tip = fmt.Sprint("服务器不存在, Handler: ", cm.Handler)
+			} else {
+				tip = fmt.Sprint("服务器: ", cm.ServerID, "不存在")
+			}
+
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, tip)
 			continue
 		}
 
@@ -101,15 +116,17 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			Data: connInfo.data,
 		}
 
-		if cm.Index == 0 {
+		if cm.RequestID == 0 {
 			// 转发Notify
-			rpcClient.SendHandlerNotify(session, cm)
+			rpcClient.ForwardHandlerNotify(session, cm)
 		} else {
 			// 转发Request
-			rpcClient.SendHandlerRequest(session, cm, func(data interface{}) {
+			rpcClient.ForwardHandlerRequest(session, cm, func(rpcResp *msg.RPCResp) {
+
 				clientResp := msg.ClientResp{
-					Index: cm.Index,
-					Data:  data,
+					RequestID: rpcResp.RequestID,
+					Code:      rpcResp.Code,
+					Data:      rpcResp.Data,
 				}
 
 				bytes, err := json.Marshal(clientResp)
@@ -132,9 +149,9 @@ func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 	}
 
 	rpcResp := msg.ClientResp{
-		Index: index,
-		Code:  msg.StatusCode.Fail,
-		Data:  data,
+		RequestID: index,
+		Code:      msg.StatusCode.Fail,
+		Data:      data,
 	}
 
 	err := respConn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
