@@ -1,7 +1,7 @@
 
 import * as WebSocket from 'ws'
 
-const ws = new WebSocket('ws://127.0.0.1:3113?id=hao&token=123123')
+const ws = new WebSocket('ws://127.0.0.1:3110?id=hao&token=123123')
 ws.onopen = (_: WebSocket.OpenEvent) => {
     console.warn('已连接')
     ws.send(JSON.stringify({

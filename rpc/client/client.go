@@ -10,8 +10,6 @@ import (
 	"trial/rpc/filter"
 	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/msg"
-	"trial/rpc/msg/msgkind"
-	"trial/rpc/msg/msgtype"
 	"trial/rpc/response"
 
 	"github.com/gorilla/websocket"
@@ -42,7 +40,7 @@ type RPCClient struct {
 func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
-		Kind:    msgkind.Sys,
+		Kind:    msg.KindEnum.Sys,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -55,7 +53,7 @@ func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientM
 
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -65,7 +63,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
 		Index:   requestIndex,
-		Kind:    msgkind.Sys,
+		Kind:    msg.KindEnum.Sys,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -81,7 +79,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 		lock.Lock()
 		requestMap[requestIndex] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -89,7 +87,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
-		Kind:    msgkind.Handler,
+		Kind:    msg.KindEnum.Handler,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -102,7 +100,7 @@ func (client RPCClient) SendHandlerNotify(session *msg.Session, message *msg.Cli
 
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -112,7 +110,7 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.Cl
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
 		Index:   requestIndex,
-		Kind:    msgkind.Handler,
+		Kind:    msg.KindEnum.Handler,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -128,7 +126,7 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.Cl
 		lock.Lock()
 		requestMap[requestIndex] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -136,7 +134,7 @@ func (client RPCClient) SendHandlerRequest(session *msg.Session, message *msg.Cl
 func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
-		Kind:    msgkind.RPC,
+		Kind:    msg.KindEnum.RPC,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -149,7 +147,7 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -159,7 +157,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 	requestIndex := getRequestIndex()
 	fm := &msg.RPCMessage{
 		Index:   requestIndex,
-		Kind:    msgkind.RPC,
+		Kind:    msg.KindEnum.RPC,
 		Handler: message.Handler,
 		Data:    message.Data,
 		Session: session,
@@ -175,7 +173,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 		lock.Lock()
 		requestMap[requestIndex] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msgtype.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
 
@@ -247,9 +245,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				requestFunc, ok := requestMap[rpcResp.Index]
 				if ok {
 					delete(requestMap, rpcResp.Index)
-					if rpcResp.Kind == msgkind.RPC {
+					if rpcResp.Kind == msg.KindEnum.RPC {
 						rpcfilter.AfterFilterManager().Exec(rpcResp)
-					} else if rpcResp.Kind == msgkind.Handler {
+					} else if rpcResp.Kind == msg.KindEnum.Handler {
 						filter.AfterFilterManager().Exec(rpcResp)
 					}
 					requestFunc(rpcResp.Data)

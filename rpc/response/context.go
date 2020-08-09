@@ -3,7 +3,6 @@ package response
 import (
 	"fmt"
 	"trial/rpc/msg"
-	"trial/rpc/msg/msgtype"
 
 	"github.com/gorilla/websocket"
 )
@@ -24,11 +23,11 @@ func (rc RespCtx) SendFailMessage(data interface{}) {
 	rpcResp := msg.RPCResp{
 		Kind:  rc.Fm.Kind + 10000,
 		Index: rc.Fm.Index,
-		Code:  msg.StatusCode().Fail,
+		Code:  msg.StatusCode.Fail,
 		Data:  data,
 	}
 
-	err := rc.Conn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
+	err := rc.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -45,11 +44,11 @@ func (rc RespCtx) SendSuccessfulMessage(data interface{}) {
 	rpcResp := msg.RPCResp{
 		Kind:  rc.Fm.Kind + 10000,
 		Index: rc.Fm.Index,
-		Code:  msg.StatusCode().Successful,
+		Code:  msg.StatusCode.Successful,
 		Data:  data,
 	}
 
-	err := rc.Conn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
+	err := rc.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

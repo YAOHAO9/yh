@@ -10,7 +10,6 @@ import (
 	"trial/rpc/handler/rpchandler"
 	"trial/rpc/handler/syshandler"
 	"trial/rpc/msg"
-	"trial/rpc/msg/msgkind"
 	"trial/rpc/response"
 	"trial/rpc/zookeeper"
 
@@ -86,11 +85,11 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if rc.Kind == msgkind.Sys {
+		if rc.Kind == msg.KindEnum.Sys {
 			syshandler.Manager().Exec(respCtx)
-		} else if rc.Kind == msgkind.RPC {
+		} else if rc.Kind == msg.KindEnum.RPC {
 			rpchandler.Manager().Exec(respCtx)
-		} else if rc.Kind == msgkind.Handler {
+		} else if rc.Kind == msg.KindEnum.Handler {
 			handler.Manager().Exec(respCtx)
 		}
 	}

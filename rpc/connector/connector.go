@@ -8,8 +8,6 @@ import (
 	"trial/rpc/client/clientmanager"
 	"trial/rpc/config"
 	"trial/rpc/msg"
-	"trial/rpc/msg/msgkind"
-	"trial/rpc/msg/msgtype"
 
 	"github.com/gorilla/websocket"
 )
@@ -46,7 +44,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" || token == "" {
 		fmt.Println("用户校验失败!!!")
-		err := conn.WriteMessage(msgtype.TextMessage, []byte("认证失败"))
+		err := conn.WriteMessage(msg.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
 			fmt.Println("发送认证失败消息失败: ", err.Error())
 		}
@@ -75,12 +73,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, cm)
 
 		if err != nil {
-			sendFailMessage(conn, msgkind.Handler, cm.Index, "消息解析失败，请发送json消息")
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, "消息解析失败，请发送json消息")
 			continue
 		}
 		fmt.Println(cm.Data)
 		if cm.Handler == "" {
-			sendFailMessage(conn, msgkind.Handler, cm.Index, "Hanler不能为空")
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, "Hanler不能为空")
 			continue
 		}
 
@@ -93,7 +91,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if rpcClient == nil {
-			sendFailMessage(conn, msgkind.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
+			sendFailMessage(conn, msg.KindEnum.Handler, cm.Index, fmt.Sprint("服务器不存在, Kind: ", cm.Kind, ", ServerID: ", cm.ServerID))
 			continue
 		}
 
@@ -118,7 +116,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					fmt.Println("Invalid message")
 				} else {
-					conn.WriteMessage(msgtype.TextMessage, bytes)
+					conn.WriteMessage(msg.TypeEnum.TextMessage, bytes)
 				}
 			})
 		}
@@ -135,11 +133,11 @@ func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 
 	rpcResp := msg.ClientResp{
 		Index: index,
-		Code:  msg.StatusCode().Fail,
+		Code:  msg.StatusCode.Fail,
 		Data:  data,
 	}
 
-	err := respConn.WriteMessage(msgtype.TextMessage, rpcResp.ToBytes())
+	err := respConn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

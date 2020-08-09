@@ -6,7 +6,7 @@ import (
 	"time"
 	"trial/rpc/client"
 	"trial/rpc/config"
-	"trial/rpc/msg/msgtype"
+	"trial/rpc/msg"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
@@ -65,6 +65,6 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 func SendMessageByID(serverID string, data []byte) {
 	client := GetClientByID(serverID).Conn
 	if client != nil {
-		client.WriteMessage(msgtype.TextMessage, data)
+		client.WriteMessage(msg.TypeEnum.TextMessage, data)
 	}
 }
