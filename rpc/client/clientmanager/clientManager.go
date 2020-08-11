@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 	"trial/rpc/client"
+	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/msg"
 )
@@ -20,19 +21,24 @@ func GetClientByID(id string) (c *client.RPCClient) {
 	return
 }
 
-// GetRandClientByKind get rpc client by rand num
-func GetRandClientByKind(kind string) (c *client.RPCClient) {
+// GetClientByRouter get rpc client by rand num
+func GetClientByRouter(routerInfo router.Info) (c *client.RPCClient) {
 
 	clients := make([]*client.RPCClient, 0)
 
 	for _, rpcClientInfo := range rpcClientMap {
-		if rpcClientInfo.ServerConfig.Kind == kind {
+		if rpcClientInfo.ServerConfig.Kind == routerInfo.ServerKind {
 			clients = append(clients, rpcClientInfo)
 		}
 	}
 
 	if len(clients) == 0 {
 		return nil
+	}
+
+	route := router.Manager.Get(routerInfo.ServerKind)
+	if route != nil {
+		return route(routerInfo, clients)
 	}
 
 	return clients[rand.Intn(len(clients))]

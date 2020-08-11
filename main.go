@@ -1,7 +1,10 @@
 package main
 
 import (
+	"math/rand"
 	"trial/rpc/application"
+	"trial/rpc/client"
+	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/response"
@@ -33,5 +36,19 @@ func register(app *application.Application) {
 	app.RegisterHandlerAfterFilter(func(rm *msg.RPCResp) (next bool) {
 		rm.RequestID += 1000
 		return true
+	})
+
+	app.RegisterRouter("ddz", func(routerInfo router.Info, clients []*client.RPCClient) *client.RPCClient {
+		var luckClient *client.RPCClient
+		for _, clientInfo := range clients {
+			if clientInfo.ServerConfig.ID == "ddz-3" {
+				luckClient = clientInfo
+				break
+			}
+		}
+		if luckClient != nil {
+			return luckClient
+		}
+		return clients[rand.Intn(len(clients))]
 	})
 }

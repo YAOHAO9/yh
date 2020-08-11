@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"trial/rpc/client"
+	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/filter"
 	"trial/rpc/filter/rpcfilter"
@@ -47,6 +49,11 @@ func (app Application) RegisterRPCBeforeFilter(f func(respCtx *response.RespCtx)
 // RegisterRPCAfterFilter 注册after filter of rpc request
 func (app Application) RegisterRPCAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
 	rpcfilter.AfterFilterManager().Register(f)
+}
+
+// RegisterRouter 注册路由
+func (app Application) RegisterRouter(serverKind string, route func(routerInfo router.Info, clients []*client.RPCClient) *client.RPCClient) {
+	router.Manager.Register(serverKind, route)
 }
 
 func init() {

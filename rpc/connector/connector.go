@@ -7,6 +7,7 @@ import (
 	"strings"
 	"trial/rpc/client"
 	"trial/rpc/client/clientmanager"
+	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/msg"
 
@@ -87,6 +88,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		serverKind := handlerInfos[0] // 解析出服务器类型
 		cm.Handler = handlerInfos[1]  // 真正的handler
 
+		session := &msg.Session{
+			UID:  id,
+			CID:  config.GetServerConfig().ID,
+			Data: connInfo.data,
+		}
+
 		// 获取RPCCLint
 		var rpcClient *client.RPCClient
 		if cm.ServerID != "" {
@@ -94,7 +101,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			rpcClient = clientmanager.GetClientByID(cm.ServerID)
 		} else {
 			// 根据类型转发
-			rpcClient = clientmanager.GetRandClientByKind(serverKind)
+			rpcClient = clientmanager.GetClientByRouter(router.Info{
+				ServerKind: serverKind,
+				Handler:    cm.Handler,
+				Session:    *session,
+			})
 		}
 
 		if rpcClient == nil {
@@ -108,12 +119,6 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, tip)
 			continue
-		}
-
-		session := &msg.Session{
-			UID:  id,
-			CID:  config.GetServerConfig().ID,
-			Data: connInfo.data,
 		}
 
 		if cm.RequestID == 0 {
