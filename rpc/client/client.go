@@ -15,16 +15,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var requestIndex = 1
-
+var requestID = 1
 var maxInt64Value = 1<<63 - 1
 
-func getRequestIndex() int {
-	requestIndex++
-	if requestIndex >= maxInt64Value {
-		requestIndex = 1
+func getRequestID() int {
+	requestID++
+	if requestID >= maxInt64Value {
+		requestID = 1
 	}
-	return requestIndex
+	return requestID
 }
 
 var requestMap = make(map[int]func(rpcResp *msg.RPCResp))
@@ -60,9 +59,9 @@ func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientM
 // SendSysRequest send handler message
 func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
-	requestIndex := getRequestIndex()
+	requestID := getRequestID()
 	fm := &msg.RPCMessage{
-		RequestID: requestIndex,
+		RequestID: requestID,
 		Kind:      msg.KindEnum.Sys,
 		Handler:   message.Handler,
 		Data:      message.Data,
@@ -77,7 +76,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
 		lock.Lock()
-		requestMap[requestIndex] = cb
+		requestMap[requestID] = cb
 		lock.Unlock()
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
@@ -107,9 +106,9 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 // ForwardHandlerRequest send handler message
 func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
-	requestIndex := getRequestIndex()
+	requestID := getRequestID()
 	fm := &msg.RPCMessage{
-		RequestID: requestIndex,
+		RequestID: requestID,
 		Kind:      msg.KindEnum.Handler,
 		Handler:   message.Handler,
 		Data:      message.Data,
@@ -124,7 +123,7 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 	// 执行 Before filter
 	if filter.BeforeFilterManager().Exec(respCtx) {
 		lock.Lock()
-		requestMap[requestIndex] = cb
+		requestMap[requestID] = cb
 		lock.Unlock()
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
@@ -154,9 +153,9 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 // SendRPCRequest send rpc message
 func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
-	requestIndex := getRequestIndex()
+	requestID := getRequestID()
 	fm := &msg.RPCMessage{
-		RequestID: requestIndex,
+		RequestID: requestID,
 		Kind:      msg.KindEnum.RPC,
 		Handler:   message.Handler,
 		Data:      message.Data,
@@ -171,7 +170,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 	// 执行 Before RPC filter
 	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
 		lock.Lock()
-		requestMap[requestIndex] = cb
+		requestMap[requestID] = cb
 		lock.Unlock()
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}

@@ -6,12 +6,21 @@ sh start.sh // start the app
 
 ## 启动一个服务
 ```
+eg.
+go run main.go -c -p="3110" -k="connector" -i="connector-1" // 启动一个Connector
+
 -c 是否是connector服
 -p 端口
 -k 服务类型
 -i 服务唯一标识
+-t Token
+-H 服务器IP  默认:127.0.0.1
 
-go run main.go -c -p="3110" -k="connector" -i="connector-1" // 启动一个Connector
+-zh zookeeper host
+-zp zookeeper post
+
+-h help
+-s 系统名称
 ```
 
 ## 连接到Connector

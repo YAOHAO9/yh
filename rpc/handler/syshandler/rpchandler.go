@@ -9,12 +9,8 @@ import (
 // Map of rpc
 type Map handler.Map
 
-var syshandlerMap = make(handler.Map)
-
 // Manager return syshandlerMap
-func Manager() handler.Map {
-	return syshandlerMap
-}
+var Manager = make(handler.Map)
 
 // Exec 执行handler
 func (syshandlerMap Map) Exec(respCtx *response.RespCtx) {

@@ -86,11 +86,11 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if rc.Kind == msg.KindEnum.Sys {
-			syshandler.Manager().Exec(respCtx)
+			syshandler.Manager.Exec(respCtx)
 		} else if rc.Kind == msg.KindEnum.RPC {
-			rpchandler.Manager().Exec(respCtx)
+			rpchandler.Manager.Exec(respCtx)
 		} else if rc.Kind == msg.KindEnum.Handler {
-			handler.Manager().Exec(respCtx)
+			handler.Manager.Exec(respCtx)
 		}
 	}
 }

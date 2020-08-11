@@ -6,11 +6,11 @@ import (
 )
 
 func init() {
-	syshandler.Manager().Register("updateSession", func(respCtx *response.RespCtx) {
+	syshandler.Manager.Register("updateSession", func(respCtx *response.RespCtx) {
 		// connector.GetConnInfo()
 
 	})
-	syshandler.Manager().Register("pushMessage", func(respCtx *response.RespCtx) {
+	syshandler.Manager.Register("pushMessage", func(respCtx *response.RespCtx) {
 
 	})
 }

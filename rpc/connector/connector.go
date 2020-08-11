@@ -101,7 +101,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 			tip := ""
 			if cm.ServerID == "" {
-				tip = fmt.Sprint("服务器不存在, Handler: ", cm.Handler)
+				tip = fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
 			} else {
 				tip = fmt.Sprint("服务器: ", cm.ServerID, "不存在")
 			}
