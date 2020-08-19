@@ -50,3 +50,9 @@ func (slice AfterFilterSlice) Exec(rm *msg.RPCResp) (next bool) {
 	}
 	return true
 }
+
+// BaseFilter baseFilter
+type BaseFilter struct {
+	Before BeforeFilterSlice
+	After  AfterFilterSlice
+}

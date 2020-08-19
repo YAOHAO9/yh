@@ -6,8 +6,8 @@ import (
 
 // Handler RPCHandler
 type Handler struct {
-	*handler.Handler
+	*handler.BaseHandler
 }
 
 // Manager return RPCHandler
-var Manager = &Handler{&handler.Handler{Map: make(handler.Map)}}
+var Manager = &Handler{&handler.BaseHandler{Map: make(handler.Map)}}

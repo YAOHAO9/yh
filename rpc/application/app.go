@@ -7,14 +7,14 @@ import (
 	"math/rand"
 	"time"
 	"trial/rpc/client"
-	"trial/rpc/client/router"
 	"trial/rpc/config"
-	"trial/rpc/filter"
+	"trial/rpc/filter/handlerfilter"
 	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/handler/clienthandler"
 	"trial/rpc/handler/rpchandler"
 	"trial/rpc/msg"
 	"trial/rpc/response"
+	"trial/rpc/router"
 	RpcServer "trial/rpc/server"
 )
 
@@ -33,22 +33,22 @@ func (app Application) RegisterRPCHandler(name string, f func(respCtx *response.
 
 // RegisterHandlerBeforeFilter 注册before filter
 func (app Application) RegisterHandlerBeforeFilter(f func(respCtx *response.RespCtx) (next bool)) {
-	filter.BeforeFilterManager().Register(f)
+	handlerfilter.Manager.Before.Register(f)
 }
 
 // RegisterHandlerAfterFilter 注册after filter
 func (app Application) RegisterHandlerAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
-	filter.AfterFilterManager().Register(f)
+	handlerfilter.Manager.After.Register(f)
 }
 
 // RegisterRPCBeforeFilter 注册before filter of rpc
 func (app Application) RegisterRPCBeforeFilter(f func(respCtx *response.RespCtx) (next bool)) {
-	rpcfilter.BeforeFilterManager().Register(f)
+	rpcfilter.Manager.Before.Register(f)
 }
 
 // RegisterRPCAfterFilter 注册after filter of rpc request
 func (app Application) RegisterRPCAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
-	rpcfilter.AfterFilterManager().Register(f)
+	rpcfilter.Manager.After.Register(f)
 }
 
 // RegisterRouter 注册路由

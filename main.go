@@ -4,10 +4,10 @@ import (
 	"math/rand"
 	"trial/rpc/application"
 	"trial/rpc/client"
-	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/response"
+	"trial/rpc/router"
 )
 
 func main() {

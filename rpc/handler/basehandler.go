@@ -8,18 +8,18 @@ import (
 // Map handler函数仓库
 type Map map[string]func(respCtx *response.RespCtx)
 
-// Handler Handler
-type Handler struct {
+// BaseHandler BaseHandler
+type BaseHandler struct {
 	Map Map
 }
 
 // Register handler
-func (handler Handler) Register(name string, f func(respCtx *response.RespCtx)) {
+func (handler BaseHandler) Register(name string, f func(respCtx *response.RespCtx)) {
 	handler.Map[name] = f
 }
 
 // Exec 执行handler
-func (handler Handler) Exec(respCtx *response.RespCtx) {
+func (handler BaseHandler) Exec(respCtx *response.RespCtx) {
 
 	f, ok := handler.Map[respCtx.Fm.Handler]
 	if ok {
@@ -29,4 +29,4 @@ func (handler Handler) Exec(respCtx *response.RespCtx) {
 	}
 }
 
-var a = Handler{make(Map)}
+var a = BaseHandler{make(Map)}

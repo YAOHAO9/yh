@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 	"trial/rpc/config"
-	"trial/rpc/filter"
+	"trial/rpc/filter/handlerfilter"
 	"trial/rpc/filter/rpcfilter"
 	"trial/rpc/msg"
 	"trial/rpc/response"
@@ -53,7 +53,7 @@ func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientM
 	}
 
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(respCtx) {
+	if handlerfilter.Manager.Before.Exec(respCtx) {
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
@@ -76,7 +76,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 	}
 
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(respCtx) {
+	if handlerfilter.Manager.Before.Exec(respCtx) {
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
@@ -100,7 +100,7 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 	}
 
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(respCtx) {
+	if handlerfilter.Manager.Before.Exec(respCtx) {
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
@@ -123,7 +123,7 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 	}
 
 	// 执行 Before filter
-	if filter.BeforeFilterManager().Exec(respCtx) {
+	if handlerfilter.Manager.Before.Exec(respCtx) {
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
@@ -147,7 +147,7 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 	}
 
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
+	if rpcfilter.Manager.Before.Exec(respCtx) {
 		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
 	}
 }
@@ -170,7 +170,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 	}
 
 	// 执行 Before RPC filter
-	if rpcfilter.BeforeFilterManager().Exec(respCtx) {
+	if rpcfilter.Manager.Before.Exec(respCtx) {
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
@@ -248,9 +248,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 					delete(requestMap, rpcResp.RequestID)
 					// 执行 After RPC filter
 					if rpcResp.Kind == msg.KindEnum.RPC {
-						rpcfilter.AfterFilterManager().Exec(rpcResp)
+						rpcfilter.Manager.After.Exec(rpcResp)
 					} else if rpcResp.Kind == msg.KindEnum.Handler {
-						filter.AfterFilterManager().Exec(rpcResp)
+						handlerfilter.Manager.After.Exec(rpcResp)
 					}
 					requestFunc(rpcResp)
 				}

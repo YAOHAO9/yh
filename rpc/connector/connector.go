@@ -7,9 +7,9 @@ import (
 	"strings"
 	"trial/rpc/client"
 	"trial/rpc/client/clientmanager"
-	"trial/rpc/client/router"
 	"trial/rpc/config"
 	"trial/rpc/msg"
+	"trial/rpc/router"
 
 	"github.com/gorilla/websocket"
 )
