@@ -12,7 +12,7 @@ import (
 
 var rpcClientMap = make(map[string]*client.RPCClient)
 
-// GetClientByID get rpc client by id
+// GetClientByID 通过ID获取Rpc连接客户端
 func GetClientByID(id string) (c *client.RPCClient) {
 	c, b := rpcClientMap[id]
 	if !b {
@@ -21,7 +21,7 @@ func GetClientByID(id string) (c *client.RPCClient) {
 	return
 }
 
-// GetClientByRouter get rpc client by rand num
+// GetClientByRouter 随机获取一个Rpc连接客户端
 func GetClientByRouter(routerInfo router.Info) (c *client.RPCClient) {
 
 	clients := make([]*client.RPCClient, 0)
@@ -44,13 +44,13 @@ func GetClientByRouter(routerInfo router.Info) (c *client.RPCClient) {
 	return clients[rand.Intn(len(clients))]
 }
 
-// DelClientByID get rpc client by id
+// DelClientByID 删除RPC连接客户端
 func DelClientByID(id string) {
 	delete(rpcClientMap, id)
 	return
 }
 
-// CreateClient create client
+// CreateClient 创建RPC连接客户端
 func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) {
 	defer func() {
 		data := recover()
@@ -67,7 +67,7 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 	}
 }
 
-// SendMessageByID send message to specified server
+// SendMessageByID 发送消息给指定的服务器
 func SendMessageByID(serverID string, data []byte) {
 	client := GetClientByID(serverID).Conn
 	if client != nil {

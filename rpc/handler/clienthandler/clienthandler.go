@@ -1,13 +1,13 @@
-package rpchandler
+package clienthandler
 
 import (
 	"trial/rpc/handler"
 )
 
-// Handler RPCHandler
+// Handler ClientHandler
 type Handler struct {
 	*handler.Handler
 }
 
-// Manager return RPCHandler
+// Manager return ClientHandler
 var Manager = &Handler{&handler.Handler{Map: make(handler.Map)}}

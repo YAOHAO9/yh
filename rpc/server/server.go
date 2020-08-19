@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"trial/rpc/config"
 	"trial/rpc/connector"
-	"trial/rpc/handler"
+	"trial/rpc/handler/clienthandler"
 	"trial/rpc/handler/rpchandler"
 	"trial/rpc/handler/syshandler"
 	"trial/rpc/msg"
@@ -90,7 +90,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		} else if rc.Kind == msg.KindEnum.RPC {
 			rpchandler.Manager.Exec(respCtx)
 		} else if rc.Kind == msg.KindEnum.Handler {
-			handler.Manager.Exec(respCtx)
+			clienthandler.Manager.Exec(respCtx)
 		}
 	}
 }

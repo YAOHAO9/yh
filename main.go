@@ -8,17 +8,10 @@ import (
 	"trial/rpc/config"
 	"trial/rpc/msg"
 	"trial/rpc/response"
-	RpcServer "trial/rpc/server"
 )
 
 func main() {
 	app := application.CreateApp()
-	register(app)
-	// 启动RPC server
-	RpcServer.Start()
-}
-
-func register(app *application.Application) {
 
 	app.RegisterHandler("handler", func(respCtx *response.RespCtx) {
 		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
@@ -29,12 +22,12 @@ func register(app *application.Application) {
 	})
 
 	app.RegisterRPCAfterFilter(func(rm *msg.RPCResp) (next bool) {
-		rm.RequestID -= 1000
+		// rm.RequestID -= 1000
 		return true
 	})
 
 	app.RegisterHandlerAfterFilter(func(rm *msg.RPCResp) (next bool) {
-		rm.RequestID += 1000
+		// rm.RequestID += 1000
 		return true
 	})
 
@@ -51,4 +44,6 @@ func register(app *application.Application) {
 		}
 		return clients[rand.Intn(len(clients))]
 	})
+
+	app.Start()
 }

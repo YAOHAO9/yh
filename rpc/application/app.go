@@ -11,7 +11,7 @@ import (
 	"trial/rpc/config"
 	"trial/rpc/filter"
 	"trial/rpc/filter/rpcfilter"
-	"trial/rpc/handler"
+	"trial/rpc/handler/clienthandler"
 	"trial/rpc/handler/rpchandler"
 	"trial/rpc/msg"
 	"trial/rpc/response"
@@ -23,20 +23,20 @@ type Application struct{}
 
 // RegisterHandler 注册Handler
 func (app Application) RegisterHandler(name string, f func(respCtx *response.RespCtx)) {
-	handler.Manager.Register(name, f)
+	clienthandler.Manager.Register(name, f)
 }
 
-// RegisterRPCHandler 注册Handler
+// RegisterRPCHandler 注册RPC Handler
 func (app Application) RegisterRPCHandler(name string, f func(respCtx *response.RespCtx)) {
 	rpchandler.Manager.Register(name, f)
 }
 
-// RegisterHandlerBeforeFilter 注册before filter of handler
+// RegisterHandlerBeforeFilter 注册before filter
 func (app Application) RegisterHandlerBeforeFilter(f func(respCtx *response.RespCtx) (next bool)) {
 	filter.BeforeFilterManager().Register(f)
 }
 
-// RegisterHandlerAfterFilter 注册after filter of handler request
+// RegisterHandlerAfterFilter 注册after filter
 func (app Application) RegisterHandlerAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
 	filter.AfterFilterManager().Register(f)
 }
@@ -62,6 +62,11 @@ func init() {
 
 var app *Application
 
+// Start start application
+func (app Application) Start() {
+	RpcServer.Start()
+}
+
 // CreateApp 创建app
 func CreateApp() *Application {
 	if !parseFlag() {
@@ -72,11 +77,6 @@ func CreateApp() *Application {
 	}
 	app = &Application{}
 	return app
-}
-
-// Start start application
-func Start() {
-	RpcServer.Start()
 }
 
 // 解析命令行参数

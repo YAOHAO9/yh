@@ -18,6 +18,7 @@ import (
 var requestID = 1
 var maxInt64Value = 1<<63 - 1
 
+// 唯一的RequestID
 func getRequestID() int {
 	requestID++
 	if requestID >= maxInt64Value {
@@ -27,6 +28,7 @@ func getRequestID() int {
 }
 
 var requestMap = make(map[int]func(rpcResp *msg.RPCResp))
+
 var lock sync.Mutex
 
 // RPCClient websocket client 连接信息
@@ -35,7 +37,7 @@ type RPCClient struct {
 	ServerConfig *config.ServerConfig
 }
 
-// SendSysNotify send handler message
+// SendSysNotify 发送系统RPC通知
 func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
@@ -56,7 +58,7 @@ func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientM
 	}
 }
 
-// SendSysRequest send handler message
+// SendSysRequest 发送系统请求
 func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestID := getRequestID()
@@ -82,7 +84,7 @@ func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.Client
 	}
 }
 
-// ForwardHandlerNotify send handler message
+// ForwardHandlerNotify 转发Handler通知
 func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
@@ -103,7 +105,7 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 	}
 }
 
-// ForwardHandlerRequest send handler message
+// ForwardHandlerRequest 转发Handler请求
 func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestID := getRequestID()
@@ -129,7 +131,7 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 	}
 }
 
-// SendRPCNotify send rpc message
+// SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
 
 	fm := &msg.RPCMessage{
@@ -150,7 +152,7 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 	}
 }
 
-// SendRPCRequest send rpc message
+// SendRPCRequest 发送RPC请求
 func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestID := getRequestID()
@@ -244,6 +246,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				requestFunc, ok := requestMap[rpcResp.RequestID]
 				if ok {
 					delete(requestMap, rpcResp.RequestID)
+					// 执行 After RPC filter
 					if rpcResp.Kind == msg.KindEnum.RPC {
 						rpcfilter.AfterFilterManager().Exec(rpcResp)
 					} else if rpcResp.Kind == msg.KindEnum.Handler {

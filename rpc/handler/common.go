@@ -5,21 +5,28 @@ import (
 	"trial/rpc/response"
 )
 
-// Map map
+// Map handler函数仓库
 type Map map[string]func(respCtx *response.RespCtx)
 
+// Handler Handler
+type Handler struct {
+	Map Map
+}
+
 // Register handler
-func (handlerMap Map) Register(name string, f func(respCtx *response.RespCtx)) {
-	handlerMap[name] = f
+func (handler Handler) Register(name string, f func(respCtx *response.RespCtx)) {
+	handler.Map[name] = f
 }
 
 // Exec 执行handler
-func (handlerMap Map) Exec(respCtx *response.RespCtx) {
+func (handler Handler) Exec(respCtx *response.RespCtx) {
 
-	f, ok := handlerMap[respCtx.Fm.Handler]
+	f, ok := handler.Map[respCtx.Fm.Handler]
 	if ok {
 		f(respCtx)
 	} else {
-		respCtx.SendFailMessage(fmt.Sprintf("Handler %v 不存在", respCtx.Fm.Handler))
+		respCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", respCtx.Fm.Handler))
 	}
 }
+
+var a = Handler{make(Map)}

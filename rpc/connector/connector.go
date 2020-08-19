@@ -78,7 +78,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
 			continue
 		}
+
 		fmt.Println(cm.Data)
+
 		if cm.Handler == "" {
 			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
 			continue

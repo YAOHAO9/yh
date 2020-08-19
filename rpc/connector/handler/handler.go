@@ -6,6 +6,7 @@ import (
 )
 
 func init() {
+
 	syshandler.Manager.Register("updateSession", func(respCtx *response.RespCtx) {
 		// connector.GetConnInfo()
 
