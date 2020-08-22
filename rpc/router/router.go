@@ -1,8 +1,8 @@
 package router
 
 import (
-	"yh/rpc/client"
-	"yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/msg"
 )
 
 // Map 存储自定义的路由

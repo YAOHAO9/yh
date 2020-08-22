@@ -3,13 +3,13 @@ package connector
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
+	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/router"
 	"net/http"
 	"strings"
-	"yh/application/config"
-	"yh/rpc/client"
-	"yh/rpc/client/clientmanager"
-	"yh/rpc/msg"
-	"yh/rpc/router"
 
 	"github.com/gorilla/websocket"
 )

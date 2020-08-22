@@ -1,6 +1,6 @@
 package rpcfilter
 
-import "yh/rpc/filter"
+import "github.com/YAOHAO9/yh/rpc/filter"
 
 type rpcFilter struct {
 	*filter.BaseFilter

@@ -2,12 +2,12 @@ package clientmanager
 
 import (
 	"fmt"
+	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/router"
 	"math/rand"
 	"time"
-	"yh/application/config"
-	"yh/rpc/client"
-	"yh/rpc/msg"
-	"yh/rpc/router"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)

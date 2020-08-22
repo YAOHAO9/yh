@@ -1,7 +1,7 @@
 package rpchandler
 
 import (
-	"yh/rpc/handler"
+	"github.com/YAOHAO9/yh/rpc/handler"
 )
 
 // Handler RPCHandler

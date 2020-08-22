@@ -3,9 +3,9 @@ package zookeeper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"time"
-	"yh/application/config"
-	"yh/rpc/client/clientmanager"
 
 	"github.com/samuel/go-zookeeper/zk"
 )

@@ -1,8 +1,8 @@
 package connector
 
 import (
-	"yh/rpc/handler/syshandler"
-	"yh/rpc/response"
+	"github.com/YAOHAO9/yh/rpc/handler/syshandler"
+	"github.com/YAOHAO9/yh/rpc/response"
 )
 
 func init() {

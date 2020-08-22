@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"yh/rpc/response"
+	"github.com/YAOHAO9/yh/rpc/response"
 )
 
 // Map handler函数仓库

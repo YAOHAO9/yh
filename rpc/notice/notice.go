@@ -1,6 +1,6 @@
 package notice
 
-import "yh/rpc/msg"
+import "github.com/YAOHAO9/yh/rpc/msg"
 
 // PushBySession PushBySession
 func PushBySession(session *msg.Session) {
