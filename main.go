@@ -2,9 +2,9 @@ package main
 
 import (
 	"math/rand"
-	"yh/rpc/application"
+	"yh/application"
+	"yh/application/config"
 	"yh/rpc/client"
-	"yh/rpc/config"
 	"yh/rpc/msg"
 	"yh/rpc/response"
 	"yh/rpc/router"

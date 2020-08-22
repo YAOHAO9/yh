@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"yh/application/config"
 	"yh/rpc/client"
 	"yh/rpc/client/clientmanager"
-	"yh/rpc/config"
 	"yh/rpc/msg"
 	"yh/rpc/router"
 

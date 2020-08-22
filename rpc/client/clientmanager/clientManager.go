@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"yh/application/config"
 	"yh/rpc/client"
-	"yh/rpc/config"
 	"yh/rpc/msg"
 	"yh/rpc/router"
 )

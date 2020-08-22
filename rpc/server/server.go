@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"yh/rpc/config"
+	"yh/application/config"
 	"yh/rpc/connector"
 	"yh/rpc/handler/clienthandler"
 	"yh/rpc/handler/rpchandler"
