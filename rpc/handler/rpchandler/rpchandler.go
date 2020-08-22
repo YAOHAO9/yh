@@ -1,7 +1,7 @@
 package rpchandler
 
 import (
-	"trial/rpc/handler"
+	"yh/rpc/handler"
 )
 
 // Handler RPCHandler

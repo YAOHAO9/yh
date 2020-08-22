@@ -2,12 +2,12 @@ package main
 
 import (
 	"math/rand"
-	"trial/rpc/application"
-	"trial/rpc/client"
-	"trial/rpc/config"
-	"trial/rpc/msg"
-	"trial/rpc/response"
-	"trial/rpc/router"
+	"yh/rpc/application"
+	"yh/rpc/client"
+	"yh/rpc/config"
+	"yh/rpc/msg"
+	"yh/rpc/response"
+	"yh/rpc/router"
 )
 
 func main() {

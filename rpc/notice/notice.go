@@ -1,6 +1,6 @@
 package notice
 
-import "trial/rpc/msg"
+import "yh/rpc/msg"
 
 // PushBySession PushBySession
 func PushBySession(session *msg.Session) {

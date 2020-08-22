@@ -1,8 +1,8 @@
 package router
 
 import (
-	"trial/rpc/client"
-	"trial/rpc/msg"
+	"yh/rpc/client"
+	"yh/rpc/msg"
 )
 
 // Map 存储自定义的路由

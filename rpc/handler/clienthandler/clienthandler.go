@@ -1,7 +1,7 @@
 package clienthandler
 
 import (
-	"trial/rpc/handler"
+	"yh/rpc/handler"
 )
 
 // Handler ClientHandler

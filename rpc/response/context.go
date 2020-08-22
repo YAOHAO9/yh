@@ -2,7 +2,7 @@ package response
 
 import (
 	"fmt"
-	"trial/rpc/msg"
+	"yh/rpc/msg"
 
 	"github.com/gorilla/websocket"
 )

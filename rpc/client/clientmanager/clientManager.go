@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"trial/rpc/client"
-	"trial/rpc/config"
-	"trial/rpc/msg"
-	"trial/rpc/router"
+	"yh/rpc/client"
+	"yh/rpc/config"
+	"yh/rpc/msg"
+	"yh/rpc/router"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)

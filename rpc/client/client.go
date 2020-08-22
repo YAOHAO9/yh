@@ -6,11 +6,11 @@ import (
 	"net/url"
 	"sync"
 	"time"
-	"trial/rpc/config"
-	"trial/rpc/filter/handlerfilter"
-	"trial/rpc/filter/rpcfilter"
-	"trial/rpc/msg"
-	"trial/rpc/response"
+	"yh/rpc/config"
+	"yh/rpc/filter/handlerfilter"
+	"yh/rpc/filter/rpcfilter"
+	"yh/rpc/msg"
+	"yh/rpc/response"
 
 	"github.com/gorilla/websocket"
 )

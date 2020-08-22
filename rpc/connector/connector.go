@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"trial/rpc/client"
-	"trial/rpc/client/clientmanager"
-	"trial/rpc/config"
-	"trial/rpc/msg"
-	"trial/rpc/router"
+	"yh/rpc/client"
+	"yh/rpc/client/clientmanager"
+	"yh/rpc/config"
+	"yh/rpc/msg"
+	"yh/rpc/router"
 
 	"github.com/gorilla/websocket"
 )

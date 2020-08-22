@@ -1,7 +1,7 @@
 package syshandler
 
 import (
-	"trial/rpc/handler"
+	"yh/rpc/handler"
 )
 
 // Handler SysHandler
