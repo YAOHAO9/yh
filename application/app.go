@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
@@ -14,12 +17,11 @@ import (
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
-	"math/rand"
-	"time"
 )
 
 // Application app
-type Application struct{}
+type Application struct {
+}
 
 // RegisterHandler 注册Handler
 func (app Application) RegisterHandler(name string, f func(respCtx *response.RespCtx)) {
@@ -76,6 +78,7 @@ func CreateApp() *Application {
 		return app
 	}
 	app = &Application{}
+
 	return app
 }
 
@@ -90,7 +93,7 @@ func parseFlag() bool {
 	flag.StringVar(&serverConfig.Kind, "k", "connector", "Server kind")
 	flag.StringVar(&serverConfig.Host, "H", "127.0.0.1", "Server host")
 	flag.StringVar(&serverConfig.Port, "p", "3110", "server port")
-	flag.BoolVar(&serverConfig.IsConnector, "c", false, "Client port")
+	flag.BoolVar(&serverConfig.IsConnector, "c", true, "Client port")
 	flag.StringVar(&serverConfig.Token, "t", "ksYNdrAo", "System token")
 
 	// Zookeeper 配置

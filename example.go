@@ -1,13 +1,14 @@
 package main
 
 import (
+	"math/rand"
+
 	"github.com/YAOHAO9/yh/application"
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
-	"math/rand"
 )
 
 func main() {

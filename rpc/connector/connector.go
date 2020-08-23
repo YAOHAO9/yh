@@ -1,18 +1,29 @@
 package connector
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
-	"github.com/YAOHAO9/yh/rpc/msg"
-	"github.com/YAOHAO9/yh/rpc/router"
 	"net/http"
-	"strings"
+
+	"github.com/YAOHAO9/yh/rpc/handler/syshandler"
+	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
+
+func init() {
+
+	syshandler.Manager.Register("updateSession", func(respCtx *response.RespCtx) {
+		// connector.GetConnInfo()
+
+	})
+
+	syshandler.Manager.Register("pushMessage", func(respCtx *response.RespCtx) {
+		connInfo, _ := ConnMap[respCtx.Fm.Session.UID]
+		connInfo.conn.WriteMessage(msg.TypeEnum.TextMessage, respCtx.Fm.ToBytes())
+	})
+
+}
 
 var upgrader = websocket.Upgrader{
 	// 解决跨域问题
@@ -32,9 +43,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 断开连接自动清除连接信息
-	id := r.URL.Query().Get("id")
+	uid := r.URL.Query().Get("id")
 	conn.SetCloseHandler(func(code int, text string) error {
-		delete(ConnMap, id)
+		delete(ConnMap, uid)
 		conn.Close()
 		fmt.Println("CloseHandler: ", text)
 		return nil
@@ -42,9 +53,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 用户认证
 	token := r.URL.Query().Get("token")
-	fmt.Println("Id: ", id, " Token: ", token)
+	fmt.Println("Id: ", uid, " Token: ", token)
 
-	if id == "" || token == "" {
+	if uid == "" || token == "" {
 		fmt.Println("用户校验失败!!!")
 		err := conn.WriteMessage(msg.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
@@ -55,96 +66,16 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 防止重复连接
-	if oldConnInfo, ok := ConnMap[id]; ok {
+	if oldConnInfo, ok := ConnMap[uid]; ok {
 		oldConnInfo.conn.CloseHandler()(0, "关闭重复连接")
 	}
 
 	// 保存连接信息
-	connInfo := &ConnInfo{id: 1, conn: conn}
-	ConnMap[id] = connInfo
+	connInfo := &ConnInfo{uid: 1, conn: conn}
+	ConnMap[uid] = connInfo
 
-	// 开始接收消息
-	for {
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			conn.CloseHandler()(0, err.Error())
-			break
-		}
-		// 解析消息
-		cm := &msg.ClientMessage{}
-		err = json.Unmarshal(data, cm)
+	connInfo.StartReceiveMsg()
 
-		if err != nil {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
-			continue
-		}
-
-		fmt.Println(cm.Data)
-
-		if cm.Handler == "" {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
-			continue
-		}
-
-		handlerInfos := strings.Split(cm.Handler, ".")
-		serverKind := handlerInfos[0] // 解析出服务器类型
-		cm.Handler = handlerInfos[1]  // 真正的handler
-
-		session := &msg.Session{
-			UID:  id,
-			CID:  config.GetServerConfig().ID,
-			Data: connInfo.data,
-		}
-
-		// 获取RPCCLint
-		var rpcClient *client.RPCClient
-		if cm.ServerID != "" {
-			// 转发到指定的后端服务器
-			rpcClient = clientmanager.GetClientByID(cm.ServerID)
-		} else {
-			// 根据类型转发
-			rpcClient = clientmanager.GetClientByRouter(router.Info{
-				ServerKind: serverKind,
-				Handler:    cm.Handler,
-				Session:    *session,
-			})
-		}
-
-		if rpcClient == nil {
-
-			tip := ""
-			if cm.ServerID == "" {
-				tip = fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
-			} else {
-				tip = fmt.Sprint("服务器: ", cm.ServerID, "不存在")
-			}
-
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, tip)
-			continue
-		}
-
-		if cm.RequestID == 0 {
-			// 转发Notify
-			rpcClient.ForwardHandlerNotify(session, cm)
-		} else {
-			// 转发Request
-			rpcClient.ForwardHandlerRequest(session, cm, func(rpcResp *msg.RPCResp) {
-
-				clientResp := msg.ClientResp{
-					RequestID: rpcResp.RequestID,
-					Code:      rpcResp.Code,
-					Data:      rpcResp.Data,
-				}
-
-				bytes, err := json.Marshal(clientResp)
-				if err != nil {
-					fmt.Println("Invalid message")
-				} else {
-					conn.WriteMessage(msg.TypeEnum.TextMessage, bytes)
-				}
-			})
-		}
-	}
 }
 
 // sendFailMessage 消息发送失败
