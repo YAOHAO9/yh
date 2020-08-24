@@ -15,7 +15,7 @@ import (
 
 // ConnInfo 用户连接信息
 type ConnInfo struct {
-	uid  int
+	uid  string
 	conn *websocket.Conn
 	data map[string]interface{}
 }
@@ -60,7 +60,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		cm.Handler = handlerInfos[1]  // 真正的handler
 
 		session := &msg.Session{
-			UID:  string(uid),
+			UID:  uid,
 			CID:  config.GetServerConfig().ID,
 			Data: connInfo.data,
 		}

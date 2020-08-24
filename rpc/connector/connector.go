@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/YAOHAO9/yh/rpc/handler/syshandler"
+	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/rpc/response"
 
@@ -13,13 +13,17 @@ import (
 
 func init() {
 
-	syshandler.Manager.Register("updateSession", func(respCtx *response.RespCtx) {
+	rpchandler.Manager.Register(SysRPCEnum.UpdateSession, func(respCtx *response.RespCtx) {
 		// connector.GetConnInfo()
 
 	})
 
-	syshandler.Manager.Register("pushMessage", func(respCtx *response.RespCtx) {
-		connInfo, _ := ConnMap[respCtx.Fm.Session.UID]
+	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(respCtx *response.RespCtx) {
+		connInfo, ok := ConnMap[respCtx.Fm.Session.UID]
+		if !ok {
+			fmt.Println("无效的Uid", respCtx.Fm.Session.UID, "没有找到对应的客户端连接")
+			return
+		}
 		connInfo.conn.WriteMessage(msg.TypeEnum.TextMessage, respCtx.Fm.ToBytes())
 	})
 
@@ -71,7 +75,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 保存连接信息
-	connInfo := &ConnInfo{uid: 1, conn: conn}
+	connInfo := &ConnInfo{uid: uid, conn: conn}
 	ConnMap[uid] = connInfo
 
 	connInfo.StartReceiveMsg()

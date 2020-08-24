@@ -40,43 +40,56 @@ func (rpc rpcManager) ByKind(kind string, session *msg.Session, message *msg.Cli
 type notify struct{}
 
 // ToServer Rpc到指定的Server
-func (n notify) ToServer(serverID string, session *msg.Session, message *msg.ClientMessage) {
+func (n notify) ToServer(serverID string, handler string, session *msg.Session, data interface{}) {
+
 	rpcClient := clientmanager.GetClientByID(serverID)
-	rpcClient.SendRPCNotify(session, message)
+	rpcClient.SendRPCNotify(session, &msg.ClientMessage{
+		Handler: handler,
+		Data:    data,
+	})
 }
 
 // ByKind Rpc到指定的Server
-func (n notify) ByKind(kind string, session *msg.Session, message *msg.ClientMessage) {
+func (n notify) ByKind(kind string, handler string, session *msg.Session, data interface{}) {
 
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(router.Info{
 		ServerKind: kind,
-		Handler:    message.Handler,
+		Handler:    handler,
 		Session:    *session,
 	})
 
-	rpcClient.SendRPCNotify(session, message)
+	rpcClient.SendRPCNotify(session, &msg.ClientMessage{
+		Handler: handler,
+		Data:    data,
+	})
 }
 
 type request struct{}
 
 // ToServer Rpc到指定的Server
-func (req request) ToServer(serverID string, session *msg.Session, message *msg.ClientMessage, f func(rpcResp *msg.RPCResp)) {
+func (req request) ToServer(serverID string, handler string, session *msg.Session, data interface{}, f func(rpcResp *msg.RPCResp)) {
 	rpcClient := clientmanager.GetClientByID(serverID)
-	rpcClient.SendRPCRequest(session, message, f)
+	rpcClient.SendRPCRequest(session, &msg.ClientMessage{
+		Handler: handler,
+		Data:    data,
+	}, f)
 }
 
 // ByKind Rpc到指定的Server
-func (req request) ByKind(kind string, session *msg.Session, message *msg.ClientMessage, f func(rpcResp *msg.RPCResp)) {
+func (req request) ByKind(kind string, handler string, session *msg.Session, data interface{}, f func(rpcResp *msg.RPCResp)) {
 
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(router.Info{
 		ServerKind: kind,
-		Handler:    message.Handler,
+		Handler:    handler,
 		Session:    *session,
 	})
 
-	rpcClient.SendRPCRequest(session, message, f)
+	rpcClient.SendRPCRequest(session, &msg.ClientMessage{
+		Handler: handler,
+		Data:    data,
+	}, f)
 }
 
 type rpc struct {

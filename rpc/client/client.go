@@ -3,14 +3,15 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"sync"
+	"time"
+
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/rpc/response"
-	"net/url"
-	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -35,53 +36,6 @@ var lock sync.Mutex
 type RPCClient struct {
 	Conn         *websocket.Conn
 	ServerConfig *config.ServerConfig
-}
-
-// SendSysNotify 发送系统RPC通知
-func (client RPCClient) SendSysNotify(session *msg.Session, message *msg.ClientMessage) {
-
-	fm := &msg.RPCMessage{
-		Kind:    msg.KindEnum.Sys,
-		Handler: message.Handler,
-		Data:    message.Data,
-		Session: session,
-	}
-
-	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
-	}
-
-	// 执行 Before filter
-	if handlerfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
-	}
-}
-
-// SendSysRequest 发送系统请求
-func (client RPCClient) SendSysRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
-
-	requestID := getRequestID()
-	fm := &msg.RPCMessage{
-		RequestID: requestID,
-		Kind:      msg.KindEnum.Sys,
-		Handler:   message.Handler,
-		Data:      message.Data,
-		Session:   session,
-	}
-
-	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
-	}
-
-	// 执行 Before filter
-	if handlerfilter.Manager.Before.Exec(respCtx) {
-		lock.Lock()
-		requestMap[requestID] = cb
-		lock.Unlock()
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
-	}
 }
 
 // ForwardHandlerNotify 转发Handler通知

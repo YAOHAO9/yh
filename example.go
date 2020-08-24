@@ -2,10 +2,12 @@ package main
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/YAOHAO9/yh/application"
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/connector"
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
@@ -16,6 +18,14 @@ func main() {
 
 	app.RegisterHandler("handler", func(respCtx *response.RespCtx) {
 		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
+		go func() {
+			for {
+				application.RPC.Notify.ToServer(respCtx.Fm.Session.CID, connector.SysRPCEnum.PushMessage, respCtx.Fm.Session, &msg.ClientMessage{
+					Data: "有点意思啊",
+				})
+				time.Sleep(time.Second * 5)
+			}
+		}()
 	})
 
 	app.RegisterRPCHandler("rpc", func(respCtx *response.RespCtx) {
