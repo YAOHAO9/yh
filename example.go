@@ -34,12 +34,10 @@ func main() {
 	})
 
 	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
-		// rm.RequestID -= 1000
 		return true
 	})
 
 	app.RegisterHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
-		// rm.RequestID += 1000
 		return true
 	})
 

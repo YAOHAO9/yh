@@ -49,7 +49,7 @@ func (app Application) RegisterRPCBeforeFilter(f func(respCtx *response.RespCtx)
 }
 
 // RegisterRPCAfterFilter 注册after filter of rpc request
-func (app Application) RegisterRPCAfterFilter(f func(rm *message.RPCResp) (next bool)) {
+func (app Application) RegisterRPCAfterFilter(f func(rpcResp *message.RPCResp) (next bool)) {
 	rpcfilter.Manager.After.Register(f)
 }
 

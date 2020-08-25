@@ -42,22 +42,22 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		cm := &message.ClientMessage{}
-		err = json.Unmarshal(data, cm)
+		clientMessage := &message.ClientMessage{}
+		err = json.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
+			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "消息解析失败，请发送json消息")
 			continue
 		}
 
-		if cm.Handler == "" {
-			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
+		if clientMessage.Handler == "" {
+			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "Hanler不能为空")
 			continue
 		}
 
-		handlerInfos := strings.Split(cm.Handler, ".")
-		serverKind := handlerInfos[0] // 解析出服务器类型
-		cm.Handler = handlerInfos[1]  // 真正的handler
+		handlerInfos := strings.Split(clientMessage.Handler, ".")
+		serverKind := handlerInfos[0]           // 解析出服务器类型
+		clientMessage.Handler = handlerInfos[1] // 真正的handler
 
 		session := &message.Session{
 			UID:  uid,
@@ -70,23 +70,23 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		// 根据类型转发
 		rpcClient = clientmanager.GetClientByRouter(router.Info{
 			ServerKind: serverKind,
-			Handler:    cm.Handler,
+			Handler:    clientMessage.Handler,
 			Session:    *session,
 		})
 
 		if rpcClient == nil {
 
-			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
-			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, tip)
+			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", clientMessage.Handler)
+			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, tip)
 			continue
 		}
 
-		if cm.RequestID == 0 {
+		if clientMessage.RequestID == 0 {
 			// 转发Notify
-			rpcClient.ForwardHandlerNotify(session, cm)
+			rpcClient.ForwardHandlerNotify(session, clientMessage)
 		} else {
 			// 转发Request
-			rpcClient.ForwardHandlerRequest(session, cm, func(rpcResp *message.RPCResp) {
+			rpcClient.ForwardHandlerRequest(session, clientMessage, func(rpcResp *message.RPCResp) {
 
 				clientResp := message.ClientResp{
 					RequestID: rpcResp.RequestID,
