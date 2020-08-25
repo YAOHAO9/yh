@@ -10,20 +10,20 @@ import (
 
 // RespCtx response context
 type RespCtx struct {
-	Conn *websocket.Conn
-	Fm   *msg.RPCMessage
+	Conn   *websocket.Conn
+	RPCMsg *msg.RPCMessage
 }
 
 // SendFailMessage 消息发送失败
 func (rc RespCtx) SendFailMessage(data interface{}) {
 	// Notify的消息，不通知成功
-	if rc.Fm.RequestID == 0 {
+	if rc.RPCMsg.RequestID == 0 {
 		return
 	}
 
 	rpcResp := msg.RPCResp{
-		Kind:      rc.Fm.Kind + 10000,
-		RequestID: rc.Fm.RequestID,
+		Kind:      rc.RPCMsg.Kind + 10000,
+		RequestID: rc.RPCMsg.RequestID,
 		Code:      msg.StatusCode.Fail,
 		Data:      data,
 	}
@@ -38,13 +38,13 @@ func (rc RespCtx) SendFailMessage(data interface{}) {
 func (rc RespCtx) SendSuccessfulMessage(data interface{}) {
 
 	// Notify的消息，不通知成功
-	if rc.Fm.RequestID == 0 {
+	if rc.RPCMsg.RequestID == 0 {
 		return
 	}
 
 	rpcResp := msg.RPCResp{
-		Kind:      rc.Fm.Kind + 10000,
-		RequestID: rc.Fm.RequestID,
+		Kind:      rc.RPCMsg.Kind + 10000,
+		RequestID: rc.RPCMsg.RequestID,
 		Code:      msg.StatusCode.Successful,
 		Data:      data,
 	}

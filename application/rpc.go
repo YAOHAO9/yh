@@ -40,7 +40,7 @@ func (rpc rpcManager) ByKind(kind string, session *msg.Session, message *msg.Cli
 type notify struct{}
 
 // ToServer Rpc到指定的Server
-func (n notify) ToServer(serverID string, handler string, session *msg.Session, data interface{}) {
+func (n notify) ToServer(serverID string, session *msg.Session, handler string, data interface{}) {
 
 	rpcClient := clientmanager.GetClientByID(serverID)
 	rpcClient.SendRPCNotify(session, &msg.ClientMessage{
@@ -50,7 +50,7 @@ func (n notify) ToServer(serverID string, handler string, session *msg.Session, 
 }
 
 // ByKind Rpc到指定的Server
-func (n notify) ByKind(kind string, handler string, session *msg.Session, data interface{}) {
+func (n notify) ByKind(kind string, session *msg.Session, handler string, data interface{}) {
 
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(router.Info{
@@ -68,7 +68,7 @@ func (n notify) ByKind(kind string, handler string, session *msg.Session, data i
 type request struct{}
 
 // ToServer Rpc到指定的Server
-func (req request) ToServer(serverID string, handler string, session *msg.Session, data interface{}, f func(rpcResp *msg.RPCResp)) {
+func (req request) ToServer(serverID string, session *msg.Session, handler string, data interface{}, f func(rpcResp *msg.RPCResp)) {
 	rpcClient := clientmanager.GetClientByID(serverID)
 	rpcClient.SendRPCRequest(session, &msg.ClientMessage{
 		Handler: handler,
@@ -77,7 +77,7 @@ func (req request) ToServer(serverID string, handler string, session *msg.Sessio
 }
 
 // ByKind Rpc到指定的Server
-func (req request) ByKind(kind string, handler string, session *msg.Session, data interface{}, f func(rpcResp *msg.RPCResp)) {
+func (req request) ByKind(kind string, session *msg.Session, handler string, data interface{}, f func(rpcResp *msg.RPCResp)) {
 
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(router.Info{

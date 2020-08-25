@@ -19,7 +19,7 @@ var KindEnum = struct {
 
 // TypeEnum 消息类型枚举
 var TypeEnum = struct {
-	// TextMessage denotes a text data message. The text message payload is
+	// TextMessage denotes a text data me  ssage. The text message payload is
 	// interpreted as UTF-8 encoded text data.
 	TextMessage int
 	// BinaryMessage denotes a binary data message.

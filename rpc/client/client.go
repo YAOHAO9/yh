@@ -41,7 +41,7 @@ type RPCClient struct {
 // ForwardHandlerNotify 转发Handler通知
 func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
 
-	fm := &msg.RPCMessage{
+	rpcMsg := &msg.RPCMessage{
 		Kind:    msg.KindEnum.Handler,
 		Handler: message.Handler,
 		Data:    message.Data,
@@ -49,13 +49,13 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 	}
 
 	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
+		Conn:   client.Conn,
+		RPCMsg: rpcMsg,
 	}
 
 	// 执行 Before filter
 	if handlerfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, respCtx.RPCMsg.ToBytes())
 	}
 }
 
@@ -63,7 +63,7 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestID := getRequestID()
-	fm := &msg.RPCMessage{
+	rpcMsg := &msg.RPCMessage{
 		RequestID: requestID,
 		Kind:      msg.KindEnum.Handler,
 		Handler:   message.Handler,
@@ -72,8 +72,8 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 	}
 
 	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
+		Conn:   client.Conn,
+		RPCMsg: rpcMsg,
 	}
 
 	// 执行 Before filter
@@ -81,14 +81,14 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
 // SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
 
-	fm := &msg.RPCMessage{
+	rpcMsg := &msg.RPCMessage{
 		Kind:    msg.KindEnum.RPC,
 		Handler: message.Handler,
 		Data:    message.Data,
@@ -96,13 +96,13 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 	}
 
 	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
+		Conn:   client.Conn,
+		RPCMsg: rpcMsg,
 	}
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
@@ -110,7 +110,7 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
 
 	requestID := getRequestID()
-	fm := &msg.RPCMessage{
+	rpcMsg := &msg.RPCMessage{
 		RequestID: requestID,
 		Kind:      msg.KindEnum.RPC,
 		Handler:   message.Handler,
@@ -119,8 +119,8 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 	}
 
 	respCtx := &response.RespCtx{
-		Conn: client.Conn,
-		Fm:   fm,
+		Conn:   client.Conn,
+		RPCMsg: rpcMsg,
 	}
 
 	// 执行 Before RPC filter
@@ -128,7 +128,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, fm.ToBytes())
+		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 

@@ -2,6 +2,7 @@ package channel
 
 import (
 	"github.com/YAOHAO9/yh/application"
+	"github.com/YAOHAO9/yh/rpc/connector"
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/util/beeku"
 )
@@ -16,7 +17,7 @@ func (channel Channel) PushMessageToUser(uid string, data interface{}) {
 		return
 	}
 
-	application.RPC.Notify.ToServer(session.CID, "", session, data)
+	PushMessageBySession(session, data)
 }
 
 // PushMessage 推送消息给所有人
@@ -38,4 +39,9 @@ func (channel Channel) PushMessageToOthers(uids []string, data interface{}) {
 // Add 推送消息给其他人
 func (channel Channel) Add(uid string, session *msg.Session) {
 	channel[uid] = session
+}
+
+// PushMessageBySession 通过session推送消息
+func PushMessageBySession(session *msg.Session, data interface{}) {
+	application.RPC.Notify.ToServer(session.CID, session, connector.SysRPCEnum.PushMessage, data)
 }

@@ -67,27 +67,16 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 
 		// 获取RPCCLint
 		var rpcClient *client.RPCClient
-		if cm.ServerID != "" {
-			// 转发到指定的后端服务器
-			rpcClient = clientmanager.GetClientByID(cm.ServerID)
-		} else {
-			// 根据类型转发
-			rpcClient = clientmanager.GetClientByRouter(router.Info{
-				ServerKind: serverKind,
-				Handler:    cm.Handler,
-				Session:    *session,
-			})
-		}
+		// 根据类型转发
+		rpcClient = clientmanager.GetClientByRouter(router.Info{
+			ServerKind: serverKind,
+			Handler:    cm.Handler,
+			Session:    *session,
+		})
 
 		if rpcClient == nil {
 
-			tip := ""
-			if cm.ServerID == "" {
-				tip = fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
-			} else {
-				tip = fmt.Sprint("服务器: ", cm.ServerID, "不存在")
-			}
-
+			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
 			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, tip)
 			continue
 		}

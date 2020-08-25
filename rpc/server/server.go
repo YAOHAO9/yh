@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/connector"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
@@ -11,7 +13,6 @@ import (
 	"github.com/YAOHAO9/yh/rpc/msg"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/zookeeper"
-	"net/http"
 
 	"github.com/gorilla/websocket"
 )
@@ -76,8 +77,8 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(data, rc)
 
 		respCtx := &response.RespCtx{
-			Conn: conn,
-			Fm:   rc,
+			Conn:   conn,
+			RPCMsg: rc,
 		}
 
 		if err != nil {
