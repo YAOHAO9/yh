@@ -19,12 +19,12 @@ func main() {
 	app.RegisterHandler("handler", func(respCtx *response.RespCtx) {
 		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
 		channel := channelfactory.CreateChannel("test")
-		channel.Add(respCtx.RPCMsg.Session.CID, respCtx.RPCMsg.Session)
+		channel.Add(respCtx.Session.CID, respCtx.Session)
 
 		go func() {
 			for {
 				time.Sleep(time.Second * 1)
-				channel.PushMessage([]string{respCtx.RPCMsg.Session.CID}, "啊哈哈啊")
+				channel.PushMessage([]string{respCtx.Session.CID}, "啊哈哈啊")
 			}
 		}()
 	})

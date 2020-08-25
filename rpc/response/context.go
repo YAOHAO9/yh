@@ -9,46 +9,67 @@ import (
 
 // RespCtx response context
 type RespCtx struct {
-	Conn   *websocket.Conn
-	RPCMsg *message.RPCMessage
+	conn      *websocket.Conn
+	kind      int
+	requestID int
+	handler   string
+	Data      interface{}
+	Session   *message.Session
+}
+
+// GenRespCtx 创建一个response上下文
+func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RespCtx {
+	return &RespCtx{
+		conn:      conn,
+		kind:      rpcMsg.Kind,
+		requestID: rpcMsg.RequestID,
+		handler:   rpcMsg.Handler,
+		Data:      rpcMsg.Data,
+		Session:   rpcMsg.Session,
+	}
+}
+
+// GetHandler 消息发送失败
+func (respCtx RespCtx) GetHandler() string {
+	return respCtx.handler
 }
 
 // SendFailMessage 消息发送失败
-func (rc RespCtx) SendFailMessage(data interface{}) {
+func (respCtx RespCtx) SendFailMessage(data interface{}) {
 	// Notify的消息，不通知成功
-	if rc.RPCMsg.RequestID == 0 {
+	if respCtx.requestID == 0 {
 		return
 	}
 
 	rpcResp := message.RPCResp{
-		Kind:      rc.RPCMsg.Kind + 10000,
-		RequestID: rc.RPCMsg.RequestID,
+		Kind:      respCtx.kind + 10000,
+		RequestID: respCtx.requestID,
 		Code:      message.StatusCode.Fail,
 		Data:      data,
 	}
 
-	err := rc.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
+	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 // SendSuccessfulMessage 消息发送成功
-func (rc RespCtx) SendSuccessfulMessage(data interface{}) {
+func (respCtx RespCtx) SendSuccessfulMessage(data interface{}) {
 
 	// Notify的消息，不通知成功
-	if rc.RPCMsg.RequestID == 0 {
+	if respCtx.requestID == 0 {
 		return
 	}
 
 	rpcResp := message.RPCResp{
-		Kind:      rc.RPCMsg.Kind + 10000,
-		RequestID: rc.RPCMsg.RequestID,
+		Kind:      respCtx.kind + 10000,
+		RequestID: respCtx.requestID,
 		Code:      message.StatusCode.Successful,
 		Data:      data,
 	}
 
-	err := rc.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
+	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

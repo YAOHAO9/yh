@@ -72,22 +72,19 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		rc := &message.RPCMessage{}
-		err = json.Unmarshal(data, rc)
+		rpcMsg := &message.RPCMessage{}
+		err = json.Unmarshal(data, rpcMsg)
 
-		respCtx := &response.RespCtx{
-			Conn:   conn,
-			RPCMsg: rc,
-		}
+		respCtx := response.GenRespCtx(conn, rpcMsg)
 
 		if err != nil {
 			respCtx.SendFailMessage("无效的消息类型")
 			continue
 		}
 
-		if rc.Kind == message.KindEnum.RPC {
+		if rpcMsg.Kind == message.KindEnum.RPC {
 			rpchandler.Manager.Exec(respCtx)
-		} else if rc.Kind == message.KindEnum.Handler {
+		} else if rpcMsg.Kind == message.KindEnum.Handler {
 			clienthandler.Manager.Exec(respCtx)
 		}
 	}

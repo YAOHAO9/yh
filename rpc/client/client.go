@@ -48,14 +48,11 @@ func (client RPCClient) ForwardHandlerNotify(session *message.Session, msg *mess
 		Session: session,
 	}
 
-	respCtx := &response.RespCtx{
-		Conn:   client.Conn,
-		RPCMsg: rpcMsg,
-	}
+	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before filter
 	if handlerfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(message.TypeEnum.TextMessage, respCtx.RPCMsg.ToBytes())
+		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
@@ -71,10 +68,7 @@ func (client RPCClient) ForwardHandlerRequest(session *message.Session, msg *mes
 		Session:   session,
 	}
 
-	respCtx := &response.RespCtx{
-		Conn:   client.Conn,
-		RPCMsg: rpcMsg,
-	}
+	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before filter
 	if handlerfilter.Manager.Before.Exec(respCtx) {
@@ -95,10 +89,7 @@ func (client RPCClient) SendRPCNotify(session *message.Session, msg *message.Cli
 		Session: session,
 	}
 
-	respCtx := &response.RespCtx{
-		Conn:   client.Conn,
-		RPCMsg: rpcMsg,
-	}
+	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {
@@ -118,10 +109,7 @@ func (client RPCClient) SendRPCRequest(session *message.Session, msg *message.Cl
 		Session:   session,
 	}
 
-	respCtx := &response.RespCtx{
-		Conn:   client.Conn,
-		RPCMsg: rpcMsg,
-	}
+	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {

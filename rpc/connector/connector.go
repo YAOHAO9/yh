@@ -20,12 +20,12 @@ func init() {
 	})
 
 	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(respCtx *response.RespCtx) {
-		connInfo, ok := ConnMap[respCtx.RPCMsg.Session.UID]
+		connInfo, ok := ConnMap[respCtx.Session.UID]
 		if !ok {
-			fmt.Println("无效的Uid", respCtx.RPCMsg.Session.UID, "没有找到对应的客户端连接")
+			fmt.Println("无效的Uid", respCtx.Session.UID, "没有找到对应的客户端连接")
 			return
 		}
-		bytes, err := json.Marshal(respCtx.RPCMsg.Data)
+		bytes, err := json.Marshal(respCtx.Data)
 		if err != nil {
 			panic(err)
 		}

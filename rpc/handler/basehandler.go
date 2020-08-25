@@ -22,11 +22,11 @@ func (handler BaseHandler) Register(name string, f func(respCtx *response.RespCt
 // Exec 执行handler
 func (handler BaseHandler) Exec(respCtx *response.RespCtx) {
 
-	f, ok := handler.Map[respCtx.RPCMsg.Handler]
+	f, ok := handler.Map[respCtx.GetHandler()]
 	if ok {
 		f(respCtx)
 	} else {
-		respCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", respCtx.RPCMsg.Handler))
+		respCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", respCtx.GetHandler()))
 	}
 }
 
