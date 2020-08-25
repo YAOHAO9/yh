@@ -13,7 +13,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
@@ -39,7 +39,7 @@ func (app Application) RegisterHandlerBeforeFilter(f func(respCtx *response.Resp
 }
 
 // RegisterHandlerAfterFilter 注册after filter
-func (app Application) RegisterHandlerAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
+func (app Application) RegisterHandlerAfterFilter(f func(rpcResp *message.RPCResp) (next bool)) {
 	handlerfilter.Manager.After.Register(f)
 }
 
@@ -49,7 +49,7 @@ func (app Application) RegisterRPCBeforeFilter(f func(respCtx *response.RespCtx)
 }
 
 // RegisterRPCAfterFilter 注册after filter of rpc request
-func (app Application) RegisterRPCAfterFilter(f func(rm *msg.RPCResp) (next bool)) {
+func (app Application) RegisterRPCAfterFilter(f func(rm *message.RPCResp) (next bool)) {
 	rpcfilter.Manager.After.Register(f)
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/router"
 	"github.com/gorilla/websocket"
 )
@@ -42,16 +42,16 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		cm := &msg.ClientMessage{}
+		cm := &message.ClientMessage{}
 		err = json.Unmarshal(data, cm)
 
 		if err != nil {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
+			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if cm.Handler == "" {
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
+			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, "Hanler不能为空")
 			continue
 		}
 
@@ -59,7 +59,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		serverKind := handlerInfos[0] // 解析出服务器类型
 		cm.Handler = handlerInfos[1]  // 真正的handler
 
-		session := &msg.Session{
+		session := &message.Session{
 			UID:  uid,
 			CID:  config.GetServerConfig().ID,
 			Data: connInfo.data,
@@ -77,7 +77,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		if rpcClient == nil {
 
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", cm.Handler)
-			sendFailMessage(conn, msg.KindEnum.Handler, cm.RequestID, tip)
+			sendFailMessage(conn, message.KindEnum.Handler, cm.RequestID, tip)
 			continue
 		}
 
@@ -86,9 +86,9 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			rpcClient.ForwardHandlerNotify(session, cm)
 		} else {
 			// 转发Request
-			rpcClient.ForwardHandlerRequest(session, cm, func(rpcResp *msg.RPCResp) {
+			rpcClient.ForwardHandlerRequest(session, cm, func(rpcResp *message.RPCResp) {
 
-				clientResp := msg.ClientResp{
+				clientResp := message.ClientResp{
 					RequestID: rpcResp.RequestID,
 					Code:      rpcResp.Code,
 					Data:      rpcResp.Data,
@@ -98,7 +98,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 				if err != nil {
 					fmt.Println("Invalid message")
 				} else {
-					conn.WriteMessage(msg.TypeEnum.TextMessage, bytes)
+					conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
 				}
 			})
 		}

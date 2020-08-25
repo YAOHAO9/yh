@@ -2,12 +2,13 @@ package clientmanager
 
 import (
 	"fmt"
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/msg"
-	"github.com/YAOHAO9/yh/rpc/router"
 	"math/rand"
 	"time"
+
+	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/yh/rpc/router"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
@@ -71,6 +72,6 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 func SendMessageByID(serverID string, data []byte) {
 	client := GetClientByID(serverID).Conn
 	if client != nil {
-		client.WriteMessage(msg.TypeEnum.TextMessage, data)
+		client.WriteMessage(message.TypeEnum.TextMessage, data)
 	}
 }

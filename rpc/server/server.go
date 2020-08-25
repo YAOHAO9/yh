@@ -9,7 +9,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/connector"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/zookeeper"
 
@@ -72,7 +72,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		rc := &msg.RPCMessage{}
+		rc := &message.RPCMessage{}
 		err = json.Unmarshal(data, rc)
 
 		respCtx := &response.RespCtx{
@@ -85,9 +85,9 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if rc.Kind == msg.KindEnum.RPC {
+		if rc.Kind == message.KindEnum.RPC {
 			rpchandler.Manager.Exec(respCtx)
-		} else if rc.Kind == msg.KindEnum.Handler {
+		} else if rc.Kind == message.KindEnum.Handler {
 			clienthandler.Manager.Exec(respCtx)
 		}
 	}

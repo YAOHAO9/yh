@@ -1,4 +1,4 @@
-package msg
+package message
 
 // KindEnum 消息类型枚举
 var KindEnum = struct {

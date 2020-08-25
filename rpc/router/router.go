@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 )
 
 // Map 存储自定义的路由
@@ -12,7 +12,7 @@ type Map map[string]func(routerInfo Info, clients []*client.RPCClient) *client.R
 type Info struct {
 	ServerKind string
 	Handler    string
-	Session    msg.Session
+	Session    message.Session
 }
 
 // Register 注册一个路由函数

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
 
 	"github.com/gorilla/websocket"
@@ -29,7 +29,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		connInfo.conn.WriteMessage(msg.TypeEnum.TextMessage, bytes)
+		connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
 	})
 
 }
@@ -66,7 +66,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	if uid == "" || token == "" {
 		fmt.Println("用户校验失败!!!")
-		err := conn.WriteMessage(msg.TypeEnum.TextMessage, []byte("认证失败"))
+		err := conn.WriteMessage(message.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
 			fmt.Println("发送认证失败消息失败: ", err.Error())
 		}
@@ -95,13 +95,13 @@ func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 		return
 	}
 
-	rpcResp := msg.ClientResp{
+	rpcResp := message.ClientResp{
 		RequestID: index,
-		Code:      msg.StatusCode.Fail,
+		Code:      message.StatusCode.Fail,
 		Data:      data,
 	}
 
-	err := respConn.WriteMessage(msg.TypeEnum.TextMessage, rpcResp.ToBytes())
+	err := respConn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

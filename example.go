@@ -8,7 +8,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/channel/channelfactory"
 	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
 )
@@ -33,12 +33,12 @@ func main() {
 		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Rpc消息")
 	})
 
-	app.RegisterRPCAfterFilter(func(rm *msg.RPCResp) (next bool) {
+	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
 		// rm.RequestID -= 1000
 		return true
 	})
 
-	app.RegisterHandlerAfterFilter(func(rm *msg.RPCResp) (next bool) {
+	app.RegisterHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
 		// rm.RequestID += 1000
 		return true
 	})

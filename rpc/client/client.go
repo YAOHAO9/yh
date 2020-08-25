@@ -10,7 +10,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
-	"github.com/YAOHAO9/yh/rpc/msg"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
 
 	"github.com/gorilla/websocket"
@@ -28,7 +28,7 @@ func getRequestID() int {
 	return requestID
 }
 
-var requestMap = make(map[int]func(rpcResp *msg.RPCResp))
+var requestMap = make(map[int]func(rpcResp *message.RPCResp))
 
 var lock sync.Mutex
 
@@ -39,12 +39,12 @@ type RPCClient struct {
 }
 
 // ForwardHandlerNotify 转发Handler通知
-func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.ClientMessage) {
+func (client RPCClient) ForwardHandlerNotify(session *message.Session, msg *message.ClientMessage) {
 
-	rpcMsg := &msg.RPCMessage{
-		Kind:    msg.KindEnum.Handler,
-		Handler: message.Handler,
-		Data:    message.Data,
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.Handler,
+		Handler: msg.Handler,
+		Data:    msg.Data,
 		Session: session,
 	}
 
@@ -55,19 +55,19 @@ func (client RPCClient) ForwardHandlerNotify(session *msg.Session, message *msg.
 
 	// 执行 Before filter
 	if handlerfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, respCtx.RPCMsg.ToBytes())
+		client.Conn.WriteMessage(message.TypeEnum.TextMessage, respCtx.RPCMsg.ToBytes())
 	}
 }
 
 // ForwardHandlerRequest 转发Handler请求
-func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
+func (client RPCClient) ForwardHandlerRequest(session *message.Session, msg *message.ClientMessage, cb func(rpcResp *message.RPCResp)) {
 
 	requestID := getRequestID()
-	rpcMsg := &msg.RPCMessage{
+	rpcMsg := &message.RPCMessage{
 		RequestID: requestID,
-		Kind:      msg.KindEnum.Handler,
-		Handler:   message.Handler,
-		Data:      message.Data,
+		Kind:      message.KindEnum.Handler,
+		Handler:   msg.Handler,
+		Data:      msg.Data,
 		Session:   session,
 	}
 
@@ -81,17 +81,17 @@ func (client RPCClient) ForwardHandlerRequest(session *msg.Session, message *msg
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
+		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
 // SendRPCNotify 发送RPC通知
-func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientMessage) {
+func (client RPCClient) SendRPCNotify(session *message.Session, msg *message.ClientMessage) {
 
-	rpcMsg := &msg.RPCMessage{
-		Kind:    msg.KindEnum.RPC,
-		Handler: message.Handler,
-		Data:    message.Data,
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.RPC,
+		Handler: msg.Handler,
+		Data:    msg.Data,
 		Session: session,
 	}
 
@@ -102,19 +102,19 @@ func (client RPCClient) SendRPCNotify(session *msg.Session, message *msg.ClientM
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
+		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.ClientMessage, cb func(rpcResp *msg.RPCResp)) {
+func (client RPCClient) SendRPCRequest(session *message.Session, msg *message.ClientMessage, cb func(rpcResp *message.RPCResp)) {
 
 	requestID := getRequestID()
-	rpcMsg := &msg.RPCMessage{
+	rpcMsg := &message.RPCMessage{
 		RequestID: requestID,
-		Kind:      msg.KindEnum.RPC,
-		Handler:   message.Handler,
-		Data:      message.Data,
+		Kind:      message.KindEnum.RPC,
+		Handler:   msg.Handler,
+		Data:      msg.Data,
 		Session:   session,
 	}
 
@@ -128,7 +128,7 @@ func (client RPCClient) SendRPCRequest(session *msg.Session, message *msg.Client
 		lock.Lock()
 		requestMap[requestID] = cb
 		lock.Unlock()
-		client.Conn.WriteMessage(msg.TypeEnum.TextMessage, rpcMsg.ToBytes())
+		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
 	}
 }
 
@@ -187,7 +187,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				break
 			}
 			// 解析消息
-			rpcResp := &msg.RPCResp{}
+			rpcResp := &message.RPCResp{}
 			err = json.Unmarshal(data, rpcResp)
 			if err != nil {
 				fmt.Println("Rpc request's response body parse fail")
@@ -201,9 +201,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				if ok {
 					delete(requestMap, rpcResp.RequestID)
 					// 执行 After RPC filter
-					if rpcResp.Kind == msg.KindEnum.RPC {
+					if rpcResp.Kind == message.KindEnum.RPC {
 						rpcfilter.Manager.After.Exec(rpcResp)
-					} else if rpcResp.Kind == msg.KindEnum.Handler {
+					} else if rpcResp.Kind == message.KindEnum.Handler {
 						handlerfilter.Manager.After.Exec(rpcResp)
 					}
 					requestFunc(rpcResp)

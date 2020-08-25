@@ -1,4 +1,4 @@
-package msg
+package message
 
 // Session of connection
 type Session struct {
