@@ -2,19 +2,15 @@ package msg
 
 // KindEnum 消息类型枚举
 var KindEnum = struct {
-	Sys             int
 	Handler         int
 	RPC             int
-	SysResponse     int
 	HandlerResponse int
 	RPCResponse     int
 }{
-	Sys:             1,     // 系统rpc
-	Handler:         2,     // 客户端调用 Handler
-	RPC:             3,     //  RPC
-	SysResponse:     10001, // 系统消息的response
-	HandlerResponse: 10002, // handler request的response
-	RPCResponse:     10003, // rpc 的response
+	Handler:         1,     // 客户端调用 Handler
+	RPC:             2,     //  RPC
+	HandlerResponse: 10001, // handler request的response
+	RPCResponse:     10002, // rpc 的response
 }
 
 // TypeEnum 消息类型枚举
