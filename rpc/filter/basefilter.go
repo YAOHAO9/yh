@@ -1,8 +1,8 @@
 package filter
 
 import (
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 )
 
 //===================================================
@@ -10,17 +10,17 @@ import (
 //===================================================
 
 // BeforeFilterSlice map
-type BeforeFilterSlice []func(respCtx *response.RespCtx) (next bool)
+type BeforeFilterSlice []func(rpcCtx *context.RPCCtx) (next bool)
 
 // Register filter
-func (slice *BeforeFilterSlice) Register(f func(respCtx *response.RespCtx) (next bool)) {
+func (slice *BeforeFilterSlice) Register(f func(rpcCtx *context.RPCCtx) (next bool)) {
 	*slice = append(*slice, f)
 }
 
 // Exec filter
-func (slice BeforeFilterSlice) Exec(respCtx *response.RespCtx) (next bool) {
+func (slice BeforeFilterSlice) Exec(rpcCtx *context.RPCCtx) (next bool) {
 	for _, f := range slice {
-		next = f(respCtx)
+		next = f(rpcCtx)
 		if !next {
 			return false
 		}

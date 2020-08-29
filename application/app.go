@@ -9,12 +9,12 @@ import (
 
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/router"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
 )
@@ -24,17 +24,17 @@ type Application struct {
 }
 
 // RegisterHandler 注册Handler
-func (app Application) RegisterHandler(name string, f func(respCtx *response.RespCtx)) {
+func (app Application) RegisterHandler(name string, f func(rpcCtx *context.RPCCtx)) {
 	clienthandler.Manager.Register(name, f)
 }
 
 // RegisterRPCHandler 注册RPC Handler
-func (app Application) RegisterRPCHandler(name string, f func(respCtx *response.RespCtx)) {
+func (app Application) RegisterRPCHandler(name string, f func(rpcCtx *context.RPCCtx)) {
 	rpchandler.Manager.Register(name, f)
 }
 
 // RegisterHandlerBeforeFilter 注册before filter
-func (app Application) RegisterHandlerBeforeFilter(f func(respCtx *response.RespCtx) (next bool)) {
+func (app Application) RegisterHandlerBeforeFilter(f func(rpcCtx *context.RPCCtx) (next bool)) {
 	handlerfilter.Manager.Before.Register(f)
 }
 
@@ -44,7 +44,7 @@ func (app Application) RegisterHandlerAfterFilter(f func(rpcResp *message.RPCRes
 }
 
 // RegisterRPCBeforeFilter 注册before filter of rpc
-func (app Application) RegisterRPCBeforeFilter(f func(respCtx *response.RespCtx) (next bool)) {
+func (app Application) RegisterRPCBeforeFilter(f func(rpcCtx *context.RPCCtx) (next bool)) {
 	rpcfilter.Manager.Before.Register(f)
 }
 

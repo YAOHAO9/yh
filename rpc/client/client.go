@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
@@ -49,10 +49,10 @@ func (client RPCClient) SendMsg(data []byte) {
 // SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(session *message.Session, rpcMsg *message.RPCMessage) {
 
-	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
+	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before RPC filter
-	if rpcfilter.Manager.Before.Exec(respCtx) {
+	if rpcfilter.Manager.Before.Exec(rpcCtx) {
 		client.SendMsg(rpcMsg.ToBytes())
 	}
 }
@@ -62,10 +62,10 @@ func (client RPCClient) SendRPCRequest(session *message.Session, rpcMsg *message
 
 	rpcMsg.RequestID = getRequestID()
 
-	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
+	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before RPC filter
-	if rpcfilter.Manager.Before.Exec(respCtx) {
+	if rpcfilter.Manager.Before.Exec(rpcCtx) {
 		requestMapLock.Lock()
 		requestMap[requestID] = cb
 		requestMapLock.Unlock()

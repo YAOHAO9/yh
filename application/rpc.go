@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
 )
@@ -11,6 +13,10 @@ type notify struct{}
 func (n notify) ToServer(serverID string, session *message.Session, handler string, data interface{}) {
 
 	rpcClient := clientmanager.GetClientByID(serverID)
+	if rpcClient == nil {
+		fmt.Println("Rpc 消息发送失败，没有找到对应的服务器")
+		return
+	}
 
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
@@ -33,7 +39,10 @@ func (n notify) ByKind(serverKind string, session *message.Session, handler stri
 
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
-
+	if rpcClient == nil {
+		fmt.Println("Rpc 消息发送失败，没有找到对应的服务器")
+		return
+	}
 	rpcClient.SendRPCNotify(session, rpcMsg)
 }
 
@@ -42,6 +51,10 @@ type request struct{}
 // ToServer Rpc到指定的Server
 func (req request) ToServer(serverID string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcClient := clientmanager.GetClientByID(serverID)
+	if rpcClient == nil {
+		fmt.Println("Rpc 消息发送失败，没有找到对应的服务器")
+		return
+	}
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
@@ -61,7 +74,10 @@ func (req request) ByKind(serverKind string, session *message.Session, handler s
 	}
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
-
+	if rpcClient == nil {
+		fmt.Println("Rpc 消息发送失败，没有找到对应的服务器")
+		return
+	}
 	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 

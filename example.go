@@ -2,34 +2,33 @@ package main
 
 import (
 	"math/rand"
-	"time"
 
 	"github.com/YAOHAO9/yh/application"
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/channel/channelfactory"
 	"github.com/YAOHAO9/yh/rpc/client"
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 )
 
 func main() {
 	app := application.CreateApp()
 
-	app.RegisterHandler("handler", func(respCtx *response.RespCtx) {
-		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
+	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) {
+		rpcCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
 		channel := channelfactory.CreateChannel("test")
-		channel.Add(respCtx.Session.CID, respCtx.Session)
+		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 
-		go func() {
-			for {
-				channel.PushMessage([]string{respCtx.Session.CID}, "test", "啊哈哈啊")
-				time.Sleep(time.Second * 1)
-			}
-		}()
+		// go func() {
+		// 	for {
+		// 		channel.PushMessage([]string{rpcCtx.Session.CID}, "test", "啊哈哈啊")
+		// 		time.Sleep(time.Second * 1)
+		// 	}
+		// }()
 	})
 
-	app.RegisterRPCHandler("rpc", func(respCtx *response.RespCtx) {
-		respCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Rpc消息")
+	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) {
+		rpcCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Rpc消息")
 	})
 
 	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/connector"
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 	"github.com/YAOHAO9/yh/rpc/zookeeper"
 
 	"github.com/gorilla/websocket"
@@ -75,17 +75,17 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcMsg := &message.RPCMessage{}
 		err = json.Unmarshal(data, rpcMsg)
 
-		respCtx := response.GenRespCtx(conn, rpcMsg)
+		rpcCtx := context.GenRespCtx(conn, rpcMsg)
 
 		if err != nil {
-			respCtx.SendFailMessage("无效的消息类型")
+			rpcCtx.SendFailMessage("无效的消息类型")
 			continue
 		}
 
 		if rpcMsg.Kind == message.KindEnum.RPC {
-			rpchandler.Manager.Exec(respCtx)
+			rpchandler.Manager.Exec(rpcCtx)
 		} else if rpcMsg.Kind == message.KindEnum.Handler {
-			clienthandler.Manager.Exec(respCtx)
+			clienthandler.Manager.Exec(rpcCtx)
 		}
 	}
 }

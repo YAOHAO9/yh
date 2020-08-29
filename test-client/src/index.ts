@@ -4,11 +4,13 @@ import * as WebSocket from 'ws'
 const ws = new WebSocket('ws://127.0.0.1:3110?id=hao&token=ksYNdrAo')
 ws.onopen = (_: WebSocket.OpenEvent) => {
     console.warn('已连接')
-    ws.send(JSON.stringify({
-        Route: 'connector.handler',
-        RequestID: 1,
-        Data: { a: 1, b: 2, c: 3 }
-    }))
+    Array.from({ length: 100 }).forEach((_, index) => {
+        ws.send(JSON.stringify({
+            Route: 'connector.handler',
+            RequestID: index,
+            Data: { a: 1, b: 2, c: 3 }
+        }))
+    })
 }
 
 ws.onmessage = (event: WebSocket.MessageEvent) => {

@@ -1,4 +1,4 @@
-package response
+package context
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 
 var mutex sync.Mutex
 
-// RespCtx response context
-type RespCtx struct {
+// RPCCtx response context
+type RPCCtx struct {
 	conn      *websocket.Conn
 	kind      int
 	requestID int
@@ -21,8 +21,8 @@ type RespCtx struct {
 }
 
 // GenRespCtx 创建一个response上下文
-func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RespCtx {
-	return &RespCtx{
+func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RPCCtx {
+	return &RPCCtx{
 		conn:      conn,
 		kind:      rpcMsg.Kind,
 		requestID: rpcMsg.RequestID,
@@ -33,14 +33,14 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RespCtx {
 }
 
 // GetHandler 获取请求的Handler
-func (respCtx RespCtx) GetHandler() string {
-	return respCtx.handler
+func (rpcCtx RPCCtx) GetHandler() string {
+	return rpcCtx.handler
 }
 
 // SendMsg 发送消息
-func (respCtx RespCtx) SendMsg(data []byte) {
+func (rpcCtx RPCCtx) SendMsg(data []byte) {
 	mutex.Lock()
-	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, data)
+	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, data)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -48,36 +48,36 @@ func (respCtx RespCtx) SendMsg(data []byte) {
 }
 
 // SendFailMessage 消息发送失败
-func (respCtx RespCtx) SendFailMessage(data interface{}) {
+func (rpcCtx RPCCtx) SendFailMessage(data interface{}) {
 	// Notify的消息，不通知成功
-	if respCtx.requestID == 0 {
+	if rpcCtx.requestID == 0 {
 		return
 	}
 
 	rpcResp := message.RPCResp{
-		Kind:      respCtx.kind + 10000,
-		RequestID: respCtx.requestID,
+		Kind:      rpcCtx.kind + 10000,
+		RequestID: rpcCtx.requestID,
 		Code:      message.StatusCode.Fail,
 		Data:      data,
 	}
 
-	respCtx.SendMsg(rpcResp.ToBytes())
+	rpcCtx.SendMsg(rpcResp.ToBytes())
 }
 
 // SendSuccessfulMessage 消息发送成功
-func (respCtx RespCtx) SendSuccessfulMessage(data interface{}) {
+func (rpcCtx RPCCtx) SendSuccessfulMessage(data interface{}) {
 
 	// Notify的消息，不通知成功
-	if respCtx.requestID == 0 {
+	if rpcCtx.requestID == 0 {
 		return
 	}
 
 	rpcResp := message.RPCResp{
-		Kind:      respCtx.kind + 10000,
-		RequestID: respCtx.requestID,
+		Kind:      rpcCtx.kind + 10000,
+		RequestID: rpcCtx.requestID,
 		Code:      message.StatusCode.Successful,
 		Data:      data,
 	}
 
-	respCtx.SendMsg(rpcResp.ToBytes())
+	rpcCtx.SendMsg(rpcResp.ToBytes())
 }

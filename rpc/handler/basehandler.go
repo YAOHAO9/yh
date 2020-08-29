@@ -3,11 +3,11 @@ package handler
 import (
 	"fmt"
 
-	"github.com/YAOHAO9/yh/rpc/response"
+	"github.com/YAOHAO9/yh/rpc/context"
 )
 
 // Map handler函数仓库
-type Map map[string]func(respCtx *response.RespCtx)
+type Map map[string]func(rpcCtx *context.RPCCtx)
 
 // BaseHandler BaseHandler
 type BaseHandler struct {
@@ -15,18 +15,18 @@ type BaseHandler struct {
 }
 
 // Register handler
-func (handler BaseHandler) Register(name string, f func(respCtx *response.RespCtx)) {
+func (handler BaseHandler) Register(name string, f func(rpcCtx *context.RPCCtx)) {
 	handler.Map[name] = f
 }
 
 // Exec 执行handler
-func (handler BaseHandler) Exec(respCtx *response.RespCtx) {
+func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 
-	f, ok := handler.Map[respCtx.GetHandler()]
+	f, ok := handler.Map[rpcCtx.GetHandler()]
 	if ok {
-		f(respCtx)
+		f(rpcCtx)
 	} else {
-		respCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", respCtx.GetHandler()))
+		rpcCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", rpcCtx.GetHandler()))
 	}
 }
 

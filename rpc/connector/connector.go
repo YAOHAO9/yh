@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/response"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,20 +14,20 @@ import (
 func init() {
 
 	// 更新Session
-	rpchandler.Manager.Register(SysRPCEnum.UpdateSession, func(respCtx *response.RespCtx) {
+	rpchandler.Manager.Register(SysRPCEnum.UpdateSession, func(rpcCtx *context.RPCCtx) {
 		// connector.GetConnInfo()
 
 	})
 
 	// 推送消息
-	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(respCtx *response.RespCtx) {
-		connInfo, ok := ConnMap[respCtx.Session.UID]
+	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(rpcCtx *context.RPCCtx) {
+		connInfo, ok := ConnMap[rpcCtx.Session.UID]
 		if !ok {
-			fmt.Println("无效的Uid", respCtx.Session.UID, "没有找到对应的客户端连接")
+			fmt.Println("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
 			return
 		}
 
-		if smp, ok := respCtx.Data.(map[string]interface{}); ok {
+		if smp, ok := rpcCtx.Data.(map[string]interface{}); ok {
 			var notify message.Notify = message.Notify{
 				Route: smp["Route"].(string),
 				Data:  smp["Data"],
