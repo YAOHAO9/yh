@@ -95,13 +95,13 @@ func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interfa
 		return
 	}
 
-	rpcResp := message.ClientResp{
+	clientResp := message.ClientResp{
 		RequestID: index,
 		Code:      message.StatusCode.Fail,
 		Data:      data,
 	}
 
-	err := respConn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
+	err := respConn.WriteMessage(message.TypeEnum.TextMessage, clientResp.ToBytes())
 	if err != nil {
 		fmt.Println(err)
 	}

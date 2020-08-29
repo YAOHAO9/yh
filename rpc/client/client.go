@@ -38,56 +38,8 @@ type RPCClient struct {
 	ServerConfig *config.ServerConfig
 }
 
-// ForwardHandlerNotify 转发Handler通知
-func (client RPCClient) ForwardHandlerNotify(session *message.Session, msg *message.ClientMessage) {
-
-	rpcMsg := &message.RPCMessage{
-		Kind:    message.KindEnum.Handler,
-		Handler: msg.Handler,
-		Data:    msg.Data,
-		Session: session,
-	}
-
-	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
-
-	// 执行 Before filter
-	if handlerfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
-	}
-}
-
-// ForwardHandlerRequest 转发Handler请求
-func (client RPCClient) ForwardHandlerRequest(session *message.Session, msg *message.ClientMessage, cb func(rpcResp *message.RPCResp)) {
-
-	requestID := getRequestID()
-	rpcMsg := &message.RPCMessage{
-		RequestID: requestID,
-		Kind:      message.KindEnum.Handler,
-		Handler:   msg.Handler,
-		Data:      msg.Data,
-		Session:   session,
-	}
-
-	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
-
-	// 执行 Before filter
-	if handlerfilter.Manager.Before.Exec(respCtx) {
-		lock.Lock()
-		requestMap[requestID] = cb
-		lock.Unlock()
-		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
-	}
-}
-
 // SendRPCNotify 发送RPC通知
-func (client RPCClient) SendRPCNotify(session *message.Session, msg *message.ClientMessage) {
-
-	rpcMsg := &message.RPCMessage{
-		Kind:    message.KindEnum.RPC,
-		Handler: msg.Handler,
-		Data:    msg.Data,
-		Session: session,
-	}
+func (client RPCClient) SendRPCNotify(session *message.Session, rpcMsg *message.RPCMessage) {
 
 	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 
@@ -98,16 +50,9 @@ func (client RPCClient) SendRPCNotify(session *message.Session, msg *message.Cli
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(session *message.Session, msg *message.ClientMessage, cb func(rpcResp *message.RPCResp)) {
+func (client RPCClient) SendRPCRequest(session *message.Session, rpcMsg *message.RPCMessage, cb func(rpcResp *message.RPCResp)) {
 
-	requestID := getRequestID()
-	rpcMsg := &message.RPCMessage{
-		RequestID: requestID,
-		Kind:      message.KindEnum.RPC,
-		Handler:   msg.Handler,
-		Data:      msg.Data,
-		Session:   session,
-	}
+	rpcMsg.RequestID = getRequestID()
 
 	respCtx := response.GenRespCtx(client.Conn, rpcMsg)
 

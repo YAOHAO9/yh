@@ -6,47 +6,21 @@ import (
 	"github.com/YAOHAO9/yh/rpc/router"
 )
 
-type rpcManager struct {
-}
-
-// ToServer Rpc到指定的Server
-func (rpc rpcManager) ToServer(serverID string, session *message.Session, msg *message.ClientMessage, f func(rpcResp *message.RPCResp)) {
-
-	rpcClient := clientmanager.GetClientByID(serverID)
-	if f == nil {
-		rpcClient.SendRPCNotify(session, msg)
-	} else {
-		rpcClient.SendRPCRequest(session, msg, f)
-	}
-}
-
-// ToServer Rpc到指定的Server
-func (rpc rpcManager) ByKind(kind string, session *message.Session, msg *message.ClientMessage, f func(rpcResp *message.RPCResp)) {
-
-	// 根据类型转发
-	rpcClient := clientmanager.GetClientByRouter(router.Info{
-		ServerKind: kind,
-		Handler:    msg.Handler,
-		Session:    *session,
-	})
-
-	if f == nil {
-		rpcClient.SendRPCNotify(session, msg)
-	} else {
-		rpcClient.SendRPCRequest(session, msg, f)
-	}
-}
-
 type notify struct{}
 
 // ToServer Rpc到指定的Server
 func (n notify) ToServer(serverID string, session *message.Session, handler string, data interface{}) {
 
 	rpcClient := clientmanager.GetClientByID(serverID)
-	rpcClient.SendRPCNotify(session, &message.ClientMessage{
+
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
-	})
+		Session: session,
+	}
+
+	rpcClient.SendRPCNotify(session, rpcMsg)
 }
 
 // ByKind Rpc到指定的Server
@@ -59,10 +33,14 @@ func (n notify) ByKind(kind string, session *message.Session, handler string, da
 		Session:    *session,
 	})
 
-	rpcClient.SendRPCNotify(session, &message.ClientMessage{
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
-	})
+		Session: session,
+	}
+
+	rpcClient.SendRPCNotify(session, rpcMsg)
 }
 
 type request struct{}
@@ -70,10 +48,13 @@ type request struct{}
 // ToServer Rpc到指定的Server
 func (req request) ToServer(serverID string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcClient := clientmanager.GetClientByID(serverID)
-	rpcClient.SendRPCRequest(session, &message.ClientMessage{
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
-	}, f)
+		Session: session,
+	}
+	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 
 // ByKind Rpc到指定的Server
@@ -85,11 +66,13 @@ func (req request) ByKind(kind string, session *message.Session, handler string,
 		Handler:    handler,
 		Session:    *session,
 	})
-
-	rpcClient.SendRPCRequest(session, &message.ClientMessage{
+	rpcMsg := &message.RPCMessage{
+		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
-	}, f)
+		Session: session,
+	}
+	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 
 type rpc struct {

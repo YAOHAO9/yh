@@ -50,14 +50,15 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			continue
 		}
 
-		if clientMessage.Handler == "" {
-			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "Hanler不能为空")
+		if clientMessage.Route == "" {
+			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "Route不能为空")
 			continue
 		}
 
-		handlerInfos := strings.Split(clientMessage.Handler, ".")
-		serverKind := handlerInfos[0]           // 解析出服务器类型
-		clientMessage.Handler = handlerInfos[1] // 真正的handler
+		handlerInfos := strings.Split(clientMessage.Route, ".")
+
+		serverKind := handlerInfos[0] // 解析出服务器类型
+		handler := handlerInfos[1]    // 真正的handler
 
 		session := &message.Session{
 			UID:  uid,
@@ -70,26 +71,33 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		// 根据类型转发
 		rpcClient = clientmanager.GetClientByRouter(router.Info{
 			ServerKind: serverKind,
-			Handler:    clientMessage.Handler,
+			Handler:    handler,
 			Session:    *session,
 		})
 
 		if rpcClient == nil {
 
-			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Handler: ", clientMessage.Handler)
+			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
 			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, tip)
 			continue
 		}
 
+		rpcMsg := &message.RPCMessage{
+			Kind:    message.KindEnum.Handler,
+			Handler: handler,
+			Data:    clientMessage.Data,
+			Session: session,
+		}
+
 		if clientMessage.RequestID == 0 {
 			// 转发Notify
-			rpcClient.ForwardHandlerNotify(session, clientMessage)
+			rpcClient.SendRPCNotify(session, rpcMsg)
 		} else {
 			// 转发Request
-			rpcClient.ForwardHandlerRequest(session, clientMessage, func(rpcResp *message.RPCResp) {
+			rpcClient.SendRPCRequest(session, rpcMsg, func(rpcResp *message.RPCResp) {
 
 				clientResp := message.ClientResp{
-					RequestID: rpcResp.RequestID,
+					RequestID: clientMessage.RequestID,
 					Code:      rpcResp.Code,
 					Data:      rpcResp.Data,
 				}
