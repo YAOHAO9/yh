@@ -10,7 +10,6 @@ import (
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/response"
-	"github.com/YAOHAO9/yh/rpc/router"
 )
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 		return true
 	})
 
-	app.RegisterRouter("ddz", func(routerInfo router.Info, clients []*client.RPCClient) *client.RPCClient {
+	app.RegisterRouter("ddz", func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient {
 		var luckClient *client.RPCClient
 		for _, clientInfo := range clients {
 			if clientInfo.ServerConfig.ID == "ddz-3" {

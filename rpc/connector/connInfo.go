@@ -6,10 +6,8 @@ import (
 	"strings"
 
 	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/router"
 	"github.com/gorilla/websocket"
 )
 
@@ -66,27 +64,20 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			Data: connInfo.data,
 		}
 
+		rpcMsg := &message.RPCMessage{
+			Kind:    message.KindEnum.Handler,
+			Handler: handler,
+			Data:    clientMessage.Data,
+			Session: session,
+		}
 		// 获取RPCCLint
-		var rpcClient *client.RPCClient
-		// 根据类型转发
-		rpcClient = clientmanager.GetClientByRouter(router.Info{
-			ServerKind: serverKind,
-			Handler:    handler,
-			Session:    *session,
-		})
+		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
 
 		if rpcClient == nil {
 
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
 			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, tip)
 			continue
-		}
-
-		rpcMsg := &message.RPCMessage{
-			Kind:    message.KindEnum.Handler,
-			Handler: handler,
-			Data:    clientMessage.Data,
-			Session: session,
 		}
 
 		if clientMessage.RequestID == 0 {

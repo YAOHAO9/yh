@@ -6,22 +6,15 @@ import (
 )
 
 // Map 存储自定义的路由
-type Map map[string]func(routerInfo Info, clients []*client.RPCClient) *client.RPCClient
-
-// Info 路由信息
-type Info struct {
-	ServerKind string
-	Handler    string
-	Session    message.Session
-}
+type Map map[string]func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient
 
 // Register 注册一个路由函数
-func (routeMap Map) Register(serverKind string, route func(routerInfo Info, clients []*client.RPCClient) *client.RPCClient) {
+func (routeMap Map) Register(serverKind string, route func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient) {
 	routeMap[serverKind] = route
 }
 
 // Get 获取一个路由函数
-func (routeMap Map) Get(serverKind string) func(routerInfo Info, clients []*client.RPCClient) *client.RPCClient {
+func (routeMap Map) Get(serverKind string) func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient {
 	return routeMap[serverKind]
 }
 

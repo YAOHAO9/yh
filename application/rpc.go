@@ -3,7 +3,6 @@ package application
 import (
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/router"
 )
 
 type notify struct{}
@@ -24,21 +23,16 @@ func (n notify) ToServer(serverID string, session *message.Session, handler stri
 }
 
 // ByKind Rpc到指定的Server
-func (n notify) ByKind(kind string, session *message.Session, handler string, data interface{}) {
-
-	// 根据类型转发
-	rpcClient := clientmanager.GetClientByRouter(router.Info{
-		ServerKind: kind,
-		Handler:    handler,
-		Session:    *session,
-	})
-
+func (n notify) ByKind(serverKind string, session *message.Session, handler string, data interface{}) {
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
 	}
+
+	// 根据类型转发
+	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
 
 	rpcClient.SendRPCNotify(session, rpcMsg)
 }
@@ -58,20 +52,16 @@ func (req request) ToServer(serverID string, session *message.Session, handler s
 }
 
 // ByKind Rpc到指定的Server
-func (req request) ByKind(kind string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
-
-	// 根据类型转发
-	rpcClient := clientmanager.GetClientByRouter(router.Info{
-		ServerKind: kind,
-		Handler:    handler,
-		Session:    *session,
-	})
+func (req request) ByKind(serverKind string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
 	}
+	// 根据类型转发
+	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
+
 	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 

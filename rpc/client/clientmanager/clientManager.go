@@ -22,24 +22,31 @@ func GetClientByID(id string) (c *client.RPCClient) {
 	return
 }
 
-// GetClientByRouter 随机获取一个Rpc连接客户端
-func GetClientByRouter(routerInfo router.Info) (c *client.RPCClient) {
+// GetClientsByKind 根据服务器类型获取RPC连接客户端
+func GetClientsByKind(serverKind string) (c []*client.RPCClient) {
 
 	clients := make([]*client.RPCClient, 0)
 
 	for _, rpcClientInfo := range rpcClientMap {
-		if rpcClientInfo.ServerConfig.Kind == routerInfo.ServerKind {
+		if rpcClientInfo.ServerConfig.Kind == serverKind {
 			clients = append(clients, rpcClientInfo)
 		}
 	}
+	return clients
+}
+
+// GetClientByRouter 随机获取一个Rpc连接客户端
+func GetClientByRouter(serverKind string, rpcMsg *message.RPCMessage) (c *client.RPCClient) {
+
+	clients := GetClientsByKind(serverKind)
 
 	if len(clients) == 0 {
 		return nil
 	}
 
-	route := router.Manager.Get(routerInfo.ServerKind)
+	route := router.Manager.Get(serverKind)
 	if route != nil {
-		return route(routerInfo, clients)
+		return route(rpcMsg, clients)
 	}
 
 	return clients[rand.Intn(len(clients))]

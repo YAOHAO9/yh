@@ -54,7 +54,7 @@ func (app Application) RegisterRPCAfterFilter(f func(rpcResp *message.RPCResp) (
 }
 
 // RegisterRouter 注册路由
-func (app Application) RegisterRouter(serverKind string, route func(routerInfo router.Info, clients []*client.RPCClient) *client.RPCClient) {
+func (app Application) RegisterRouter(serverKind string, route func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient) {
 	router.Manager.Register(serverKind, route)
 }
 
