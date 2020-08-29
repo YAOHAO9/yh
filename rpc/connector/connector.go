@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -14,22 +13,28 @@ import (
 
 func init() {
 
+	// 更新Session
 	rpchandler.Manager.Register(SysRPCEnum.UpdateSession, func(respCtx *response.RespCtx) {
 		// connector.GetConnInfo()
 
 	})
 
+	// 推送消息
 	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(respCtx *response.RespCtx) {
 		connInfo, ok := ConnMap[respCtx.Session.UID]
 		if !ok {
 			fmt.Println("无效的Uid", respCtx.Session.UID, "没有找到对应的客户端连接")
 			return
 		}
-		bytes, err := json.Marshal(respCtx.Data)
-		if err != nil {
-			panic(err)
+
+		if smp, ok := respCtx.Data.(map[string]interface{}); ok {
+			var notify message.Notify = message.Notify{
+				Route: smp["Route"].(string),
+				Data:  smp["Data"],
+			}
+			connInfo.notify(notify.Route, notify.Data)
 		}
-		connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
+
 	})
 
 }
@@ -41,7 +46,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// WebSocketHandler deal with ws request
+// WebSocketHandler 处理ws请求
 func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 建立连接
@@ -85,24 +90,4 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	connInfo.StartReceiveMsg()
 
-}
-
-// sendFailMessage 消息发送失败
-func sendFailMessage(respConn *websocket.Conn, Kind int, index int, data interface{}) {
-	fmt.Println(data)
-	// Notify的消息，不通知成功
-	if index == 0 {
-		return
-	}
-
-	clientResp := message.ClientResp{
-		RequestID: index,
-		Code:      message.StatusCode.Fail,
-		Data:      data,
-	}
-
-	err := respConn.WriteMessage(message.TypeEnum.TextMessage, clientResp.ToBytes())
-	if err != nil {
-		fmt.Println(err)
-	}
 }

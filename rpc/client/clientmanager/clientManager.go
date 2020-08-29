@@ -74,11 +74,3 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 		rpcClientMap[serverConfig.ID] = rpcClient
 	}
 }
-
-// SendMessageByID 发送消息给指定的服务器
-func SendMessageByID(serverID string, data []byte) {
-	client := GetClientByID(serverID).Conn
-	if client != nil {
-		client.WriteMessage(message.TypeEnum.TextMessage, data)
-	}
-}

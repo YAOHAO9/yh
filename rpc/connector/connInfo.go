@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/gorilla/websocket"
 )
+
+var mutex sync.Mutex
 
 // ConnInfo 用户连接信息
 type ConnInfo struct {
@@ -28,6 +31,37 @@ func (connInfo ConnInfo) Set(key string, v interface{}) {
 	connInfo.data[key] = v
 }
 
+// 回复request
+func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
+	clientResp := message.ClientResp{
+		RequestID: requestID,
+		Code:      code,
+		Data:      data,
+	}
+	mutex.Lock()
+	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, clientResp.ToBytes())
+	mutex.Unlock()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// 主动推送消息
+func (connInfo ConnInfo) notify(route string, data interface{}) {
+
+	notify := message.Notify{
+		Route: route,
+		Data:  data,
+	}
+
+	mutex.Lock()
+	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, notify.ToBytes())
+	mutex.Unlock()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 // StartReceiveMsg 开始接收消息
 func (connInfo ConnInfo) StartReceiveMsg() {
 	uid := connInfo.uid
@@ -44,12 +78,12 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		err = json.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "消息解析失败，请发送json消息")
+			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if clientMessage.Route == "" {
-			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, "Route不能为空")
+			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, "Route不能为空")
 			continue
 		}
 
@@ -74,9 +108,8 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
 
 		if rpcClient == nil {
-
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
-			sendFailMessage(conn, message.KindEnum.Handler, clientMessage.RequestID, tip)
+			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, tip)
 			continue
 		}
 
@@ -86,19 +119,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		} else {
 			// 转发Request
 			rpcClient.SendRPCRequest(session, rpcMsg, func(rpcResp *message.RPCResp) {
-
-				clientResp := message.ClientResp{
-					RequestID: clientMessage.RequestID,
-					Code:      rpcResp.Code,
-					Data:      rpcResp.Data,
-				}
-
-				bytes, err := json.Marshal(clientResp)
-				if err != nil {
-					fmt.Println("Invalid message")
-				} else {
-					conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
-				}
+				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})
 		}
 	}

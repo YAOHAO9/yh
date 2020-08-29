@@ -11,27 +11,27 @@ import (
 type Channel map[string]*message.Session
 
 // PushMessageToUser 推送消息给指定玩家
-func (channel Channel) PushMessageToUser(uid string, data interface{}) {
+func (channel Channel) PushMessageToUser(uid string, route string, data interface{}) {
 	session, ok := channel[uid]
 	if !ok {
 		return
 	}
 
-	PushMessageBySession(session, data)
+	PushMessageBySession(session, route, data)
 }
 
 // PushMessage 推送消息给所有人
-func (channel Channel) PushMessage(uids []string, data interface{}) {
+func (channel Channel) PushMessage(uids []string, route string, data interface{}) {
 	for _, uid := range uids {
-		channel.PushMessageToUser(uid, data)
+		channel.PushMessageToUser(uid, route, data)
 	}
 }
 
 // PushMessageToOthers 推送消息给其他人
-func (channel Channel) PushMessageToOthers(uids []string, data interface{}) {
+func (channel Channel) PushMessageToOthers(uids []string, route string, data interface{}) {
 	for _, uid := range uids {
 		if beeku.InSlice(uid, uids) == -1 {
-			channel.PushMessageToUser(uid, data)
+			channel.PushMessageToUser(uid, route, data)
 		}
 	}
 }
@@ -42,6 +42,10 @@ func (channel Channel) Add(uid string, session *message.Session) {
 }
 
 // PushMessageBySession 通过session推送消息
-func PushMessageBySession(session *message.Session, data interface{}) {
-	application.RPC.Notify.ToServer(session.CID, session, connector.SysRPCEnum.PushMessage, data)
+func PushMessageBySession(session *message.Session, route string, data interface{}) {
+	notify := message.Notify{
+		Route: route,
+		Data:  data,
+	}
+	application.RPC.Notify.ToServer(session.CID, session, connector.SysRPCEnum.PushMessage, notify)
 }

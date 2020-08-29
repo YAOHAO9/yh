@@ -2,10 +2,13 @@ package response
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/gorilla/websocket"
 )
+
+var mutex sync.Mutex
 
 // RespCtx response context
 type RespCtx struct {
@@ -29,9 +32,19 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RespCtx {
 	}
 }
 
-// GetHandler 消息发送失败
+// GetHandler 获取请求的Handler
 func (respCtx RespCtx) GetHandler() string {
 	return respCtx.handler
+}
+
+// SendMsg 发送消息
+func (respCtx RespCtx) SendMsg(data []byte) {
+	mutex.Lock()
+	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	mutex.Unlock()
 }
 
 // SendFailMessage 消息发送失败
@@ -48,10 +61,7 @@ func (respCtx RespCtx) SendFailMessage(data interface{}) {
 		Data:      data,
 	}
 
-	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
-	if err != nil {
-		fmt.Println(err)
-	}
+	respCtx.SendMsg(rpcResp.ToBytes())
 }
 
 // SendSuccessfulMessage 消息发送成功
@@ -69,8 +79,5 @@ func (respCtx RespCtx) SendSuccessfulMessage(data interface{}) {
 		Data:      data,
 	}
 
-	err := respCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
-	if err != nil {
-		fmt.Println(err)
-	}
+	respCtx.SendMsg(rpcResp.ToBytes())
 }

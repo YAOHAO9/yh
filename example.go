@@ -22,8 +22,8 @@ func main() {
 
 		go func() {
 			for {
+				channel.PushMessage([]string{respCtx.Session.CID}, "test", "啊哈哈啊")
 				time.Sleep(time.Second * 1)
-				channel.PushMessage([]string{respCtx.Session.CID}, "啊哈哈啊")
 			}
 		}()
 	})

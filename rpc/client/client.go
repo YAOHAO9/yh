@@ -30,12 +30,20 @@ func getRequestID() int {
 
 var requestMap = make(map[int]func(rpcResp *message.RPCResp))
 
-var lock sync.Mutex
+var requestMapLock sync.RWMutex
+var websocketWriteLock sync.Mutex
 
 // RPCClient websocket client 连接信息
 type RPCClient struct {
 	Conn         *websocket.Conn
 	ServerConfig *config.ServerConfig
+}
+
+// SendMsg 发送消息
+func (client RPCClient) SendMsg(data []byte) {
+	websocketWriteLock.Lock()
+	client.Conn.WriteMessage(message.TypeEnum.TextMessage, data)
+	websocketWriteLock.Unlock()
 }
 
 // SendRPCNotify 发送RPC通知
@@ -45,7 +53,7 @@ func (client RPCClient) SendRPCNotify(session *message.Session, rpcMsg *message.
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {
-		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
+		client.SendMsg(rpcMsg.ToBytes())
 	}
 }
 
@@ -58,10 +66,10 @@ func (client RPCClient) SendRPCRequest(session *message.Session, rpcMsg *message
 
 	// 执行 Before RPC filter
 	if rpcfilter.Manager.Before.Exec(respCtx) {
-		lock.Lock()
+		requestMapLock.Lock()
 		requestMap[requestID] = cb
-		lock.Unlock()
-		client.Conn.WriteMessage(message.TypeEnum.TextMessage, rpcMsg.ToBytes())
+		requestMapLock.Unlock()
+		client.SendMsg(rpcMsg.ToBytes())
 	}
 }
 
@@ -129,7 +137,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 
 			// 如果是request消息，则调用回调函数
 			if rpcResp.RequestID != 0 {
-				lock.Lock()
+				requestMapLock.RLock()
 				requestFunc, ok := requestMap[rpcResp.RequestID]
 				if ok {
 					delete(requestMap, rpcResp.RequestID)
@@ -141,7 +149,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 					}
 					requestFunc(rpcResp)
 				}
-				lock.Unlock()
+				requestMapLock.RUnlock()
 				continue
 			}
 			fmt.Println("Notify消息:", string(data))
