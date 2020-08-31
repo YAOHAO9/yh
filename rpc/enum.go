@@ -1,4 +1,4 @@
-package connector
+package rpc
 
 // SysRPCEnum 系统PRC枚举
 var SysRPCEnum = struct {

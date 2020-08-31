@@ -1,13 +1,17 @@
 package message
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/YAOHAO9/yh/rpc/session"
+)
 
 // RPCMessage 转发消息结构
 type RPCMessage struct {
 	Kind      int // message kind
 	Handler   string
 	Data      interface{}
-	Session   *Session
+	Session   *session.Session
 	RequestID int `json:",omitempty"`
 }
 

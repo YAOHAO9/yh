@@ -1,4 +1,4 @@
-package message
+package session
 
 // Session of connection
 type Session struct {
@@ -8,11 +8,11 @@ type Session struct {
 }
 
 // Get a value from session
-func (s Session) Get(key string) interface{} {
-	return s.Data[key]
+func (session Session) Get(key string) interface{} {
+	return session.Data[key]
 }
 
 // Set a value to session
-func (s Session) Set(key string, v interface{}) {
-	s.Data[key] = v
+func (session Session) Set(key string, v interface{}) {
+	session.Data[key] = v
 }

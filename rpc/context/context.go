@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,7 +18,7 @@ type RPCCtx struct {
 	requestID int
 	handler   string
 	Data      interface{}
-	Session   *message.Session
+	Session   *session.Session
 }
 
 // GenRespCtx 创建一个response上下文

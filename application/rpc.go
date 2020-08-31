@@ -5,12 +5,13 @@ import (
 
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/yh/rpc/session"
 )
 
 type notify struct{}
 
 // ToServer Rpc到指定的Server
-func (n notify) ToServer(serverID string, session *message.Session, handler string, data interface{}) {
+func (n notify) ToServer(serverID string, session *session.Session, handler string, data interface{}) {
 
 	rpcClient := clientmanager.GetClientByID(serverID)
 	if rpcClient == nil {
@@ -29,7 +30,7 @@ func (n notify) ToServer(serverID string, session *message.Session, handler stri
 }
 
 // ByKind Rpc到指定的Server
-func (n notify) ByKind(serverKind string, session *message.Session, handler string, data interface{}) {
+func (n notify) ByKind(serverKind string, session *session.Session, handler string, data interface{}) {
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
@@ -49,7 +50,7 @@ func (n notify) ByKind(serverKind string, session *message.Session, handler stri
 type request struct{}
 
 // ToServer Rpc到指定的Server
-func (req request) ToServer(serverID string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
+func (req request) ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcClient := clientmanager.GetClientByID(serverID)
 	if rpcClient == nil {
 		fmt.Println("Rpc 消息发送失败，没有找到对应的服务器")
@@ -65,7 +66,7 @@ func (req request) ToServer(serverID string, session *message.Session, handler s
 }
 
 // ByKind Rpc到指定的Server
-func (req request) ByKind(serverKind string, session *message.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
+func (req request) ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcMsg := &message.RPCMessage{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
@@ -81,13 +82,8 @@ func (req request) ByKind(serverKind string, session *message.Session, handler s
 	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 
-type rpc struct {
+// RPC 实例
+var RPC struct {
 	Notify  notify
 	Request request
-}
-
-// RPC 实例
-var RPC = rpc{
-	Notify:  notify{},
-	Request: request{},
 }

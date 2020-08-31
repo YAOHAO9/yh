@@ -19,6 +19,8 @@ func main() {
 		channel := channelfactory.CreateChannel("test")
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 
+		rpcCtx.Session.Set("test", rpcCtx.Data)
+		application.CreateApp().UpdateSession(rpcCtx.Session)
 		// go func() {
 		// 	for {
 		// 		channel.PushMessage([]string{rpcCtx.Session.CID}, "test", "啊哈哈啊")

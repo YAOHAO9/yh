@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
@@ -17,6 +18,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/router"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
+	"github.com/YAOHAO9/yh/rpc/session"
 )
 
 // Application app
@@ -56,6 +58,26 @@ func (app Application) RegisterRPCAfterFilter(f func(rpcResp *message.RPCResp) (
 // RegisterRouter 注册路由
 func (app Application) RegisterRouter(serverKind string, route func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient) {
 	router.Manager.Register(serverKind, route)
+}
+
+// UpdateSession 注册路由
+func (app Application) UpdateSession(session *session.Session, keys ...string) {
+
+	// 更新session中所有的数据
+	if len(keys) == 0 {
+		RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, session.Data)
+		return
+	}
+
+	// 根据需要更新指定的数据
+	data := make(map[string]interface{})
+	for _, key := range keys {
+		if value, ok := session.Data[key]; ok {
+			data[key] = value
+		}
+	}
+
+	RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, data)
 }
 
 func init() {

@@ -9,6 +9,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
 )
 
@@ -92,7 +93,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		serverKind := handlerInfos[0] // 解析出服务器类型
 		handler := handlerInfos[1]    // 真正的handler
 
-		session := &message.Session{
+		session := &session.Session{
 			UID:  uid,
 			CID:  config.GetServerConfig().ID,
 			Data: connInfo.data,

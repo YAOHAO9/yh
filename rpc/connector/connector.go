@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/message"
@@ -14,13 +15,13 @@ import (
 func init() {
 
 	// 更新Session
-	rpchandler.Manager.Register(SysRPCEnum.UpdateSession, func(rpcCtx *context.RPCCtx) {
+	rpchandler.Manager.Register(rpc.SysRPCEnum.UpdateSession, func(rpcCtx *context.RPCCtx) {
 		// connector.GetConnInfo()
 
 	})
 
 	// 推送消息
-	rpchandler.Manager.Register(SysRPCEnum.PushMessage, func(rpcCtx *context.RPCCtx) {
+	rpchandler.Manager.Register(rpc.SysRPCEnum.PushMessage, func(rpcCtx *context.RPCCtx) {
 		connInfo, ok := ConnMap[rpcCtx.Session.UID]
 		if !ok {
 			fmt.Println("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")

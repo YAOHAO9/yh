@@ -12,6 +12,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/yh/rpc/session"
 
 	"github.com/gorilla/websocket"
 )
@@ -47,7 +48,7 @@ func (client RPCClient) SendMsg(data []byte) {
 }
 
 // SendRPCNotify 发送RPC通知
-func (client RPCClient) SendRPCNotify(session *message.Session, rpcMsg *message.RPCMessage) {
+func (client RPCClient) SendRPCNotify(session *session.Session, rpcMsg *message.RPCMessage) {
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
@@ -58,7 +59,7 @@ func (client RPCClient) SendRPCNotify(session *message.Session, rpcMsg *message.
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(session *message.Session, rpcMsg *message.RPCMessage, cb func(rpcResp *message.RPCResp)) {
+func (client RPCClient) SendRPCRequest(session *session.Session, rpcMsg *message.RPCMessage, cb func(rpcResp *message.RPCResp)) {
 
 	rpcMsg.RequestID = getRequestID()
 
