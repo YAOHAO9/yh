@@ -38,6 +38,11 @@ func (rpcCtx RPCCtx) GetHandler() string {
 	return rpcCtx.handler
 }
 
+// GetRequestID 获取请求的GetRequestID
+func (rpcCtx RPCCtx) GetRequestID() int {
+	return rpcCtx.requestID
+}
+
 // SendMsg 发送消息
 func (rpcCtx RPCCtx) SendMsg(data []byte) {
 	mutex.Lock()

@@ -8,88 +8,23 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc"
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
-	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
-	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
-	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/router"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
-	"github.com/YAOHAO9/yh/rpc/session"
 )
-
-// Application app
-type Application struct {
-}
-
-// RegisterHandler 注册Handler
-func (app Application) RegisterHandler(name string, f func(rpcCtx *context.RPCCtx)) {
-	clienthandler.Manager.Register(name, f)
-}
-
-// RegisterRPCHandler 注册RPC Handler
-func (app Application) RegisterRPCHandler(name string, f func(rpcCtx *context.RPCCtx)) {
-	rpchandler.Manager.Register(name, f)
-}
-
-// RegisterHandlerBeforeFilter 注册before filter
-func (app Application) RegisterHandlerBeforeFilter(f func(rpcCtx *context.RPCCtx) (next bool)) {
-	handlerfilter.Manager.Before.Register(f)
-}
-
-// RegisterHandlerAfterFilter 注册after filter
-func (app Application) RegisterHandlerAfterFilter(f func(rpcResp *message.RPCResp) (next bool)) {
-	handlerfilter.Manager.After.Register(f)
-}
-
-// RegisterRPCBeforeFilter 注册before filter of rpc
-func (app Application) RegisterRPCBeforeFilter(f func(rpcCtx *context.RPCCtx) (next bool)) {
-	rpcfilter.Manager.Before.Register(f)
-}
-
-// RegisterRPCAfterFilter 注册after filter of rpc request
-func (app Application) RegisterRPCAfterFilter(f func(rpcResp *message.RPCResp) (next bool)) {
-	rpcfilter.Manager.After.Register(f)
-}
-
-// RegisterRouter 注册路由
-func (app Application) RegisterRouter(serverKind string, route func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient) {
-	router.Manager.Register(serverKind, route)
-}
-
-// UpdateSession 注册路由
-func (app Application) UpdateSession(session *session.Session, keys ...string) {
-
-	// 更新session中所有的数据
-	if len(keys) == 0 {
-		RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, session.Data)
-		return
-	}
-
-	// 根据需要更新指定的数据
-	data := make(map[string]interface{})
-	for _, key := range keys {
-		if value, ok := session.Data[key]; ok {
-			data[key] = value
-		}
-	}
-
-	RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, data)
-}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var app *Application
+// Application app
+type Application struct {
+}
 
 // Start start application
 func (app Application) Start() {
 	RpcServer.Start()
 }
+
+var app *Application
 
 // CreateApp 创建app
 func CreateApp() *Application {

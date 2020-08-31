@@ -16,8 +16,17 @@ func init() {
 
 	// 更新Session
 	rpchandler.Manager.Register(rpc.SysRPCEnum.UpdateSession, func(rpcCtx *context.RPCCtx) {
-		// connector.GetConnInfo()
+		connInfo, ok := ConnMap[rpcCtx.Session.UID]
+		if !ok {
+			fmt.Println("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
+			return
+		}
 
+		if data, ok := rpcCtx.Data.(map[string]interface{}); ok {
+			for key, value := range data {
+				connInfo.data[key] = value
+			}
+		}
 	})
 
 	// 推送消息
@@ -86,7 +95,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 保存连接信息
-	connInfo := &ConnInfo{uid: uid, conn: conn}
+	connInfo := &ConnInfo{uid: uid, conn: conn, data: make(map[string]interface{})}
 	ConnMap[uid] = connInfo
 
 	connInfo.StartReceiveMsg()

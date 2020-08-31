@@ -19,14 +19,8 @@ func main() {
 		channel := channelfactory.CreateChannel("test")
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 
-		rpcCtx.Session.Set("test", rpcCtx.Data)
-		application.CreateApp().UpdateSession(rpcCtx.Session)
-		// go func() {
-		// 	for {
-		// 		channel.PushMessage([]string{rpcCtx.Session.CID}, "test", "啊哈哈啊")
-		// 		time.Sleep(time.Second * 1)
-		// 	}
-		// }()
+		rpcCtx.Session.Set("RequestID", rpcCtx.GetRequestID())
+		application.UpdateSession(rpcCtx.Session, "RequestID")
 	})
 
 	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) {
