@@ -37,12 +37,8 @@ func init() {
 			return
 		}
 
-		if smp, ok := rpcCtx.Data.(map[string]interface{}); ok {
-			var notify message.Notify = message.Notify{
-				Route: smp["Route"].(string),
-				Data:  smp["Data"],
-			}
-			connInfo.notify(notify.Route, notify.Data)
+		if notify, ok := rpcCtx.Data.(map[string]interface{}); ok {
+			connInfo.notify(notify["Route"].(string), notify["Data"])
 		}
 
 	})

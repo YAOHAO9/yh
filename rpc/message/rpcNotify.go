@@ -2,14 +2,14 @@ package message
 
 import "encoding/json"
 
-// Notify 主动推送的客户端通知
-type Notify struct {
+// RPCNotify 通过RPC主动推送给客户端的通知
+type RPCNotify struct {
 	Route string
 	Data  interface{}
 }
 
 // ToBytes To []byte
-func (m Notify) ToBytes() (data []byte) {
+func (m RPCNotify) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }

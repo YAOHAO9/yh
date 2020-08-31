@@ -35,7 +35,7 @@ func main() {
 		return true
 	})
 
-	app.RegisterRouter("ddz", func(rpcMsg *message.RPCMessage, clients []*client.RPCClient) *client.RPCClient {
+	app.RegisterRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {
 		var luckClient *client.RPCClient
 		for _, clientInfo := range clients {
 			if clientInfo.ServerConfig.ID == "ddz-3" {

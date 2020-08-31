@@ -1,16 +1,16 @@
-package message
+package connector
 
 import "encoding/json"
 
-// ClientMessage 客户端发过来的消息的基本格式
-type ClientMessage struct {
+// ClientMsg 客户端发过来的消息的基本格式
+type ClientMsg struct {
 	Route     string
 	RequestID int `json:",omitempty"`
 	Data      interface{}
 }
 
 // ToBytes To []byte
-func (m ClientMessage) ToBytes() (data []byte) {
+func (m ClientMsg) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }

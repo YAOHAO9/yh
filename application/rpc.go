@@ -13,7 +13,7 @@ type notify struct{}
 // ToServer Rpc到指定的Server
 func (n notify) ToServer(serverID string, session *session.Session, handler string, data interface{}) {
 
-	rpcMsg := &message.RPCMessage{
+	rpcMsg := &message.RPCMsg{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
@@ -31,7 +31,7 @@ func (n notify) ToServer(serverID string, session *session.Session, handler stri
 
 // ByKind Rpc到指定的Server
 func (n notify) ByKind(serverKind string, session *session.Session, handler string, data interface{}) {
-	rpcMsg := &message.RPCMessage{
+	rpcMsg := &message.RPCMsg{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
@@ -52,7 +52,7 @@ type request struct{}
 // ToServer Rpc到指定的Server
 func (req request) ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 
-	rpcMsg := &message.RPCMessage{
+	rpcMsg := &message.RPCMsg{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,
@@ -70,7 +70,7 @@ func (req request) ToServer(serverID string, session *session.Session, handler s
 
 // ByKind Rpc到指定的Server
 func (req request) ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
-	rpcMsg := &message.RPCMessage{
+	rpcMsg := &message.RPCMsg{
 		Kind:    message.KindEnum.RPC,
 		Handler: handler,
 		Data:    data,

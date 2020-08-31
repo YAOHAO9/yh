@@ -72,7 +72,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 解析消息
-		rpcMsg := &message.RPCMessage{}
+		rpcMsg := &message.RPCMsg{}
 		err = json.Unmarshal(data, rpcMsg)
 
 		rpcCtx := context.GenRespCtx(conn, rpcMsg)

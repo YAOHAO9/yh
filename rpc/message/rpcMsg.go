@@ -6,8 +6,8 @@ import (
 	"github.com/YAOHAO9/yh/rpc/session"
 )
 
-// RPCMessage 转发消息结构
-type RPCMessage struct {
+// RPCMsg 转发消息结构
+type RPCMsg struct {
 	Kind      int // message kind
 	Handler   string
 	Data      interface{}
@@ -16,7 +16,7 @@ type RPCMessage struct {
 }
 
 // ToBytes To []byte
-func (m RPCMessage) ToBytes() (data []byte) {
+func (m RPCMsg) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }

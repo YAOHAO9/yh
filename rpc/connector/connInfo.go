@@ -34,13 +34,13 @@ func (connInfo ConnInfo) Set(key string, v interface{}) {
 
 // 回复request
 func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
-	clientResp := message.ClientResp{
+	clientMsgResp := ClientMsgResp{
 		RequestID: requestID,
 		Code:      code,
 		Data:      data,
 	}
 	mutex.Lock()
-	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, clientResp.ToBytes())
+	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, clientMsgResp.ToBytes())
 	mutex.Unlock()
 	if err != nil {
 		fmt.Println(err)
@@ -50,7 +50,7 @@ func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
 // 主动推送消息
 func (connInfo ConnInfo) notify(route string, data interface{}) {
 
-	notify := message.Notify{
+	notify := ClientNotify{
 		Route: route,
 		Data:  data,
 	}
@@ -75,7 +75,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		clientMessage := &message.ClientMessage{}
+		clientMessage := &ClientMsg{}
 		err = json.Unmarshal(data, clientMessage)
 
 		if err != nil {
@@ -101,7 +101,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 
 		fmt.Println(connInfo.data)
 
-		rpcMsg := &message.RPCMessage{
+		rpcMsg := &message.RPCMsg{
 			Kind:    message.KindEnum.Handler,
 			Handler: handler,
 			Data:    clientMessage.Data,

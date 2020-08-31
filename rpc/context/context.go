@@ -22,7 +22,7 @@ type RPCCtx struct {
 }
 
 // GenRespCtx 创建一个response上下文
-func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMessage) *RPCCtx {
+func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 	return &RPCCtx{
 		conn:      conn,
 		kind:      rpcMsg.Kind,

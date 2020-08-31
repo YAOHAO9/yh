@@ -36,7 +36,7 @@ func GetClientsByKind(serverKind string) (c []*client.RPCClient) {
 }
 
 // GetClientByRouter 随机获取一个Rpc连接客户端
-func GetClientByRouter(serverKind string, rpcMsg *message.RPCMessage) (c *client.RPCClient) {
+func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg) (c *client.RPCClient) {
 
 	clients := GetClientsByKind(serverKind)
 

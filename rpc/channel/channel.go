@@ -44,7 +44,7 @@ func (channel Channel) Add(uid string, session *session.Session) {
 
 // PushMessageBySession 通过session推送消息
 func PushMessageBySession(session *session.Session, route string, data interface{}) {
-	notify := message.Notify{
+	notify := message.RPCNotify{
 		Route: route,
 		Data:  data,
 	}
