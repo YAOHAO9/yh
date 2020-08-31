@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/connector"
+	"github.com/YAOHAO9/yh/connector"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
