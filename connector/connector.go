@@ -6,6 +6,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
+	"github.com/YAOHAO9/yh/rpc/message"
 )
 
 func init() {
@@ -22,6 +23,8 @@ func init() {
 				connInfo.data[key] = value
 			}
 		}
+
+		rpcCtx.SendMsg("", message.StatusCode.Successful)
 	})
 
 	// 推送消息

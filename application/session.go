@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/YAOHAO9/yh/rpc"
+	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
 )
 
@@ -29,6 +30,10 @@ func UpdateSession(session *session.Session, keys ...string) {
 		return
 	}
 
-	RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, data)
+	waitChan := make(chan bool, 1)
 
+	RPC.Request.ToServer(session.CID, session, rpc.SysRPCEnum.UpdateSession, data, func(rpcResp *message.RPCResp) {
+		waitChan <- true
+	})
+	<-waitChan
 }

@@ -34,7 +34,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 }
 
 // GetHandler 获取请求的Handler
-func (rpcCtx RPCCtx) GetHandler() string {
+func (rpcCtx *RPCCtx) GetHandler() string {
 	return rpcCtx.handler
 }
 
@@ -43,47 +43,43 @@ func (rpcCtx RPCCtx) GetRequestID() int {
 	return rpcCtx.requestID
 }
 
-// SendMsg 发送消息
-func (rpcCtx RPCCtx) SendMsg(data []byte) {
-	mutex.Lock()
-	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, data)
-	if err != nil {
-		fmt.Println(err)
-	}
-	mutex.Unlock()
-}
-
-// SendFailMessage 消息发送失败
-func (rpcCtx RPCCtx) SendFailMessage(data interface{}) {
+// SendMsg 消息发送失败
+func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// Notify的消息，不通知成功
 	if rpcCtx.requestID == 0 {
+		fmt.Println("Notify不需要回复消息")
+		return
+	}
+	// 重复回复
+	if rpcCtx.requestID == -1 {
+		fmt.Println("请勿重复回复消息")
 		return
 	}
 
+	// response
 	rpcResp := message.RPCResp{
 		Kind:      rpcCtx.kind + 10000,
 		RequestID: rpcCtx.requestID,
 		Code:      message.StatusCode.Fail,
 		Data:      data,
 	}
+	// 标记为已回复消息
+	rpcCtx.requestID = -1
 
-	rpcCtx.SendMsg(rpcResp.ToBytes())
+	mutex.Lock()
+	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
+	if err != nil {
+		fmt.Println(err)
+	}
+	mutex.Unlock()
 }
 
-// SendSuccessfulMessage 消息发送成功
-func (rpcCtx RPCCtx) SendSuccessfulMessage(data interface{}) {
-
-	// Notify的消息，不通知成功
-	if rpcCtx.requestID == 0 {
-		return
+// ToString 格式化消息
+func (rpcCtx RPCCtx) ToString() string {
+	if rpcCtx.kind == message.KindEnum.RPC {
+		return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
+	} else {
+		return fmt.Sprintf("Handler RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
 	}
 
-	rpcResp := message.RPCResp{
-		Kind:      rpcCtx.kind + 10000,
-		RequestID: rpcCtx.requestID,
-		Code:      message.StatusCode.Successful,
-		Data:      data,
-	}
-
-	rpcCtx.SendMsg(rpcResp.ToBytes())
 }

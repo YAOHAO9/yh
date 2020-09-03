@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/YAOHAO9/yh/application"
@@ -15,16 +16,18 @@ func main() {
 	app := application.CreateApp()
 
 	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) {
-		rpcCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Handler消息")
-		channel := channelfactory.CreateChannel("test")
+		channel := channelfactory.CreateChannel("test") // 创建channel
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 
-		rpcCtx.Session.Set("RequestID", rpcCtx.GetRequestID())
+		fmt.Println("RequestID of session", rpcCtx.Session.Get("RequestID"), "RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
+		rpcCtx.Session.Set("RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		application.UpdateSession(rpcCtx.Session, "RequestID")
+		fmt.Println("结束")
+		// rpcCtx.SendMsg(config.GetServerConfig().ID+": 收到Handler消息", message.StatusCode.Successful)
 	})
 
 	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) {
-		rpcCtx.SendSuccessfulMessage(config.GetServerConfig().ID + ": 收到Rpc消息")
+		rpcCtx.SendMsg(config.GetServerConfig().ID+": 收到Rpc消息", message.StatusCode.Successful)
 	})
 
 	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {

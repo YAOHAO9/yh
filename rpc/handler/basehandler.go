@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/YAOHAO9/yh/rpc/context"
+	"github.com/YAOHAO9/yh/rpc/message"
 )
 
 // Map handler函数仓库
@@ -24,9 +25,14 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 
 	f, ok := handler.Map[rpcCtx.GetHandler()]
 	if ok {
-		f(rpcCtx)
+		go func() {
+			f(rpcCtx)
+			if rpcCtx.GetRequestID() != -1 && rpcCtx.GetRequestID() != 0 {
+				fmt.Println("No response for request", rpcCtx.ToString())
+			}
+		}()
 	} else {
-		rpcCtx.SendFailMessage(fmt.Sprintf("SysHandler %v 不存在", rpcCtx.GetHandler()))
+		rpcCtx.SendMsg(fmt.Sprintf("SysHandler %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
 	}
 }
 

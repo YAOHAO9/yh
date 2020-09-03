@@ -99,8 +99,6 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			Data: connInfo.data,
 		}
 
-		fmt.Println(connInfo.data)
-
 		rpcMsg := &message.RPCMsg{
 			Kind:    message.KindEnum.Handler,
 			Handler: handler,

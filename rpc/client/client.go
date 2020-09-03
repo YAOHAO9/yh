@@ -19,9 +19,14 @@ import (
 
 var requestID = 1
 var maxInt64Value = 1<<63 - 1
+var requestIDMutex sync.Mutex
 
 // 唯一的RequestID
-func getRequestID() int {
+func genRequestID() int {
+
+	requestIDMutex.Lock()
+	defer requestIDMutex.Unlock()
+
 	requestID++
 	if requestID >= maxInt64Value {
 		requestID = 1
@@ -61,7 +66,7 @@ func (client RPCClient) SendRPCNotify(session *session.Session, rpcMsg *message.
 // SendRPCRequest 发送RPC请求
 func (client RPCClient) SendRPCRequest(session *session.Session, rpcMsg *message.RPCMsg, cb func(rpcResp *message.RPCResp)) {
 
-	rpcMsg.RequestID = getRequestID()
+	rpcMsg.RequestID = genRequestID()
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
