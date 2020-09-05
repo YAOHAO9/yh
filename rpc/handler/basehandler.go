@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"runtime/debug"
 
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/message"
@@ -36,7 +35,6 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 
 			defer func() {
 				if err := recover(); err != nil {
-					debug.PrintStack()
 					rpcCtx.SendMsg(err, message.StatusCode.Fail)
 				}
 			}()
