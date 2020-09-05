@@ -1,4 +1,4 @@
-package application
+package rpc
 
 import (
 	"fmt"
@@ -85,8 +85,8 @@ func (req request) ByKind(serverKind string, session *session.Session, handler s
 	rpcClient.SendRPCRequest(session, rpcMsg, f)
 }
 
-// RPC 实例
-var RPC struct {
-	Notify  notify
-	Request request
-}
+// Notify 实例
+var Notify notify
+
+// Request 实例
+var Request request

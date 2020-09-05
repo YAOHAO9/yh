@@ -1,7 +1,7 @@
-package rpc
+package connector
 
-// SysRPCEnum 系统PRC枚举
-var SysRPCEnum = struct {
+// HandlerMap 系统PRC枚举
+var HandlerMap = struct {
 	PushMessage   string
 	UpdateSession string
 }{

@@ -3,7 +3,7 @@ package channel
 import (
 	"sync"
 
-	"github.com/YAOHAO9/yh/application"
+	"github.com/YAOHAO9/yh/connector"
 	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
@@ -78,5 +78,5 @@ func PushMessageBySession(session *session.Session, route string, data interface
 		Route: route,
 		Data:  data,
 	}
-	application.RPC.Notify.ToServer(session.CID, session, rpc.SysRPCEnum.PushMessage, notify)
+	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.PushMessage, notify)
 }
