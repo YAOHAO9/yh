@@ -10,7 +10,7 @@ import (
 type RPCMsg struct {
 	Kind      int // message kind
 	Handler   string
-	Data      interface{}
+	Data      interface{} `json:",omitempty"`
 	Session   *session.Session
 	RequestID int `json:",omitempty"`
 }

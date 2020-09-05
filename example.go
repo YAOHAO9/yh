@@ -9,25 +9,28 @@ import (
 	"github.com/YAOHAO9/yh/rpc/channel/channelfactory"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/context"
+	"github.com/YAOHAO9/yh/rpc/handler"
 	"github.com/YAOHAO9/yh/rpc/message"
 )
 
 func main() {
 	app := application.CreateApp()
 
-	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) {
+	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) *handler.Resp {
 		channel := channelfactory.CreateChannel("test") // 创建channel
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 
 		fmt.Println("RequestID of session", rpcCtx.Session.Get("RequestID"), "RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		rpcCtx.Session.Set("RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		application.UpdateSession(rpcCtx.Session, "RequestID")
-		fmt.Println("结束")
-		// rpcCtx.SendMsg(config.GetServerConfig().ID+": 收到Handler消息", message.StatusCode.Successful)
+		return nil
 	})
 
-	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) {
-		rpcCtx.SendMsg(config.GetServerConfig().ID+": 收到Rpc消息", message.StatusCode.Successful)
+	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) *handler.Resp {
+
+		return &handler.Resp{
+			Data: config.GetServerConfig().ID + ": 收到Rpc消息",
+		}
 	})
 
 	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {

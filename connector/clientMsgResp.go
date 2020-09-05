@@ -4,9 +4,9 @@ import "encoding/json"
 
 // ClientMsgResp client message response
 type ClientMsgResp struct {
-	RequestID int `json:",omitempty"`
-	Code      int `json:",omitempty"`
-	Data      interface{}
+	RequestID int
+	Code      int
+	Data      interface{} `json:",omitempty"`
 }
 
 // ToBytes To []byte

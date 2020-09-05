@@ -17,7 +17,7 @@ type RPCCtx struct {
 	kind      int
 	requestID int
 	handler   string
-	Data      interface{}
+	Data      interface{} `json:",omitempty"`
 	Session   *session.Session
 }
 
@@ -47,7 +47,7 @@ func (rpcCtx RPCCtx) GetRequestID() int {
 func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// Notify的消息，不通知成功
 	if rpcCtx.requestID == 0 {
-		fmt.Println("Notify不需要回复消息")
+		// fmt.Println("Notify不需要回复消息")
 		return
 	}
 	// 重复回复
@@ -78,8 +78,6 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 func (rpcCtx RPCCtx) ToString() string {
 	if rpcCtx.kind == message.KindEnum.RPC {
 		return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
-	} else {
-		return fmt.Sprintf("Handler RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
 	}
-
+	return fmt.Sprintf("Handler RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
 }

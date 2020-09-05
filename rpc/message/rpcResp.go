@@ -5,9 +5,9 @@ import "encoding/json"
 // RPCResp 服务端推送的消息
 type RPCResp struct {
 	Kind      int `json:",omitempty"` // response kind
-	RequestID int `json:",omitempty"` // Request Id,
+	RequestID int
 	Code      int
-	Data      interface{}
+	Data      interface{} `json:",omitempty"`
 }
 
 // ToBytes To []byte

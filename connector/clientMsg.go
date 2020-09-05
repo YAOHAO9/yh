@@ -5,8 +5,8 @@ import "encoding/json"
 // ClientMsg 客户端发过来的消息的基本格式
 type ClientMsg struct {
 	Route     string
-	RequestID int `json:",omitempty"`
-	Data      interface{}
+	RequestID int         `json:",omitempty"`
+	Data      interface{} `json:",omitempty"`
 }
 
 // ToBytes To []byte
