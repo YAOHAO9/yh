@@ -6,7 +6,7 @@ import (
 
 	"github.com/YAOHAO9/yh/application"
 	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/channel/channelfactory"
+	"github.com/YAOHAO9/yh/channel/channelfactory"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler"
@@ -23,6 +23,7 @@ func main() {
 		fmt.Println("RequestID of session", rpcCtx.Session.Get("RequestID"), "RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		rpcCtx.Session.Set("RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		application.UpdateSession(rpcCtx.Session, "RequestID")
+		channel.PushMessageToOthers([]string{}, "test", "哈哈哈哈哈")
 		return nil
 	})
 

@@ -35,6 +35,8 @@ ws.onmessage = (event: WebSocket.MessageEvent) => {
         const cb = requestMap[data.RequestID]
         delete requestMap[data.RequestID]
         cb(data)
+    } else {
+        console.warn(data)
     }
 }
 

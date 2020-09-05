@@ -1,6 +1,6 @@
 package channelfactory
 
-import "github.com/YAOHAO9/yh/rpc/channel"
+import "github.com/YAOHAO9/yh/channel"
 
 var channelStore = make(map[string]*channel.Channel)
 
