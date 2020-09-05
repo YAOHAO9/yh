@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/YAOHAO9/yh/application/config"
@@ -12,6 +11,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/zookeeper"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 )
@@ -27,7 +27,7 @@ func Start() {
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
 	// RPC server启动
-	fmt.Println("Rpc server started ws://" + serverConfig.Host + ":" + serverConfig.Port)
+	logrus.Info("Rpc server started ws://" + serverConfig.Host + ":" + serverConfig.Port)
 	http.HandleFunc("/rpc", webSocketHandler)
 
 	// 对客户端暴露的ws接口
@@ -36,7 +36,7 @@ func Start() {
 	}
 	// 开启并监听
 	err := http.ListenAndServe(":"+serverConfig.Port, nil)
-	fmt.Println("Rpc server start fail: ", err.Error())
+	logrus.Error("Rpc server start fail: ", err.Error())
 }
 
 // WebSocketHandler deal with ws request
@@ -45,7 +45,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 建立连接
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println("连接失败", err.Error())
+		logrus.Error("连接失败", err.Error())
 		return
 	}
 
@@ -60,7 +60,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// token校验
 	if token != config.GetServerConfig().Token {
-		fmt.Println("用户校验失败!!!")
+		logrus.Error("用户校验失败!!!")
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}

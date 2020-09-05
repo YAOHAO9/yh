@@ -3,9 +3,11 @@ package zookeeper
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
-	"time"
+	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
 )
@@ -75,7 +77,7 @@ func initNode() {
 
 	zkClient.create(nodePath, nodeInfo, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	zkClient.serverID = serverConfig.ID
-	fmt.Println("Node created:", nodePath)
+	logrus.Info("Node created:", nodePath)
 }
 
 func watch() {
@@ -115,14 +117,14 @@ func watch() {
 					data, _, err := zkClient.conn.Get(path)
 					if err != nil {
 						clientmanager.DelClientByID(serverID)
-						fmt.Println(err.Error())
+						logrus.Error(err.Error())
 						break
 					}
 					// 解析服务器信息
 					serverConfig := &config.ServerConfig{}
 					err = json.Unmarshal(data, serverConfig)
 					if err != nil {
-						fmt.Println(err.Error())
+						logrus.Error(err.Error())
 					}
 					// 创建客户端，并于改服务器连接
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)

@@ -9,30 +9,47 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// 字体 背景  颜色
+// 31   41   红色
+// 32   42   绿色
+// 33   43   黄色
+// 34   44   蓝色
+// 35   45   洋红
+// 36   46   青色
+// 37   47   白色
 const (
-	colorRed    = 31
-	colorYellow = 33
-	colorBlue   = 36
-	colorGray   = 37
+	Error = 31
+	Warn  = 33
+	Debug = 34
+	Fatal = 35
+	Info  = 36
+	Trace = 37
 )
 
 func getColorByLevel(level logrus.Level) int {
 	switch level {
-	case logrus.DebugLevel:
-		return colorGray
+	case logrus.ErrorLevel, logrus.PanicLevel:
+		return Error
+	case logrus.FatalLevel:
+		return Fatal
 	case logrus.WarnLevel:
-		return colorYellow
-	case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
-		return colorRed
+		return Warn
+	case logrus.DebugLevel:
+		return Debug
+	case logrus.TraceLevel:
+		return Trace
+	case logrus.InfoLevel:
+		return Info
 	default:
-		return colorBlue
+		return Info
 	}
 }
 
-// error format
-type formatter struct{}
+// ErrorFormatter 错误格式化器
+type ErrorFormatter struct{}
 
-func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
+// Format Format函数
+func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	// output buffer
 	b := &bytes.Buffer{}
@@ -48,15 +65,18 @@ func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	// 日志等级
 	b.WriteString(" [")
 	b.WriteString(strings.ToUpper(entry.Level.String()))
-	b.WriteString("] ")
+	b.WriteString("]")
 
 	// message
-	b.WriteString(strings.TrimSpace(entry.Message))
+	if entry.Message != "" {
+		b.WriteString(" [" + strings.TrimSpace(entry.Message) + "]")
+	}
 
 	stack, hasStack := entry.Data["Stack"]
 	if hasStack {
 		delete(entry.Data, "Stack")
 	}
+
 	// fields
 	for key, value := range entry.Data {
 		b.WriteString(fmt.Sprint(" [", key, ":", value, "] "))
@@ -70,7 +90,6 @@ func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		// caller
 		b.WriteString("\x1b[0m")
 		b.WriteString(fmt.Sprint(" ", entry.Caller.File, ":", entry.Caller.Line, "\n"))
-
 	}
 
 	return b.Bytes(), nil

@@ -7,6 +7,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 var mutex sync.Mutex
@@ -47,12 +48,12 @@ func (rpcCtx RPCCtx) GetRequestID() int {
 func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// Notify的消息，不通知成功
 	if rpcCtx.requestID == 0 {
-		// fmt.Println("Notify不需要回复消息")
+		logrus.Warn("Notify不需要回复消息")
 		return
 	}
 	// 重复回复
 	if rpcCtx.requestID == -1 {
-		fmt.Println("请勿重复回复消息")
+		logrus.Warn("请勿重复回复消息")
 		return
 	}
 
@@ -60,7 +61,7 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	rpcResp := message.RPCResp{
 		Kind:      rpcCtx.kind + 10000,
 		RequestID: rpcCtx.requestID,
-		Code:      message.StatusCode.Fail,
+		Code:      code,
 		Data:      data,
 	}
 	// 标记为已回复消息
@@ -69,7 +70,7 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	mutex.Lock()
 	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
-		fmt.Println(err)
+		logrus.Error(err)
 	}
 	mutex.Unlock()
 }

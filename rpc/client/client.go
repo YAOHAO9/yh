@@ -13,6 +13,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 )
@@ -120,7 +121,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 	}
 
 	// 连接成功！！！
-	fmt.Println("连接到", serverConfig.ID, "成功！！！")
+	logrus.Info("连接到", serverConfig.ID, "成功！！！")
 	// 接收消息
 	go func() {
 		for {
@@ -130,14 +131,14 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
 				closeFunc(serverConfig.ID)
-				fmt.Println("服务", serverConfig.ID, "掉线")
+				logrus.Warn("服务", serverConfig.ID, "掉线")
 				break
 			}
 			// 解析消息
 			rpcResp := &message.RPCResp{}
 			err = json.Unmarshal(data, rpcResp)
 			if err != nil {
-				fmt.Println("Rpc request's response body parse fail")
+				logrus.Error("Rpc request's response body parse fail", err)
 				continue
 			}
 
@@ -158,7 +159,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				requestMapLock.RUnlock()
 				continue
 			}
-			fmt.Println("Notify消息:", string(data))
+			logrus.Error("Notify消息，不应有回调信息")
 		}
 	}()
 

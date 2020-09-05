@@ -21,12 +21,21 @@ func main() {
 	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) *handler.Resp {
 		channel := channelfactory.CreateChannel("test") // 创建channel
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
-
+		logrus.Trace("这是一个有意思的log", "啊时代发生的符合")
+		logrus.Debug("这是一个有意思的log", "啊时代发生的符合")
 		logrus.Info("这是一个有意思的log", "啊时代发生的符合")
+		logrus.Warn("这是一个有意思的log", "啊时代发生的符合")
 
-		logrus.WithFields(logrus.Fields{
-			"name": "example",
-		}).Error("嘿嘿嘿", true)
+		// logrus.WithFields(logrus.Fields{
+		// 	"name": "example",
+		// }).Panic("嘿嘿嘿", true)
+
+		// if rand.Int() < 1 {
+		// 	logrus.Fatal("这是一个有意思的log", "啊时代发生的符合")
+		// } else {
+		// 	logrus.Panic("panic")
+		// }
+
 		rpcCtx.Session.Set("RequestID", rpcCtx.Data.(map[string]interface{})["RequestID"])
 		application.UpdateSession(rpcCtx.Session, "RequestID")
 		channel.PushMessageToOthers([]string{}, "test", "哈哈哈哈哈")

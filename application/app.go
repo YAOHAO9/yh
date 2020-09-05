@@ -3,12 +3,12 @@ package application
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/YAOHAO9/yh/application/config"
 	RpcServer "github.com/YAOHAO9/yh/rpc/server"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -71,11 +71,12 @@ func parseFlag() bool {
 	}
 
 	// 打印命令行参数
-	data, err := json.Marshal(serverConfig)
+	_, err := json.Marshal(serverConfig)
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
-	fmt.Println("Server config: \n\t", string(data))
+	logrus.WithField("Server config", serverConfig).Info()
+	// logrus.Info("Server config: \n    ", string(data))
 
 	// 保存配置
 	config.SetServerConfig(&serverConfig)

@@ -1,11 +1,10 @@
 package rpc
 
 import (
-	"fmt"
-
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
+	"github.com/sirupsen/logrus"
 )
 
 type notify struct{}
@@ -22,7 +21,7 @@ func (n notify) ToServer(serverID string, session *session.Session, handler stri
 
 	rpcClient := clientmanager.GetClientByID(serverID)
 	if rpcClient == nil {
-		fmt.Println("Rpc Notify(ToServer) 消息发送失败，没有找到对应的服务器 handler:", handler)
+		logrus.Error("Rpc Notify(ToServer) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
 
@@ -41,7 +40,7 @@ func (n notify) ByKind(serverKind string, session *session.Session, handler stri
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
 	if rpcClient == nil {
-		fmt.Println("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
+		logrus.Error("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
 	rpcClient.SendRPCNotify(session, rpcMsg)
@@ -61,7 +60,7 @@ func (req request) ToServer(serverID string, session *session.Session, handler s
 
 	rpcClient := clientmanager.GetClientByID(serverID)
 	if rpcClient == nil {
-		fmt.Println("Rpc Request(ToServer) 消息发送失败，没有找到对应的服务器 handler:", handler)
+		logrus.Error("Rpc Request(ToServer) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
 
@@ -79,7 +78,7 @@ func (req request) ByKind(serverKind string, session *session.Session, handler s
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
 	if rpcClient == nil {
-		fmt.Println("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
+		logrus.Error("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
 	rpcClient.SendRPCRequest(session, rpcMsg, f)

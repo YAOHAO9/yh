@@ -29,7 +29,7 @@ func SetLogMode(isProduct bool) {
 		logrus.SetOutput(io.MultiWriter(writer))
 	} else {
 		// 开发模式
-		logrus.SetLevel(logrus.InfoLevel)
-		logrus.SetFormatter(formatter{})
+		logrus.SetLevel(logrus.TraceLevel)
+		logrus.SetFormatter(ErrorFormatter{})
 	}
 }

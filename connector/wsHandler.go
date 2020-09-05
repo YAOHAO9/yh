@@ -1,11 +1,11 @@
 package connector
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 var upgrader = websocket.Upgrader{
@@ -21,7 +21,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 建立连接
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println("连接失败", err.Error())
+		logrus.Error("连接失败", err.Error())
 		return
 	}
 
@@ -30,19 +30,19 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn.SetCloseHandler(func(code int, text string) error {
 		delete(ConnMap, uid)
 		conn.Close()
-		fmt.Println("CloseHandler: ", text)
+		logrus.Warn("CloseHandler: ", text)
 		return nil
 	})
 
 	// 用户认证
 	token := r.URL.Query().Get("token")
-	fmt.Println("Id: ", uid, " Token: ", token)
+	logrus.Info("Id: ", uid, " Token: ", token)
 
 	if uid == "" || token == "" {
-		fmt.Println("用户校验失败!!!")
+		logrus.Warn("用户校验失败!!!")
 		err := conn.WriteMessage(message.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
-			fmt.Println("发送认证失败消息失败: ", err.Error())
+			logrus.Warn("发送认证失败消息失败: ", err.Error())
 		}
 		conn.CloseHandler()(0, "认证失败")
 		return

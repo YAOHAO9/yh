@@ -1,12 +1,11 @@
 package application
 
 import (
-	"fmt"
-
 	"github.com/YAOHAO9/yh/connector"
 	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
+	"github.com/sirupsen/logrus"
 )
 
 // UpdateSession 注册路由
@@ -27,7 +26,7 @@ func UpdateSession(session *session.Session, keys ...string) {
 	}
 
 	if len(data) == 0 {
-		fmt.Println("Update session failed. No such data")
+		logrus.Error("Update session failed. Not any data")
 		return
 	}
 
@@ -36,5 +35,6 @@ func UpdateSession(session *session.Session, keys ...string) {
 	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, data, func(rpcResp *message.RPCResp) {
 		waitChan <- true
 	})
+
 	<-waitChan
 }

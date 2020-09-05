@@ -5,6 +5,7 @@ import (
 
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/sirupsen/logrus"
 )
 
 // Resp handler返回值
@@ -35,6 +36,11 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 
 			defer func() {
 				if err := recover(); err != nil {
+					if entry, ok := err.(*logrus.Entry); ok {
+						err, _ := (&logrus.JSONFormatter{}).Format(entry)
+						rpcCtx.SendMsg(string(err), message.StatusCode.Fail)
+						return
+					}
 					rpcCtx.SendMsg(err, message.StatusCode.Fail)
 				}
 			}()

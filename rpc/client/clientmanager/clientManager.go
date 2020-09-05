@@ -1,7 +1,6 @@
 package clientmanager
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -63,7 +62,6 @@ func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durat
 	defer func() {
 		data := recover()
 		if data != nil {
-			fmt.Println("Recover data:", data)
 			delete(rpcClientMap, serverConfig.ID)
 		}
 	}()

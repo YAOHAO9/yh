@@ -11,6 +11,7 @@ import (
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 var mutex sync.Mutex
@@ -43,7 +44,7 @@ func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
 	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, clientMsgResp.ToBytes())
 	mutex.Unlock()
 	if err != nil {
-		fmt.Println(err)
+		logrus.Error(err)
 	}
 }
 
@@ -59,7 +60,7 @@ func (connInfo ConnInfo) notify(route string, data interface{}) {
 	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, notify.ToBytes())
 	mutex.Unlock()
 	if err != nil {
-		fmt.Println(err)
+		logrus.Error(err)
 	}
 }
 
