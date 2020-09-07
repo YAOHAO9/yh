@@ -21,7 +21,7 @@ func (h *errorHook) Fire(entry *logrus.Entry) error {
 		frames = stack.Callers(6)
 	}
 
-	if !productMode {
+	if LogType == LogTypeEnum.Console || LogType == LogTypeEnum.ConsoleAndFile {
 		for index, frame := range frames {
 			frames[index].File = "    " + frame.File
 		}

@@ -6,7 +6,6 @@ import (
 	"github.com/YAOHAO9/yh/application"
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/channel/channelfactory"
-	"github.com/YAOHAO9/yh/logger"
 	"github.com/YAOHAO9/yh/rpc/client"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler"
@@ -15,7 +14,6 @@ import (
 )
 
 func main() {
-	logger.SetLogMode(false)
 	app := application.CreateApp()
 
 	app.RegisterHandler("handler", func(rpcCtx *context.RPCCtx) *handler.Resp {

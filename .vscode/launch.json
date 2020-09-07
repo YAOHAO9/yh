@@ -12,10 +12,7 @@
             "program": "${workspaceFolder}/example.go",
             "env": {},
             "args": [
-                "-c",
-                "-p=3110",
-                "-k=connector",
-                "-i=connector-3"
+                "-h",
             ]
         },
         {

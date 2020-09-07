@@ -35,6 +35,7 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 		go func() {
 
 			defer func() {
+				// 错误处理
 				if err := recover(); err != nil {
 					if entry, ok := err.(*logrus.Entry); ok {
 						err, _ := (&logrus.JSONFormatter{}).Format(entry)
@@ -44,16 +45,17 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 					rpcCtx.SendMsg(err, message.StatusCode.Fail)
 				}
 			}()
-
+			// 执行handler
 			resp := f(rpcCtx)
 
+			// 回复消息
 			if resp == nil {
 				rpcCtx.SendMsg(nil, message.StatusCode.Successful)
 				return
 			}
 
+			// 回复消息
 			rpcCtx.SendMsg(resp.Data, resp.Code)
-
 		}()
 	} else {
 		rpcCtx.SendMsg(fmt.Sprintf("SysHandler %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)

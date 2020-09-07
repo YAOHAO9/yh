@@ -1,12 +1,26 @@
-// package main
+package main
 
 // import (
 // 	"fmt"
+// 	"log"
 
-// 	"github.com/YAOHAO9/yh/util/beeku"
+// 	"github.com/YAOHAO9/yh/application/config"
+// 	flags "github.com/jessevdk/go-flags"
 // )
 
+// type Options struct {
+// 	*config.ServerConfig
+// 	*config.ZkConfig
+// }
+
 // func main() {
-// 	sl := []interface{}{1, 2, 3}
-// 	fmt.Println(beeku.SlicePadEnd(sl, 12, 12))
+
+// 	serverC := &Options{}
+// 	_, err := flags.Parse(serverC)
+// 	if err != nil {
+// 		log.Panic(err)
+// 	}
+// 	fmt.Printf("%+v\n", serverC.ServerConfig)
+// 	fmt.Printf("%+v\n", serverC.ZkConfig)
+
 // }
