@@ -13,8 +13,8 @@ type ServerConfig struct {
 	Host        string `short:"H" long:"host" description:"Host" required:"true" default:"127.0.0.1"`
 	Port        string `short:"P" long:"port" description:"Port" required:"true"`
 	IsConnector bool   `short:"c" long:"isConnector" description:"是否是Connector服"`
-	Token       string `short:"t" long:"token" description:"系统认证Token" required:"true"`
-	LogType     int    `short:"l" long:"logType" description:"日志类型" default:"1" choice:"1" choice:"2" choice:"3"`
+	Token       string `short:"t" long:"token" description:"集群认证Token" required:"true"`
+	LogType     int    `short:"l" long:"logType" description:"日志类型" default:"1" choice:"1" choice:"2"` // 1、控制台输出 2、日志文件
 }
 
 // SetServerConfig 保存服务器配置

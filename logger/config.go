@@ -2,8 +2,10 @@ package logger
 
 import (
 	"log"
+	"os"
 	"time"
 
+	"github.com/YAOHAO9/yh/application/config"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/sirupsen/logrus"
 )
@@ -23,10 +25,10 @@ func SetLogMode(logType int) {
 		logrus.SetLevel(logrus.ErrorLevel)
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 
-		path := "D:\\Projects\\go-trial"
+		path, _ := os.Getwd()
+
 		writer, err := rotatelogs.New(
-			path+".%Y%m%d%H%M",
-			rotatelogs.WithLinkName(path),
+			path+"/log/"+config.GetServerConfig().ID+"_%m_%d.log",
 			rotatelogs.WithMaxAge(30*time.Second),
 			rotatelogs.WithRotationTime(time.Duration(60)*time.Second),
 		)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/YAOHAO9/yh/application/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,7 +70,9 @@ func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	// message
 	if entry.Message != "" {
-		b.WriteString(" [" + strings.TrimSpace(entry.Message) + "]")
+		b.WriteString(" [" + config.GetServerConfig().ID + ":" + strings.TrimSpace(entry.Message) + "]")
+	} else {
+		b.WriteString(" [" + config.GetServerConfig().ID + "]")
 	}
 
 	stack, hasStack := entry.Data["Stack"]
