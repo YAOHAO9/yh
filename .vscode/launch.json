@@ -12,7 +12,16 @@
             "program": "${workspaceFolder}/example.go",
             "env": {},
             "args": [
-                "-h",
+                "-s=dwc",
+                "-i=connector-1",
+                "-k=connector",
+                "-H=127.0.0.1",
+                "-P=3110",
+                "-c",
+                "-t=ksYNdrAo",
+                "-l=1",
+                "--zhost=127.0.0.1",
+                "--zport=2181"
             ]
         },
         {

@@ -48,7 +48,10 @@ func (rpcCtx RPCCtx) GetRequestID() int {
 func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// Notify的消息，不通知成功
 	if rpcCtx.requestID == 0 {
-		logrus.Warn("Notify不需要回复消息")
+		if data == nil {
+			return
+		}
+		logrus.Error("Notify不需要回复消息")
 		return
 	}
 	// 重复回复
@@ -60,6 +63,7 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// response
 	rpcResp := message.RPCResp{
 		Kind:      rpcCtx.kind + 10000,
+		Handler:   rpcCtx.handler,
 		RequestID: rpcCtx.requestID,
 		Code:      code,
 		Data:      data,

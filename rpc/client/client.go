@@ -58,10 +58,21 @@ func (client RPCClient) SendRPCNotify(session *session.Session, rpcMsg *message.
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
-	// 执行 Before RPC filter
-	if rpcfilter.Manager.Before.Exec(rpcCtx) {
-		client.SendMsg(rpcMsg.ToBytes())
+	// 执行 Before Handler filter
+	if rpcMsg.Kind == message.KindEnum.Handler {
+		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
+			return
+		}
 	}
+
+	// 执行 Before RPC filter
+	if rpcMsg.Kind == message.KindEnum.RPC {
+		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
+			return
+		}
+	}
+
+	client.SendMsg(rpcMsg.ToBytes())
 }
 
 // SendRPCRequest 发送RPC请求
@@ -71,13 +82,24 @@ func (client RPCClient) SendRPCRequest(session *session.Session, rpcMsg *message
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
-	// 执行 Before RPC filter
-	if rpcfilter.Manager.Before.Exec(rpcCtx) {
-		requestMapLock.Lock()
-		requestMap[requestID] = cb
-		requestMapLock.Unlock()
-		client.SendMsg(rpcMsg.ToBytes())
+	// 执行 Before Handler filter
+	if rpcMsg.Kind == message.KindEnum.Handler {
+		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
+			return
+		}
 	}
+
+	// 执行 Before RPC filter
+	if rpcMsg.Kind == message.KindEnum.RPC {
+		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
+			return
+		}
+	}
+
+	requestMapLock.Lock()
+	requestMap[requestID] = cb
+	requestMapLock.Unlock()
+	client.SendMsg(rpcMsg.ToBytes())
 }
 
 // StartClient websocket client
@@ -142,24 +164,29 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				continue
 			}
 
-			// 如果是request消息，则调用回调函数
-			if rpcResp.RequestID != 0 {
-				requestMapLock.RLock()
-				requestFunc, ok := requestMap[rpcResp.RequestID]
-				if ok {
-					delete(requestMap, rpcResp.RequestID)
-					// 执行 After RPC filter
-					if rpcResp.Kind == message.KindEnum.RPC {
-						rpcfilter.Manager.After.Exec(rpcResp)
-					} else if rpcResp.Kind == message.KindEnum.Handler {
-						handlerfilter.Manager.After.Exec(rpcResp)
-					}
-					requestFunc(rpcResp)
-				}
-				requestMapLock.RUnlock()
+			// Notify消息，不应有回调信息
+			if rpcResp.RequestID == 0 {
+				logrus.Error("Notify消息，不应有回调信息")
+			}
+
+			// 执行 After RPC filter
+			if rpcResp.Kind == message.KindEnum.RPCResponse && !rpcfilter.Manager.After.Exec(rpcResp) {
 				continue
 			}
-			logrus.Error("Notify消息，不应有回调信息")
+
+			// 执行 After Handler filter
+			if rpcResp.Kind == message.KindEnum.HandlerResponse && !handlerfilter.Manager.After.Exec(rpcResp) {
+				continue
+			}
+
+			// 执行回调函数
+			requestMapLock.RLock()
+			requestFunc, ok := requestMap[rpcResp.RequestID]
+			if ok {
+				delete(requestMap, rpcResp.RequestID)
+				requestFunc(rpcResp)
+			}
+			requestMapLock.RUnlock()
 		}
 	}()
 

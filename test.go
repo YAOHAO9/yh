@@ -2,25 +2,29 @@ package main
 
 // import (
 // 	"fmt"
-// 	"log"
+// 	"runtime"
+// 	"time"
 
-// 	"github.com/YAOHAO9/yh/application/config"
-// 	flags "github.com/jessevdk/go-flags"
+// 	_ "net/http/pprof"
 // )
-
-// type Options struct {
-// 	*config.ServerConfig
-// 	*config.ZkConfig
-// }
 
 // func main() {
 
-// 	serverC := &Options{}
-// 	_, err := flags.Parse(serverC)
-// 	if err != nil {
-// 		log.Panic(err)
-// 	}
-// 	fmt.Printf("%+v\n", serverC.ServerConfig)
-// 	fmt.Printf("%+v\n", serverC.ZkConfig)
+// 	c := make(chan int, 1)
+// 	go func() {
+// 		time.Sleep(time.Second * 2)
+// 		c <- 0
+// 		fmt.Println("go routine finished")
+// 	}()
 
+// 	select {
+// 	case <-c:
+// 		fmt.Println("go routine")
+// 	case <-time.After(time.Second * 1):
+// 		fmt.Println("Timeout")
+// 		fmt.Println("runtime.NumGoroutine()1:", runtime.NumGoroutine())
+// 	}
+
+// 	time.Sleep(time.Second * 3)
+// 	fmt.Println("runtime.NumGoroutine()2:", runtime.NumGoroutine())
 // }

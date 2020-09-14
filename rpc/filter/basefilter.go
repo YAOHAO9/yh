@@ -17,7 +17,7 @@ func (slice *BeforeFilterSlice) Register(f func(rpcCtx *context.RPCCtx) (next bo
 	*slice = append(*slice, f)
 }
 
-// Exec filter
+// Exec filter(返回true标识继续往下执行)
 func (slice BeforeFilterSlice) Exec(rpcCtx *context.RPCCtx) (next bool) {
 	for _, f := range slice {
 		next = f(rpcCtx)

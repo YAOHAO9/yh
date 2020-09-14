@@ -15,7 +15,7 @@ ws.onopen = async (_: WebSocket.OpenEvent) => {
 function sendMessage(index) {
     return new Promise((resolve,) => {
         ws.send(JSON.stringify({
-            Route: 'connector.handler',
+            Route: 'connector.haha',
             RequestID: index,
             Data: { RequestID: index }
         }))
@@ -31,7 +31,6 @@ function sendMessage(index) {
 ws.onmessage = (event: WebSocket.MessageEvent) => {
     const data = JSON.parse(event.data.toString())
     if (data.RequestID) {
-        console.log(data.RequestID)
         const cb = requestMap[data.RequestID]
         delete requestMap[data.RequestID]
         cb(data)
