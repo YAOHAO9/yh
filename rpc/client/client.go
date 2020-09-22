@@ -12,7 +12,6 @@ import (
 	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
 	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
@@ -54,19 +53,19 @@ func (client RPCClient) SendMsg(data []byte) {
 }
 
 // SendRPCNotify 发送RPC通知
-func (client RPCClient) SendRPCNotify(session *session.Session, rpcMsg *message.RPCMsg) {
+func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before Handler filter
-	if rpcMsg.Kind == message.KindEnum.Handler {
+	if rpcMsg.Kind == message.MsgKindEnum.Handler {
 		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
 			return
 		}
 	}
 
 	// 执行 Before RPC filter
-	if rpcMsg.Kind == message.KindEnum.RPC {
+	if rpcMsg.Kind == message.MsgKindEnum.RPC {
 		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
 			return
 		}
@@ -76,21 +75,21 @@ func (client RPCClient) SendRPCNotify(session *session.Session, rpcMsg *message.
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(session *session.Session, rpcMsg *message.RPCMsg, cb func(rpcResp *message.RPCResp)) {
+func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.RPCResp)) {
 
 	rpcMsg.RequestID = genRequestID()
 
 	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
 
 	// 执行 Before Handler filter
-	if rpcMsg.Kind == message.KindEnum.Handler {
+	if rpcMsg.Kind == message.MsgKindEnum.Handler {
 		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
 			return
 		}
 	}
 
 	// 执行 Before RPC filter
-	if rpcMsg.Kind == message.KindEnum.RPC {
+	if rpcMsg.Kind == message.MsgKindEnum.RPC {
 		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
 			return
 		}
@@ -170,12 +169,12 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			}
 
 			// 执行 After RPC filter
-			if rpcResp.Kind == message.KindEnum.RPCResponse && !rpcfilter.Manager.After.Exec(rpcResp) {
+			if rpcResp.Kind == message.MsgKindEnum.RPCResponse && !rpcfilter.Manager.After.Exec(rpcResp) {
 				continue
 			}
 
 			// 执行 After Handler filter
-			if rpcResp.Kind == message.KindEnum.HandlerResponse && !handlerfilter.Manager.After.Exec(rpcResp) {
+			if rpcResp.Kind == message.MsgKindEnum.HandlerResponse && !handlerfilter.Manager.After.Exec(rpcResp) {
 				continue
 			}
 

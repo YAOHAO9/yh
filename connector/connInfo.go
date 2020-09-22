@@ -101,7 +101,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		}
 
 		rpcMsg := &message.RPCMsg{
-			Kind:    message.KindEnum.Handler,
+			Kind:    message.MsgKindEnum.Handler,
 			Handler: handler,
 			Data:    clientMessage.Data,
 			Session: session,
@@ -117,10 +117,10 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 
 		if clientMessage.RequestID == 0 {
 			// 转发Notify
-			rpcClient.SendRPCNotify(session, rpcMsg)
+			rpcClient.SendRPCNotify(rpcMsg)
 		} else {
 			// 转发Request
-			rpcClient.SendRPCRequest(session, rpcMsg, func(rpcResp *message.RPCResp) {
+			rpcClient.SendRPCRequest(rpcMsg, func(rpcResp *message.RPCResp) {
 				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})
 		}

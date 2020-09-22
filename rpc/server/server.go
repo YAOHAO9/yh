@@ -82,9 +82,9 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if rpcMsg.Kind == message.KindEnum.RPC {
+		if rpcMsg.Kind == message.MsgKindEnum.RPC {
 			rpchandler.Manager.Exec(rpcCtx)
-		} else if rpcMsg.Kind == message.KindEnum.Handler {
+		} else if rpcMsg.Kind == message.MsgKindEnum.Handler {
 			clienthandler.Manager.Exec(rpcCtx)
 		}
 	}

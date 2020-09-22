@@ -48,6 +48,12 @@ func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg) (c *client.RPC
 		return route(rpcMsg, clients)
 	}
 
+	route = router.Manager.Get("*")
+
+	if route != nil {
+		return route(rpcMsg, clients)
+	}
+
 	return clients[rand.Intn(len(clients))]
 }
 

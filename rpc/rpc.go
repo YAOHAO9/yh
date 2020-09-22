@@ -13,7 +13,7 @@ type notify struct{}
 func (n notify) ToServer(serverID string, session *session.Session, handler string, data interface{}) {
 
 	rpcMsg := &message.RPCMsg{
-		Kind:    message.KindEnum.RPC,
+		Kind:    message.MsgKindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
@@ -25,13 +25,13 @@ func (n notify) ToServer(serverID string, session *session.Session, handler stri
 		return
 	}
 
-	rpcClient.SendRPCNotify(session, rpcMsg)
+	rpcClient.SendRPCNotify(rpcMsg)
 }
 
 // ByKind Rpc到指定的Server
 func (n notify) ByKind(serverKind string, session *session.Session, handler string, data interface{}) {
 	rpcMsg := &message.RPCMsg{
-		Kind:    message.KindEnum.RPC,
+		Kind:    message.MsgKindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
@@ -43,7 +43,7 @@ func (n notify) ByKind(serverKind string, session *session.Session, handler stri
 		logrus.Error("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
-	rpcClient.SendRPCNotify(session, rpcMsg)
+	rpcClient.SendRPCNotify(rpcMsg)
 }
 
 type request struct{}
@@ -52,7 +52,7 @@ type request struct{}
 func (req request) ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 
 	rpcMsg := &message.RPCMsg{
-		Kind:    message.KindEnum.RPC,
+		Kind:    message.MsgKindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
@@ -64,13 +64,13 @@ func (req request) ToServer(serverID string, session *session.Session, handler s
 		return
 	}
 
-	rpcClient.SendRPCRequest(session, rpcMsg, f)
+	rpcClient.SendRPCRequest(rpcMsg, f)
 }
 
 // ByKind Rpc到指定的Server
 func (req request) ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
 	rpcMsg := &message.RPCMsg{
-		Kind:    message.KindEnum.RPC,
+		Kind:    message.MsgKindEnum.RPC,
 		Handler: handler,
 		Data:    data,
 		Session: session,
@@ -81,7 +81,7 @@ func (req request) ByKind(serverKind string, session *session.Session, handler s
 		logrus.Error("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
 	}
-	rpcClient.SendRPCRequest(session, rpcMsg, f)
+	rpcClient.SendRPCRequest(rpcMsg, f)
 }
 
 // Notify 实例

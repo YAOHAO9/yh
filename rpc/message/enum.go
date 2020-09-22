@@ -1,7 +1,7 @@
 package message
 
-// KindEnum 消息类型枚举
-var KindEnum = struct {
+// MsgKindEnum 消息类型枚举
+var MsgKindEnum = struct {
 	Handler         int
 	RPC             int
 	HandlerResponse int
