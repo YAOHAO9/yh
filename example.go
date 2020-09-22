@@ -56,11 +56,6 @@ func main() {
 		return true
 	})
 
-	app.RegisterRPCAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
-		logrus.Info("AfterFilter", rpcResp.Data)
-		return true
-	})
-
 	app.RegisterHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
 		logrus.Info("AfterFilter hangler: ", rpcResp.Handler)
 		return true

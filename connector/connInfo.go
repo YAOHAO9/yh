@@ -8,6 +8,8 @@ import (
 
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
+	"github.com/YAOHAO9/yh/rpc/context"
+	"github.com/YAOHAO9/yh/rpc/filter"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
@@ -115,12 +117,19 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			continue
 		}
 
+		rpcCtx := context.GenRespCtx(conn, rpcMsg)
+
+		if !filter.Before.Exec(rpcCtx) {
+			return
+		}
+
 		if clientMessage.RequestID == 0 {
 			// 转发Notify
 			rpcClient.SendRPCNotify(rpcMsg)
 		} else {
 			// 转发Request
 			rpcClient.SendRPCRequest(rpcMsg, func(rpcResp *message.RPCResp) {
+				filter.After.Exec(rpcResp)
 				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})
 		}

@@ -8,9 +8,6 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/filter/handlerfilter"
-	"github.com/YAOHAO9/yh/rpc/filter/rpcfilter"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/sirupsen/logrus"
 
@@ -55,22 +52,6 @@ func (client RPCClient) SendMsg(data []byte) {
 // SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
-	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
-
-	// 执行 Before Handler filter
-	if rpcMsg.Kind == message.MsgKindEnum.Handler {
-		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
-			return
-		}
-	}
-
-	// 执行 Before RPC filter
-	if rpcMsg.Kind == message.MsgKindEnum.RPC {
-		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
-			return
-		}
-	}
-
 	client.SendMsg(rpcMsg.ToBytes())
 }
 
@@ -78,22 +59,6 @@ func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.RPCResp)) {
 
 	rpcMsg.RequestID = genRequestID()
-
-	rpcCtx := context.GenRespCtx(client.Conn, rpcMsg)
-
-	// 执行 Before Handler filter
-	if rpcMsg.Kind == message.MsgKindEnum.Handler {
-		if !handlerfilter.Manager.Before.Exec(rpcCtx) {
-			return
-		}
-	}
-
-	// 执行 Before RPC filter
-	if rpcMsg.Kind == message.MsgKindEnum.RPC {
-		if !rpcfilter.Manager.Before.Exec(rpcCtx) {
-			return
-		}
-	}
 
 	requestMapLock.Lock()
 	requestMap[requestID] = cb
@@ -166,16 +131,6 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			// Notify消息，不应有回调信息
 			if rpcResp.RequestID == 0 {
 				logrus.Error("Notify消息，不应有回调信息")
-			}
-
-			// 执行 After RPC filter
-			if rpcResp.Kind == message.MsgKindEnum.RPCResponse && !rpcfilter.Manager.After.Exec(rpcResp) {
-				continue
-			}
-
-			// 执行 After Handler filter
-			if rpcResp.Kind == message.MsgKindEnum.HandlerResponse && !handlerfilter.Manager.After.Exec(rpcResp) {
-				continue
 			}
 
 			// 执行回调函数
