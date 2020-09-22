@@ -7,9 +7,10 @@ import (
 	"sync"
 
 	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/yh/connector/filter"
+	"github.com/YAOHAO9/yh/connector/msg"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/filter"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/session"
 	"github.com/gorilla/websocket"
@@ -37,7 +38,7 @@ func (connInfo ConnInfo) Set(key string, v interface{}) {
 
 // 回复request
 func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
-	clientMsgResp := ClientMsgResp{
+	clientMsgResp := msg.ClientResp{
 		RequestID: requestID,
 		Code:      code,
 		Data:      data,
@@ -53,7 +54,7 @@ func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
 // 主动推送消息
 func (connInfo ConnInfo) notify(route string, data interface{}) {
 
-	notify := ClientNotify{
+	notify := msg.ClientNotify{
 		Route: route,
 		Data:  data,
 	}
@@ -78,7 +79,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		clientMessage := &ClientMsg{}
+		clientMessage := &msg.ClientReq{}
 		err = json.Unmarshal(data, clientMessage)
 
 		if err != nil {

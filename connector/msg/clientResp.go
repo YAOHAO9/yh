@@ -1,16 +1,16 @@
-package connector
+package msg
 
 import "encoding/json"
 
-// ClientMsgResp client message response
-type ClientMsgResp struct {
+// ClientResp client message response
+type ClientResp struct {
 	RequestID int
 	Code      int
 	Data      interface{} `json:",omitempty"`
 }
 
 // ToBytes To []byte
-func (m ClientMsgResp) ToBytes() (data []byte) {
+func (m ClientResp) ToBytes() (data []byte) {
 	data, _ = json.Marshal(m)
 	return
 }
