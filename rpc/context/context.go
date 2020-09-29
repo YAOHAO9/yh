@@ -38,6 +38,11 @@ func (rpcCtx *RPCCtx) GetHandler() string {
 	return rpcCtx.handler
 }
 
+// SetHandler 设置Handler
+func (rpcCtx *RPCCtx) SetHandler(handler string) {
+	rpcCtx.handler = handler
+}
+
 // GetRequestID 获取请求的GetRequestID
 func (rpcCtx RPCCtx) GetRequestID() int {
 	return rpcCtx.requestID
