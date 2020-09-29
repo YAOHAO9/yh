@@ -17,18 +17,18 @@ type Resp struct {
 // Map handler函数仓库
 type Map map[string]func(rpcCtx *context.RPCCtx) (resp *Resp)
 
-// BaseHandler BaseHandler
-type BaseHandler struct {
+// Handler Handler
+type Handler struct {
 	Map Map
 }
 
 // Register handler
-func (handler BaseHandler) Register(name string, f func(rpcCtx *context.RPCCtx) (resp *Resp)) {
+func (handler Handler) Register(name string, f func(rpcCtx *context.RPCCtx) (resp *Resp)) {
 	handler.Map[name] = f
 }
 
 // Exec 执行handler
-func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
+func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
 	f, ok := handler.Map[rpcCtx.GetHandler()]
 	if ok {
@@ -62,4 +62,5 @@ func (handler BaseHandler) Exec(rpcCtx *context.RPCCtx) {
 	}
 }
 
-var a = BaseHandler{make(Map)}
+// Manager return RPCHandler
+var Manager = &Handler{Map: make(Map)}

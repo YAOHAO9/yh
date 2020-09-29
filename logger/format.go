@@ -70,7 +70,7 @@ func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	// message
 	if entry.Message != "" {
-		b.WriteString(" [" + config.GetServerConfig().ID + ":" + strings.TrimSpace(entry.Message) + "]")
+		b.WriteString(" [" + config.GetServerConfig().ID + ": " + strings.TrimSpace(entry.Message) + "]")
 	} else {
 		b.WriteString(" [" + config.GetServerConfig().ID + "]")
 	}

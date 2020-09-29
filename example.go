@@ -44,7 +44,7 @@ func main() {
 		}
 	})
 
-	app.RegisterRPCHandler("rpc", func(rpcCtx *context.RPCCtx) *handler.Resp {
+	app.RegisterRemote("rpc", func(rpcCtx *context.RPCCtx) *handler.Resp {
 
 		return &handler.Resp{
 			Data: config.GetServerConfig().ID + ": 收到Rpc消息",
@@ -52,7 +52,7 @@ func main() {
 	})
 
 	app.RegisterHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
-		logrus.Info("BeforeFilter", rpcCtx.Data.(map[string]interface{})["RequestID"].(float64)+100)
+		logrus.Info("BeforeFilter", rpcCtx.GetRequestID())
 		return true
 	})
 

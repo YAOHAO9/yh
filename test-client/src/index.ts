@@ -7,8 +7,9 @@ ws.onopen = async (_: WebSocket.OpenEvent) => {
     console.warn('已连接')
 
     for (let index = 1; index < 100; index++) {
-        const data = await sendMessage(index)
-        console.log(data)
+        sendMessage(index).then(data => {
+            console.log(data)
+        })
     }
 }
 

@@ -30,7 +30,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn.SetCloseHandler(func(code int, text string) error {
 		delete(ConnMap, uid)
 		conn.Close()
-		logrus.Warn("CloseHandler: ", text)
+		logrus.Warn(text)
 		return nil
 	})
 

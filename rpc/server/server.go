@@ -7,7 +7,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/connector"
 	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
+	"github.com/YAOHAO9/yh/rpc/handler"
 	"github.com/YAOHAO9/yh/rpc/message"
 	"github.com/YAOHAO9/yh/rpc/zookeeper"
 	"github.com/sirupsen/logrus"
@@ -81,7 +81,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		rpchandler.Manager.Exec(rpcCtx)
+		handler.Manager.Exec(rpcCtx)
 	}
 }
 

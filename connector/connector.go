@@ -3,13 +3,12 @@ package connector
 import (
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/handler"
-	"github.com/YAOHAO9/yh/rpc/handler/rpchandler"
 	"github.com/sirupsen/logrus"
 )
 
 func init() {
 	// 更新Session
-	rpchandler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx) *handler.Resp {
+	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx) *handler.Resp {
 		connInfo, ok := ConnMap[rpcCtx.Session.UID]
 		if !ok {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
@@ -26,7 +25,7 @@ func init() {
 	})
 
 	// 推送消息
-	rpchandler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx) *handler.Resp {
+	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx) *handler.Resp {
 		connInfo, ok := ConnMap[rpcCtx.Session.UID]
 		if !ok {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
