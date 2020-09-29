@@ -9,6 +9,7 @@ import (
 	"github.com/YAOHAO9/yh/application/config"
 	"github.com/YAOHAO9/yh/connector/filter"
 	"github.com/YAOHAO9/yh/connector/msg"
+	"github.com/YAOHAO9/yh/rpc"
 	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
 	"github.com/YAOHAO9/yh/rpc/context"
 	"github.com/YAOHAO9/yh/rpc/message"
@@ -16,6 +17,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
+
+// HandlerPrefix  Handler 前缀
+var HandlerPrefix = "__"
 
 var mutex sync.Mutex
 
@@ -104,7 +108,6 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		}
 
 		rpcMsg := &message.RPCMsg{
-			Kind:    message.MsgKindEnum.Handler,
 			Handler: handler,
 			Data:    clientMessage.Data,
 			Session: session,
@@ -125,11 +128,10 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		}
 
 		if clientMessage.RequestID == 0 {
-			// 转发Notify
-			rpcClient.SendRPCNotify(rpcMsg)
+			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data)
 		} else {
 			// 转发Request
-			rpcClient.SendRPCRequest(rpcMsg, func(rpcResp *message.RPCResp) {
+			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.RPCResp) {
 				filter.After.Exec(rpcResp)
 				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})

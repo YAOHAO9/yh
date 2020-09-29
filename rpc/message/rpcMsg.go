@@ -8,7 +8,6 @@ import (
 
 // RPCMsg 转发消息结构
 type RPCMsg struct {
-	Kind      int // message kind
 	Handler   string
 	Data      interface{} `json:",omitempty"`
 	Session   *session.Session

@@ -1,18 +1,5 @@
 package message
 
-// MsgKindEnum 消息类型枚举
-var MsgKindEnum = struct {
-	Handler         int
-	RPC             int
-	HandlerResponse int
-	RPCResponse     int
-}{
-	Handler:         1,     // 客户端调用 Handler
-	RPC:             2,     //  RPC
-	HandlerResponse: 10001, // handler request的response
-	RPCResponse:     10002, // rpc 的response
-}
-
 // TypeEnum 消息类型枚举
 var TypeEnum = struct {
 	// TextMessage denotes a text data me  ssage. The text message payload is

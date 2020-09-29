@@ -26,7 +26,6 @@ type RPCCtx struct {
 func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 	return &RPCCtx{
 		conn:      conn,
-		rpcKind:   rpcMsg.Kind,
 		requestID: rpcMsg.RequestID,
 		handler:   rpcMsg.Handler,
 		Data:      rpcMsg.Data,
@@ -81,8 +80,5 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 
 // ToString 格式化消息
 func (rpcCtx RPCCtx) ToString() string {
-	if rpcCtx.rpcKind == message.MsgKindEnum.RPC {
-		return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
-	}
-	return fmt.Sprintf("Handler RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
+	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
 }
