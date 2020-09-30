@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 )
 

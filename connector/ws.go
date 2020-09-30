@@ -3,7 +3,7 @@ package connector
 import (
 	"net/http"
 
-	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )

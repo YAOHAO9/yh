@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"

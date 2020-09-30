@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/pine/application/config"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/sirupsen/logrus"
 )

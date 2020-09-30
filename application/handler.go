@@ -3,9 +3,9 @@ package application
 import (
 	"regexp"
 
-	"github.com/YAOHAO9/yh/connector"
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/handler"
+	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/sirupsen/logrus"
 )
 

@@ -3,11 +3,11 @@ package channel
 import (
 	"sync"
 
-	"github.com/YAOHAO9/yh/connector"
-	"github.com/YAOHAO9/yh/rpc"
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/session"
-	"github.com/YAOHAO9/yh/util/beeku"
+	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/rpc"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/util/beeku"
 )
 
 var lock sync.RWMutex

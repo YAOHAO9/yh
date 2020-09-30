@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/connector"
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/handler"
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/zookeeper"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/YAOHAO9/pine/rpc/handler"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/zookeeper"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"

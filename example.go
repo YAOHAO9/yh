@@ -5,13 +5,13 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/YAOHAO9/yh/application"
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/channel/channelfactory"
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/context"
-	"github.com/YAOHAO9/yh/rpc/handler"
-	"github.com/YAOHAO9/yh/rpc/message"
+	"github.com/YAOHAO9/pine/application"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/channel/channelfactory"
+	"github.com/YAOHAO9/pine/rpc/client"
+	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/YAOHAO9/pine/rpc/handler"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 )
 

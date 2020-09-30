@@ -1,4 +1,4 @@
-module github.com/YAOHAO9/yh
+module github.com/YAOHAO9/pine
 
 go 1.13
 
@@ -8,11 +8,12 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/jonboulle/clockwork v0.2.0 // indirect
-	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
+	github.com/jonboulle/clockwork v0.2.2 // indirect
+	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
-	github.com/sirupsen/logrus v1.6.0
+	github.com/samuel/go-zookeeper v0.0.0-20200724154423-2164a8ac840e
+	github.com/sirupsen/logrus v1.7.0
 	github.com/tebeka/strftime v0.1.5 // indirect
+	golang.org/x/sys v0.0.0-20200929083018-4d22bbb62b3c // indirect
 )

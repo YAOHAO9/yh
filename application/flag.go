@@ -3,7 +3,7 @@ package application
 import (
 	"os"
 
-	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/jessevdk/go-flags"
 )
 

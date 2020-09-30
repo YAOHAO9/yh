@@ -4,9 +4,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/logger"
-	RpcServer "github.com/YAOHAO9/yh/rpc/server"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
+	RpcServer "github.com/YAOHAO9/pine/rpc/server"
 )
 
 func init() {

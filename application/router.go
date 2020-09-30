@@ -1,9 +1,9 @@
 package application
 
 import (
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/router"
+	"github.com/YAOHAO9/pine/rpc/client"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/router"
 )
 
 // RegisterRouter 注册路由

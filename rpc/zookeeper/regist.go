@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/client/clientmanager"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"

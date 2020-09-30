@@ -3,7 +3,7 @@ package channelfactory
 import (
 	"sync"
 
-	"github.com/YAOHAO9/yh/channel"
+	"github.com/YAOHAO9/pine/channel"
 )
 
 var mutex sync.Mutex

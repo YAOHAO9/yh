@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/sirupsen/logrus"
 )
 

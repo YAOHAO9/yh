@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 
-	"github.com/YAOHAO9/yh/rpc/session"
+	"github.com/YAOHAO9/pine/rpc/session"
 )
 
 // RPCMsg 转发消息结构

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/session"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )

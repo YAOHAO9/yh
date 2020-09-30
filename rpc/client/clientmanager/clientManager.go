@@ -4,10 +4,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/YAOHAO9/yh/application/config"
-	"github.com/YAOHAO9/yh/rpc/client"
-	"github.com/YAOHAO9/yh/rpc/message"
-	"github.com/YAOHAO9/yh/rpc/router"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/rpc/client"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/router"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
