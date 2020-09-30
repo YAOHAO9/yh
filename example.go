@@ -51,17 +51,17 @@ func main() {
 		}
 	})
 
-	app.RegisterHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
+	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
 		logrus.Info("BeforeFilter", rpcCtx.GetRequestID())
 		return true
 	})
 
-	app.RegisterHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
+	app.RegisteHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
 		logrus.Info("AfterFilter hangler: ", rpcResp.Handler)
 		return true
 	})
 
-	app.RegisterRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {
+	app.RegisteRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {
 		var luckClient *client.RPCClient
 		for _, clientInfo := range clients {
 			if clientInfo.ServerConfig.ID == "ddz-3" {
