@@ -2,6 +2,7 @@ package zookeeper
 
 import (
 	"github.com/samuel/go-zookeeper/zk"
+	"github.com/sirupsen/logrus"
 )
 
 // ZkClient custom
@@ -13,7 +14,7 @@ type ZkClient struct {
 func (client ZkClient) exists(path string) bool {
 	ok, _, err := client.conn.Exists(path)
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
 	return ok
 }
@@ -21,7 +22,7 @@ func (client ZkClient) exists(path string) bool {
 func (client ZkClient) create(path string, data []byte, flags int32, acl []zk.ACL) string {
 	path, err := client.conn.Create(path, data, flags, acl)
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
 	return path
 }

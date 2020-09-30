@@ -108,9 +108,10 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		}
 
 		rpcMsg := &message.RPCMsg{
-			Handler: handler,
-			Data:    clientMessage.Data,
-			Session: session,
+			Handler:   handler,
+			RequestID: clientMessage.RequestID,
+			Data:      clientMessage.Data,
+			Session:   session,
 		}
 		// 获取RPCCLint
 		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
@@ -132,6 +133,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		} else {
 			// 转发Request
 			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.RPCResp) {
+				rpcResp.RequestID = clientMessage.RequestID
 				filter.After.Exec(rpcResp)
 				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})

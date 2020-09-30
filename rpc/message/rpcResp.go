@@ -4,7 +4,6 @@ import "encoding/json"
 
 // RPCResp 服务端推送的消息
 type RPCResp struct {
-	Kind      int `json:",omitempty"` // response kind
 	Handler   string
 	RequestID int
 	Code      int

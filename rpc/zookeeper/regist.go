@@ -27,7 +27,7 @@ func Start() {
 	conn, _, err := zk.Connect([]string{zkConfig.Host}, zkSessionTimeout)
 	zkClient = &ZkClient{conn: conn}
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
 
 	// 初始化节点
@@ -52,7 +52,7 @@ func initNode() {
 	// 解析服务器配置信息
 	nodeInfo, err := json.Marshal(serverConfig)
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
 	// 检查服务器数据节点是否存在，不存在则创建
 	nodePath := fmt.Sprint(rootPath, "/", serverConfig.ID)
@@ -72,7 +72,7 @@ func initNode() {
 
 	if tryTimes >= maxTryTimes {
 		// 操过最大尝试次数则报错
-		panic(fmt.Sprint("Duplicated server."))
+		logrus.Panic(fmt.Sprint("Duplicated server."))
 	}
 
 	zkClient.create(nodePath, nodeInfo, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
@@ -89,7 +89,7 @@ func watch() {
 		// 遍历所有的serverID
 		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(path)
 		if err != nil {
-			panic(err)
+			logrus.Panic(err)
 		}
 		// 监听每个server的情况
 		for _, serverID := range serverIDs {
@@ -105,7 +105,7 @@ func watch() {
 					path := fmt.Sprint(path, "/", serverID)
 					isExists, _, err := zkClient.conn.Exists(path)
 					if err != nil {
-						panic(err)
+						logrus.Panic(err)
 					}
 
 					if !isExists {

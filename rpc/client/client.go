@@ -98,12 +98,12 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 
 	if tryTimes >= maxTryTimes {
 		// 操过最大尝试次数则报错
-		panic(fmt.Sprint("Cannot create connection with ", serverConfig.ID))
+		logrus.Panic(fmt.Sprint("Cannot create connection with ", serverConfig.ID))
 	}
 
 	// 如果超过最大尝试次数，任然有错则报错
 	if e != nil {
-		panic(e)
+		logrus.Panic(e)
 	}
 
 	// 连接成功！！！

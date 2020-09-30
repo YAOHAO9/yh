@@ -15,7 +15,6 @@ var mutex sync.Mutex
 // RPCCtx response context
 type RPCCtx struct {
 	conn      *websocket.Conn
-	rpcKind   int
 	requestID int
 	handler   string
 	Data      interface{} `json:",omitempty"`
@@ -44,7 +43,7 @@ func (rpcCtx *RPCCtx) SetHandler(handler string) {
 }
 
 // GetRequestID 获取请求的GetRequestID
-func (rpcCtx RPCCtx) GetRequestID() int {
+func (rpcCtx *RPCCtx) GetRequestID() int {
 	return rpcCtx.requestID
 }
 
@@ -66,7 +65,6 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 
 	// response
 	rpcResp := message.RPCResp{
-		Kind:      rpcCtx.rpcKind + 10000,
 		Handler:   rpcCtx.handler,
 		RequestID: rpcCtx.requestID,
 		Code:      code,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -58,7 +59,20 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 			rpcCtx.SendMsg(resp.Data, resp.Code)
 		}()
 	} else {
-		rpcCtx.SendMsg(fmt.Sprintf("SysHandler %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
+		handler := rpcCtx.GetHandler()
+
+		reg, _ := regexp.Compile("^__")
+
+		if reg.MatchString(handler) {
+
+			realHandler := reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))
+			rpcCtx.SetHandler(string(realHandler))
+			rpcCtx.SendMsg(fmt.Sprintf("Handler %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
+
+		} else {
+			rpcCtx.SendMsg(fmt.Sprintf("Remoter %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
+		}
+
 	}
 }
 

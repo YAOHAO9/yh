@@ -13,7 +13,7 @@
             "env": {},
             "args": [
                 "-s=dwc",
-                "-i=connector-1",
+                "-i=connector-0",
                 "-k=connector",
                 "-H=127.0.0.1",
                 "-P=3110",

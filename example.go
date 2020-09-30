@@ -52,12 +52,12 @@ func main() {
 	})
 
 	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
-		logrus.Info("BeforeFilter", rpcCtx.GetRequestID())
+		logrus.Info("BeforeFilter => requestId: ", rpcCtx.GetRequestID())
 		return true
 	})
 
 	app.RegisteHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
-		logrus.Info("AfterFilter hangler: ", rpcResp.Handler)
+		logrus.Info("AfterFilter hangler:", rpcResp.Handler, " RequestId: ", rpcResp.RequestID)
 		return true
 	})
 
