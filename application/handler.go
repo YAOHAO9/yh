@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// RegisterHandler 注册Handler
-func (app Application) RegisterHandler(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
+// RegisteHandler 注册Handler
+func (app Application) RegisteHandler(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
 	reg := regexp.MustCompile(`^__`)
 	handler.Manager.Register(connector.HandlerPrefix+name, func(rpcCtx *context.RPCCtx) *handler.Resp {
 		rpcCtx.SetHandler(string(reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))))
@@ -18,8 +18,8 @@ func (app Application) RegisterHandler(name string, f func(rpcCtx *context.RPCCt
 	})
 }
 
-// RegisterRemote 注册RPC Handler
-func (app Application) RegisterRemote(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
+// RegisteRemoter 注册RPC Handler
+func (app Application) RegisteRemoter(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
 
 	result, err := regexp.MatchString("^__", name)
 

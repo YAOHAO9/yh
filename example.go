@@ -18,7 +18,7 @@ import (
 func main() {
 	app := application.CreateApp()
 
-	app.RegisterHandler("haha", func(rpcCtx *context.RPCCtx) *handler.Resp {
+	app.RegisteHandler("haha", func(rpcCtx *context.RPCCtx) *handler.Resp {
 		channel := channelfactory.CreateChannel("test") // 创建channel
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
 		// logrus.Trace("这是一个有意思的log", "啊时代发生的符合")
@@ -44,7 +44,7 @@ func main() {
 		}
 	})
 
-	app.RegisterRemote("rpc", func(rpcCtx *context.RPCCtx) *handler.Resp {
+	app.RegisteRemoter("rpc", func(rpcCtx *context.RPCCtx) *handler.Resp {
 
 		return &handler.Resp{
 			Data: config.GetServerConfig().ID + ": 收到Rpc消息",
