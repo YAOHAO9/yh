@@ -11,4 +11,4 @@ Server:
 
 Zookeeper:
   Host: 127.0.0.1
-  Port: 2181 
+  Port: 2182

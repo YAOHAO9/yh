@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/YAOHAO9/pine/application/config"
@@ -26,7 +27,7 @@ func Start() {
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
 	// RPC server启动
-	logrus.Info("Rpc server started ws://" + serverConfig.Host + ":" + serverConfig.Port)
+	logrus.Info("Rpc server started ws://" + serverConfig.Host + ":" + fmt.Sprint(serverConfig.Port))
 	http.HandleFunc("/rpc", webSocketHandler)
 
 	// 对客户端暴露的ws接口
@@ -34,7 +35,7 @@ func Start() {
 		http.HandleFunc("/", connector.WebSocketHandler)
 	}
 	// 开启并监听
-	err := http.ListenAndServe(":"+serverConfig.Port, nil)
+	err := http.ListenAndServe(":"+fmt.Sprint(serverConfig.Port), nil)
 	logrus.Error("Rpc server start fail: ", err.Error())
 }
 

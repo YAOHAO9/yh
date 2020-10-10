@@ -24,7 +24,7 @@ func Start() {
 	zkConfig := config.GetZkConfig()
 
 	// 建立连接
-	conn, _, err := zk.Connect([]string{zkConfig.Host}, zkSessionTimeout)
+	conn, _, err := zk.Connect([]string{zkConfig.Host + ":" + fmt.Sprint(zkConfig.Port)}, zkSessionTimeout)
 	zkClient = &ZkClient{conn: conn}
 	if err != nil {
 		logrus.Panic(err)
