@@ -28,14 +28,14 @@ func parseConfig() {
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".")
 
-	// 读取环境变量
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
 	err := viper.ReadInConfig()
 
 	if err != nil {
 		logrus.Error("读取配置文件失败: %v", err)
+	}
+
+	for _, key := range viper.AllKeys() {
+		viper.BindEnv(key, strings.ReplaceAll(key, ".", "_"))
 	}
 
 	// 保存配置
