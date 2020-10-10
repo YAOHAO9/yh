@@ -27,28 +27,32 @@ func parseConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".")
+
+	// 读取环境变量
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
 	err := viper.ReadInConfig()
 
 	if err != nil {
 		logrus.Error("读取配置文件失败: %v", err)
 	}
 
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
+	// 保存配置
 	configYml := &ymlConfig{}
 	viper.Unmarshal(configYml)
 	config.SetServerConfig(configYml.Server)
 	config.SetZkConfig(configYml.Zookeeper)
 
+	// 验证
 	if errs := validator.New().Struct(configYml.Server); errs != nil {
 		logrus.Panic(errs)
 	}
-
 	if errs := validator.New().Struct(configYml.Zookeeper); errs != nil {
 		logrus.Panic(errs)
 	}
 
+	// 打印配置
 	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, logger.Info, fmt.Sprintf("ServerConfig config: %+v", configYml.Server), 0x1B)
 	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, logger.Info, fmt.Sprintf("ZooKeeper config: %+v", configYml.Zookeeper), 0x1B)
 
