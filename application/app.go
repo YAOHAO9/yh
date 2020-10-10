@@ -27,7 +27,7 @@ var app *Application
 // CreateApp 创建app
 func CreateApp() *Application {
 
-	parseFlag()
+	parseConfig()
 
 	logger.SetLogMode(config.GetServerConfig().LogType)
 

@@ -17,7 +17,7 @@ type ymlConfig struct {
 }
 
 // 解析命令行参数
-func parseFlag() {
+func parseConfig() {
 
 	viper.SetDefault("Server.IsConnector", false)
 	viper.SetDefault("Zookeeper.Host", "127.0.0.1")
