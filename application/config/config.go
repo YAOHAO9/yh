@@ -14,7 +14,8 @@ type ServerConfig struct {
 	Port        string `short:"P" long:"port" description:"Port" required:"true"`
 	IsConnector bool   `short:"c" long:"isConnector" description:"是否是Connector服"`
 	Token       string `short:"t" long:"token" description:"集群认证Token" required:"true"`
-	LogType     int    `short:"l" long:"logType" description:"日志类型" default:"1" choice:"1" choice:"2"` // 1、控制台输出 2、日志文件
+	LogType     string `short:"l" long:"logType" description:"日志类型" default:"Console" choice:"Console" choice:"File"` // 1、控制台输出 2、日志文件
+	LogLevel    string `short:"L" long:"logLevel" description:"日志输出等级" default:"Debug" choice:"Debug" choice:"Info" choice:"Warn" choice:"Error"`
 }
 
 // SetServerConfig 保存服务器配置

@@ -11,18 +11,29 @@ import (
 )
 
 // LogType 当前日志类型
-var LogType int
+var LogType string
 
 // SetLogMode 设置log模式
-func SetLogMode(logType int) {
+func SetLogMode(logType string) {
 	LogType = logType
 
 	logrus.AddHook(&errorHook{})
 	logrus.SetReportCaller(true)
 
+	logLevel := logrus.DebugLevel // Default
+	switch config.GetServerConfig().LogLevel {
+	case LogLevelEnum.Debug: // Debug
+		logLevel = logrus.DebugLevel
+	case LogLevelEnum.Info: // Info
+		logLevel = logrus.InfoLevel
+	case LogLevelEnum.Warn: // Warn
+		logLevel = logrus.WarnLevel
+	case LogLevelEnum.Error: // Error
+		logLevel = logrus.ErrorLevel
+	}
+
+	logrus.SetLevel(logLevel)
 	if LogType == LogTypeEnum.File {
-		// 产品模式
-		logrus.SetLevel(logrus.ErrorLevel)
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 
 		path, _ := os.Getwd()
@@ -38,11 +49,7 @@ func SetLogMode(logType int) {
 		}
 
 		logrus.SetOutput(writer)
-	}
-
-	if LogType == LogTypeEnum.Console {
-		// 开发模式
-		logrus.SetLevel(logrus.TraceLevel)
+	} else {
 		logrus.SetFormatter(ErrorFormatter{})
 	}
 }

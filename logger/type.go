@@ -2,9 +2,9 @@ package logger
 
 // LogTypeEnum 日志类型枚举
 var LogTypeEnum = struct {
-	Console int
-	File    int
+	Console string
+	File    string
 }{
-	Console: 1,
-	File:    2,
+	Console: "Console",
+	File:    "File",
 }

@@ -10,19 +10,20 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/example.go",
-            "env": {},
-            "args": [
-                "-s=dwc",
-                "-i=connector-0",
-                "-k=connector",
-                "-H=127.0.0.1",
-                "-P=3110",
-                "-c",
-                "-t=ksYNdrAo",
-                "-l=1",
-                "--zhost=127.0.0.1",
-                "--zport=2181"
-            ]
+            "env": {
+                "Server_SystemName": "pine",
+                "Server_ID": "Connector-0",
+                "Server_Kind": "Connector",
+                "Server_Host": "127.0.0.1",
+                "Server_Port": 3014,
+                "Server_IsConnector": true,
+                "Server_Token": "ksYNdrAo",
+                "Server_LogType": "Console",
+                "Server_LogLevel": "Debug",
+                "Zookeeper_Host": "127.0.0.1",
+                "Zookeeper_Port": 2181,
+            },
+            "args": []
         },
         {
             "name": "Ddz",
@@ -30,12 +31,20 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "env": {},
-            "args": [
-                "-p=3120",
-                "-k=ddz",
-                "-i=ddz-1"
-            ]
+            "env": {
+                "Server_SystemName": "pine",
+                "Server_ID": "Ddz-0",
+                "Server_Kind": "Ddz",
+                "Server_Host": "127.0.0.1",
+                "Server_Port": 3114,
+                "Server_IsConnector": false,
+                "Server_Token": "ksYNdrAo",
+                "Server_LogType": "Console",
+                "Server_LogLevel": "Debug",
+                "Zookeeper_Host": "127.0.0.1",
+                "Zookeeper_Port": 2181,
+            },
+            "args": []
         },
         {
             "name": "Qznn",
@@ -43,12 +52,20 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "env": {},
-            "args": [
-                "-p=3150",
-                "-k=qznn",
-                "-i=qznn-1"
-            ]
+            "env": {
+                "Server_SystemName": "pine",
+                "Server_ID": "Qznn-0",
+                "Server_Kind": "Qznn",
+                "Server_Host": "127.0.0.1",
+                "Server_Port": 3214,
+                "Server_IsConnector": false,
+                "Server_Token": "ksYNdrAo",
+                "Server_LogType": "Console",
+                "Server_LogLevel": "Debug",
+                "Zookeeper_Host": "127.0.0.1",
+                "Zookeeper_Port": 2181,
+            },
+            "args": []
         },
         {
             "name": "Test",
