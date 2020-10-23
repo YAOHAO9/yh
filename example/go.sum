@@ -19,6 +19,8 @@ github.com/YAOHAO9/pine v0.0.0-20201010110831-7d43450f7cf1 h1:7VlivZB8NZSp+BTvVD
 github.com/YAOHAO9/pine v0.0.0-20201010110831-7d43450f7cf1/go.mod h1:FjXgbafjwUVHKvpmvHYnLWfFr9hDjw89PoytwCFmCAE=
 github.com/YAOHAO9/pine v0.0.0-20201010153952-2ed9ac643c07 h1:72J8ACX42zpetJDHNCG96RgPD/vWERIuBx34C70C+4A=
 github.com/YAOHAO9/pine v0.0.0-20201010153952-2ed9ac643c07/go.mod h1:FjXgbafjwUVHKvpmvHYnLWfFr9hDjw89PoytwCFmCAE=
+github.com/YAOHAO9/pine v0.0.0-20201023170219-82e7bbcd9f6a h1:LvCemzJgKMLcIp9NvEsACLlJMSCVGApGHWBOlP5DXOg=
+github.com/YAOHAO9/pine v0.0.0-20201023170219-82e7bbcd9f6a/go.mod h1:FjXgbafjwUVHKvpmvHYnLWfFr9hDjw89PoytwCFmCAE=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
