@@ -28,7 +28,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 断开连接自动清除连接信息
 	uid := r.URL.Query().Get("id")
 	conn.SetCloseHandler(func(code int, text string) error {
-		delete(ConnMap, uid)
+
+		DelConnection(uid)
+
 		conn.Close()
 		logrus.Warn(text)
 		return nil
@@ -49,14 +51,20 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 防止重复连接
-	if oldConnInfo, ok := ConnMap[uid]; ok {
-		oldConnInfo.conn.CloseHandler()(0, "关闭重复连接")
+	if oldConnection := GetConnection(uid); oldConnection != nil {
+		oldConnection.conn.CloseHandler()(0, "关闭重复连接")
 	}
 
 	// 保存连接信息
-	connInfo := &ConnInfo{uid: uid, conn: conn, data: make(map[string]interface{})}
-	ConnMap[uid] = connInfo
+	connection := &Connection{
+		uid:         uid,
+		conn:        conn,
+		data:        make(map[string]interface{}),
+		routeRecord: make(map[string]string),
+	}
 
-	connInfo.StartReceiveMsg()
+	SaveConnection(connection)
+
+	connection.StartReceiveMsg()
 
 }

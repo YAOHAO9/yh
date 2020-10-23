@@ -36,7 +36,7 @@ func (n notify) ByKind(serverKind string, session *session.Session, handler stri
 	}
 
 	// 根据类型转发
-	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
+	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, nil)
 	if rpcClient == nil {
 		logrus.Error("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return
@@ -72,7 +72,7 @@ func (req request) ByKind(serverKind string, session *session.Session, handler s
 		Session: session,
 	}
 	// 根据类型转发
-	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
+	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, nil)
 	if rpcClient == nil {
 		logrus.Error("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", handler)
 		return

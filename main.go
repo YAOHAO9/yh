@@ -1,8 +1,6 @@
 package main
 
 import (
-	"math/rand"
-
 	_ "net/http/pprof"
 
 	"github.com/YAOHAO9/pine/application"
@@ -72,7 +70,7 @@ func main() {
 		if luckClient != nil {
 			return luckClient
 		}
-		return clients[rand.Intn(len(clients))]
+		return nil
 	})
 
 	app.Start()

@@ -8,6 +8,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/router"
+	"github.com/sirupsen/logrus"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
@@ -35,7 +36,11 @@ func GetClientsByKind(serverKind string) (c []*client.RPCClient) {
 }
 
 // GetClientByRouter 随机获取一个Rpc连接客户端
-func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg) (c *client.RPCClient) {
+func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *map[string]string) *client.RPCClient {
+
+	defer func() {
+		logrus.Warn("Backend ID:", (*routeRecord)[serverKind])
+	}()
 
 	clients := GetClientsByKind(serverKind)
 
@@ -45,16 +50,38 @@ func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg) (c *client.RPC
 
 	route := router.Manager.Get(serverKind)
 	if route != nil {
-		return route(rpcMsg, clients)
+		client := route(rpcMsg, clients)
+		if client != nil {
+			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
+			return client
+		}
 	}
 
 	route = router.Manager.Get("*")
 
 	if route != nil {
-		return route(rpcMsg, clients)
+		client := route(rpcMsg, clients)
+		if client != nil {
+			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
+			return client
+		}
 	}
 
-	return clients[rand.Intn(len(clients))]
+	if clientID, ok := (*routeRecord)[serverKind]; ok {
+		client := GetClientByID(clientID)
+		if client != nil {
+			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
+			return client
+		}
+	}
+
+	client := clients[rand.Intn(len(clients))]
+	if client != nil {
+		(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
+		return client
+	}
+
+	return nil
 }
 
 // DelClientByID 删除RPC连接客户端

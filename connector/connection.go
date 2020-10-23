@@ -23,32 +23,33 @@ var HandlerPrefix = "__"
 
 var mutex sync.Mutex
 
-// ConnInfo 用户连接信息
-type ConnInfo struct {
-	uid  string
-	conn *websocket.Conn
-	data map[string]interface{}
+// Connection 用户连接信息
+type Connection struct {
+	uid         string
+	conn        *websocket.Conn
+	data        map[string]interface{}
+	routeRecord map[string]string
 }
 
 // Get 从session中查找一个值
-func (connInfo ConnInfo) Get(key string) interface{} {
-	return connInfo.data[key]
+func (connection Connection) Get(key string) interface{} {
+	return connection.data[key]
 }
 
 // Set 往session中设置一个键值对
-func (connInfo ConnInfo) Set(key string, v interface{}) {
-	connInfo.data[key] = v
+func (connection Connection) Set(key string, v interface{}) {
+	connection.data[key] = v
 }
 
 // 回复request
-func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
+func (connection Connection) response(requestID int, code int, data interface{}) {
 	clientMsgResp := msg.ClientResp{
 		RequestID: requestID,
 		Code:      code,
 		Data:      data,
 	}
 	mutex.Lock()
-	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, clientMsgResp.ToBytes())
+	err := connection.conn.WriteMessage(message.TypeEnum.TextMessage, clientMsgResp.ToBytes())
 	mutex.Unlock()
 	if err != nil {
 		logrus.Error(err)
@@ -56,7 +57,7 @@ func (connInfo ConnInfo) response(requestID int, code int, data interface{}) {
 }
 
 // 主动推送消息
-func (connInfo ConnInfo) notify(route string, data interface{}) {
+func (connection Connection) notify(route string, data interface{}) {
 
 	notify := msg.ClientNotify{
 		Route: route,
@@ -64,7 +65,7 @@ func (connInfo ConnInfo) notify(route string, data interface{}) {
 	}
 
 	mutex.Lock()
-	err := connInfo.conn.WriteMessage(message.TypeEnum.TextMessage, notify.ToBytes())
+	err := connection.conn.WriteMessage(message.TypeEnum.TextMessage, notify.ToBytes())
 	mutex.Unlock()
 	if err != nil {
 		logrus.Error(err)
@@ -72,9 +73,11 @@ func (connInfo ConnInfo) notify(route string, data interface{}) {
 }
 
 // StartReceiveMsg 开始接收消息
-func (connInfo ConnInfo) StartReceiveMsg() {
-	uid := connInfo.uid
-	conn := connInfo.conn
+func (connection Connection) StartReceiveMsg() {
+
+	uid := connection.uid
+	conn := connection.conn
+
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -87,12 +90,12 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		err = json.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, "消息解析失败，请发送json消息")
+			connection.response(clientMessage.RequestID, message.StatusCode.Fail, "消息解析失败，请发送json消息")
 			continue
 		}
 
 		if clientMessage.Route == "" {
-			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, "Route不能为空")
+			connection.response(clientMessage.RequestID, message.StatusCode.Fail, "Route不能为空")
 			continue
 		}
 
@@ -104,7 +107,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 		session := &session.Session{
 			UID:  uid,
 			CID:  config.GetServerConfig().ID,
-			Data: connInfo.data,
+			Data: connection.data,
 		}
 
 		rpcMsg := &message.RPCMsg{
@@ -113,12 +116,13 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			Data:      clientMessage.Data,
 			Session:   session,
 		}
+
 		// 获取RPCCLint
-		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg)
+		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, &connection.routeRecord)
 
 		if rpcClient == nil {
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
-			connInfo.response(clientMessage.RequestID, message.StatusCode.Fail, tip)
+			connection.response(clientMessage.RequestID, message.StatusCode.Fail, tip)
 			continue
 		}
 
@@ -135,7 +139,7 @@ func (connInfo ConnInfo) StartReceiveMsg() {
 			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.RPCResp) {
 				rpcResp.RequestID = clientMessage.RequestID
 				filter.After.Exec(rpcResp)
-				connInfo.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
+				connection.response(clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
 			})
 		}
 	}
