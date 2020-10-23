@@ -4,6 +4,8 @@ COPY ./ /opt/pine/
 
 WORKDIR /opt/pine/
 
-# RUN go mod download ###### go mod vendor
+CMD go run ${server_kind}/main.go 
 
-CMD go run ${Server_Kind}/main.go 
+###################
+# Run 'go mod vendor' first 
+###################
