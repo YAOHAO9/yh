@@ -19,6 +19,10 @@ type Application struct {
 
 // Start start application
 func (app Application) Start() {
+	parseConfig()
+
+	logger.SetLogMode(config.GetServerConfig().LogType)
+
 	RpcServer.Start()
 }
 
@@ -26,10 +30,6 @@ var app *Application
 
 // CreateApp 创建app
 func CreateApp() *Application {
-
-	parseConfig()
-
-	logger.SetLogMode(config.GetServerConfig().LogType)
 
 	if app != nil {
 		return app

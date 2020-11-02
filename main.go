@@ -16,6 +16,13 @@ import (
 func main() {
 	app := application.CreateApp()
 
+	app.AsConnector(func(uid string, token string) (map[string]interface{}, error) {
+
+		sessionData := make(map[string]interface{})
+
+		return sessionData, nil
+	})
+
 	app.RegisteHandler("haha", func(rpcCtx *context.RPCCtx) *handler.Resp {
 		channel := channelfactory.CreateChannel("test") // 创建channel
 		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)

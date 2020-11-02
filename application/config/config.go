@@ -12,7 +12,7 @@ type ServerConfig struct {
 	Kind        string `validate:"required"`
 	Host        string `validate:"required"`
 	Port        uint32 `validate:"gte=1,lte=65535"`
-	IsConnector bool   `validate:"required"`
+	IsConnector bool
 	Token       string `validate:"required"`
 	LogType     string `validate:"oneof=Console File"`
 	LogLevel    string `validate:"oneof=Debug Info Warn Error"`

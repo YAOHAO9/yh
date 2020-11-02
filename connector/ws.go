@@ -36,12 +36,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	// 用户认证
+	// Token
 	token := r.URL.Query().Get("token")
-	logrus.Info("Id: ", uid, " Token: ", token)
 
-	if uid == "" || token == "" {
-		logrus.Warn("用户校验失败!!!")
+	// 认证
+	data, err := authFunc(uid, token)
+	if err != nil || uid == "" {
 		err := conn.WriteMessage(message.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
 			logrus.Warn("发送认证失败消息失败: ", err.Error())
@@ -59,7 +59,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	connection := &Connection{
 		uid:         uid,
 		conn:        conn,
-		data:        make(map[string]interface{}),
+		data:        data,
 		routeRecord: make(map[string]string),
 	}
 

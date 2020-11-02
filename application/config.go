@@ -19,10 +19,6 @@ type ymlConfig struct {
 // 解析命令行参数
 func parseConfig() {
 
-	viper.SetDefault("Server.IsConnector", false)
-	viper.SetDefault("Zookeeper.Host", "127.0.0.1")
-	viper.SetDefault("Zookeeper.Port", "2181")
-
 	// 保存配置
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
@@ -33,7 +29,6 @@ func parseConfig() {
 	if err != nil {
 		logrus.Error("读取配置文件失败: %v", err)
 	}
-
 	for _, key := range viper.AllKeys() {
 		viper.BindEnv(key, strings.ReplaceAll(key, ".", "_"))
 	}
