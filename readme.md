@@ -1,10 +1,12 @@
+[TOC]
+### pine
+pine 架构理念来源于pomelo(pinus)，以最简洁的方式实现go语言版本的pomelo，希望pine可以站在巨人的肩膀上走的更远
 ### Getting started
 
 ####　初始化项目
 ```bash
 go mod init example
 go get github.com/YAOHAO9/pine@0.8
-mkdir connector
 ```
 
 #### config.yaml
@@ -26,7 +28,9 @@ Zookeeper:
 
 #### main.go
 ```
+mkdir connector
 cd connector
+vi main.go
 ```
 ```go
 package main
@@ -70,15 +74,14 @@ func main() {
 }
 ```
 
-
 #### 启动一个connector服务
 ```
-go run connector/main.go
+go run connector/main.go #一个最简单的connector已经启动好了
 ```
 
 #### 连接到Connector
 ```
-ws://127.0.0.1:3110?id=hao&token=xxxxxxx
+ws://127.0.0.1:3014?id=hao&token=xxxxxxx 
 ```
 
 #### 连接测试
@@ -92,7 +95,7 @@ ts-node index.ts
 import * as WebSocket from 'ws'
 
 const requestMap = {}
-const ws = new WebSocket('ws://127.0.0.1:3080?id=hao&token=ksYNdrAo')
+const ws = new WebSocket('ws://127.0.0.1:3014?id=hao&token=ksYNdrAo')
 ws.onopen = async (_: WebSocket.OpenEvent) => {
     console.warn('已连接')
 

@@ -13,7 +13,7 @@
             "env": {
                 "Server_SystemName": "pine",
                 "Server_ID": "Connector-0",
-                "Server_Kind": "Connector",
+                "Server_Kind": "connector",
                 "Server_Host": "127.0.0.1",
                 "Server_Port": 3014,
                 "Server_Token": "ksYNdrAo",
