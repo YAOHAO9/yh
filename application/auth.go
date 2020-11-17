@@ -6,7 +6,7 @@ import (
 )
 
 // AsConnector 作为Connector 启动
-func (app Application) AsConnector(authFunc func(uid string, token string) (map[string]interface{}, error)) {
+func (app Application) AsConnector(authFunc func(uid string, token string, sessionData map[string]interface{}) error) {
 	viper.Set("Server.IsConnector", true)
 	connector.RegisteAuth(authFunc)
 }

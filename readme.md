@@ -41,12 +41,24 @@ import (
 func main() {
 	app := application.CreateApp()
 
+  // 作为Connector启动
+	app.AsConnector(func(uid string, token string, sessionData map[string]interface{}) error {
+
+		if uid == "" || token == "" {
+			return errors.New("Invalid token")
+		}
+		sessionData[token] = token
+
+		return nil
+	})
+
+  // 注册处理客户端请求的Handler
 	app.RegisteHandler("handler", func(respCtx *context.RPCCtx) *handler.Resp {
 		return &handler.Resp{
 			Data: config.GetServerConfig().ID + ": 收到Handler消息",
 		}
 	})
-
+  // 注册系统间调用的RPC
 	app.RegisteRemoter("rpc", func(respCtx *context.RPCCtx) *handler.Resp {
 
 		return &handler.Resp{

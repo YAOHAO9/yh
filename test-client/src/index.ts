@@ -2,13 +2,18 @@
 import * as WebSocket from 'ws'
 
 const requestMap = {}
-const ws = new WebSocket('ws://127.0.0.1:3080?id=hao&token=ksYNdrAo')
+const ws = new WebSocket(`ws://127.0.0.1:3014?id=${process.argv[2]}&token=ksYNdrAo`)
 ws.onopen = async (_: WebSocket.OpenEvent) => {
     console.warn('已连接')
 
-    for (let index = 1; index < 100; index++) {
+    const count = 1
+    let str = ''
+    for (let index = 1; index <= count; index++) {
         sendMessage(index).then(data => {
-            console.log(data)
+            str += JSON.stringify(data) + '\n'
+            if (index === count) {
+                console.log(str)
+            }
         })
     }
 }
@@ -16,7 +21,7 @@ ws.onopen = async (_: WebSocket.OpenEvent) => {
 function sendMessage(index) {
     return new Promise((resolve,) => {
         ws.send(JSON.stringify({
-            Route: 'connector.handler',
+            Route: 'connector.haha',
             RequestID: index,
             Data: { RequestID: index }
         }))

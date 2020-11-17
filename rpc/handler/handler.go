@@ -33,17 +33,18 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
 	f, ok := handler.Map[rpcCtx.GetHandler()]
 	if ok {
-		go func() {
+		func() {
 
 			defer func() {
 				// 错误处理
 				if err := recover(); err != nil {
 					if entry, ok := err.(*logrus.Entry); ok {
 						err, _ := (&logrus.JSONFormatter{}).Format(entry)
-						rpcCtx.SendMsg(string(err), message.StatusCode.Fail)
+						rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
 						return
 					}
-					rpcCtx.SendMsg(err, message.StatusCode.Fail)
+					logrus.Error(err)
+					rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
 				}
 			}()
 			// 执行handler

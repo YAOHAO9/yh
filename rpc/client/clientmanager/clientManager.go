@@ -8,7 +8,6 @@ import (
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/router"
-	"github.com/sirupsen/logrus"
 )
 
 var rpcClientMap = make(map[string]*client.RPCClient)
@@ -35,12 +34,8 @@ func GetClientsByKind(serverKind string) (c []*client.RPCClient) {
 	return clients
 }
 
-// GetClientByRouter 随机获取一个Rpc连接客户端
+// GetClientByRouter 通过路由后去一个客户端的Rpc连接
 func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *map[string]string) *client.RPCClient {
-
-	defer func() {
-		logrus.Warn("Backend ID:", (*routeRecord)[serverKind])
-	}()
 
 	clients := GetClientsByKind(serverKind)
 

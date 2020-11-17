@@ -1,6 +1,7 @@
 package connector
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -32,15 +33,16 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		DelConnection(uid)
 
 		conn.Close()
-		logrus.Warn(text)
+		logrus.Warn("code:", code, "msg:", text)
 		return nil
 	})
 
 	// Token
 	token := r.URL.Query().Get("token")
 
+	sessionData := make(map[string]interface{})
 	// 认证
-	data, err := authFunc(uid, token)
+	err = authFunc(uid, token, sessionData)
 	if err != nil || uid == "" {
 		err := conn.WriteMessage(message.TypeEnum.TextMessage, []byte("认证失败"))
 		if err != nil {
@@ -52,14 +54,15 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 防止重复连接
 	if oldConnection := GetConnection(uid); oldConnection != nil {
-		oldConnection.conn.CloseHandler()(0, "关闭重复连接")
+
+		oldConnection.conn.CloseHandler()(0, fmt.Sprint("(UID:", uid, ")关闭重复连接"))
 	}
 
 	// 保存连接信息
 	connection := &Connection{
 		uid:         uid,
 		conn:        conn,
-		data:        data,
+		data:        sessionData,
 		routeRecord: make(map[string]string),
 	}
 
