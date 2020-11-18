@@ -6,7 +6,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/application/config"
-	"github.com/YAOHAO9/pine/channel/channelfactory"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
@@ -26,17 +25,10 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("haha", func(rpcCtx *context.RPCCtx) *handler.Resp {
-
-		channel := channelfactory.CreateChannel("test") // 创建channel
-		channel.Add(rpcCtx.Session.CID, rpcCtx.Session)
-
-		for i := 1; i < 100; i++ {
-			channel.PushMessage("test", i)
-		}
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx) *handler.Resp {
 
 		return &handler.Resp{
-			Data: "asldkfasdklfjs:" + rpcCtx.Session.UID,
+			Data: config.GetServerConfig().ID + ": 收到Handler消息",
 		}
 	})
 
