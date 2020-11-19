@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pine-client": "^1.0.0"
+    "pine-client": "^1.0.1"
   }
 }

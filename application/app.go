@@ -26,15 +26,16 @@ func (app Application) Start() {
 	RpcServer.Start()
 }
 
-var app *Application
+// App pine application instance
+var App *Application
 
 // CreateApp 创建app
 func CreateApp() *Application {
 
-	if app != nil {
-		return app
+	if App != nil {
+		return App
 	}
-	app = &Application{}
+	App = &Application{}
 
-	return app
+	return App
 }

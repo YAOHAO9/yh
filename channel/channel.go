@@ -7,7 +7,6 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
-	"github.com/YAOHAO9/pine/util/beeku"
 )
 
 var lock sync.RWMutex
@@ -33,7 +32,14 @@ func (channel Channel) PushMessageToOthers(uids []string, route string, data int
 	defer lock.RUnlock()
 
 	for uid := range channel {
-		if beeku.InSlice(uid, uids) == -1 {
+		findIndex := -1
+		for index, value := range uids {
+			if uid == value {
+				findIndex = index
+				break
+			}
+		}
+		if findIndex == -1 {
 			channel.PushMessageToUser(uid, route, data)
 		}
 	}
