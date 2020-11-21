@@ -35,8 +35,13 @@ func GetClientsByKind(serverKind string) (c []*client.RPCClient) {
 }
 
 // GetClientByRouter 通过路由后去一个客户端的Rpc连接
-func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *map[string]string) *client.RPCClient {
+func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *map[string]string) (rpcClient *client.RPCClient) {
 
+	defer func() {
+		if rpcClient != nil && routeRecord != nil {
+			(*routeRecord)[rpcClient.ServerConfig.Kind] = rpcClient.ServerConfig.ID
+		}
+	}()
 	clients := GetClientsByKind(serverKind)
 
 	if len(clients) == 0 {
@@ -46,37 +51,25 @@ func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *m
 	route := router.Manager.Get(serverKind)
 	if route != nil {
 		client := route(rpcMsg, clients)
-		if client != nil {
-			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
-			return client
-		}
+		return client
 	}
 
 	route = router.Manager.Get("*")
 
 	if route != nil {
 		client := route(rpcMsg, clients)
-		if client != nil {
-			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
-			return client
-		}
+		return client
 	}
 
-	if clientID, ok := (*routeRecord)[serverKind]; ok {
-		client := GetClientByID(clientID)
-		if client != nil {
-			(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
+	if routeRecord != nil {
+		if clientID, ok := (*routeRecord)[serverKind]; ok {
+			client := GetClientByID(clientID)
 			return client
 		}
 	}
 
 	client := clients[rand.Intn(len(clients))]
-	if client != nil {
-		(*routeRecord)[client.ServerConfig.Kind] = client.ServerConfig.ID
-		return client
-	}
-
-	return nil
+	return client
 }
 
 // DelClientByID 删除RPC连接客户端
