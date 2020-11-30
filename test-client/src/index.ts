@@ -10,11 +10,9 @@ import Pine from 'pine-client'
     })
 
     const requestData = { a: 1 }
-    for (let i = 0; i <= 10000; i++) {
+    for (let i = 0; i <= 10; i++) {
         pine.request('connector.handler', requestData, (response) => {
-            if (i === 10000) {
-                console.warn('Response:', response)
-            }
+            console.warn('Response:', response)
         })
     }
 })()

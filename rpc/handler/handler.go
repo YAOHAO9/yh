@@ -3,7 +3,9 @@ package handler
 import (
 	"fmt"
 	"regexp"
+	"time"
 
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
@@ -16,7 +18,7 @@ type Resp struct {
 }
 
 // Map handler函数仓库
-type Map map[string]func(rpcCtx *context.RPCCtx) (resp *Resp)
+type Map map[string]func(rpcCtx *context.RPCCtx)
 
 // Handler Handler
 type Handler struct {
@@ -24,7 +26,7 @@ type Handler struct {
 }
 
 // Register handler
-func (handler Handler) Register(name string, f func(rpcCtx *context.RPCCtx) (resp *Resp)) {
+func (handler Handler) Register(name string, f func(rpcCtx *context.RPCCtx)) {
 	handler.Map[name] = f
 }
 
@@ -33,32 +35,26 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
 	f, ok := handler.Map[rpcCtx.GetHandler()]
 	if ok {
-		func() {
-
-			defer func() {
-				// 错误处理
-				if err := recover(); err != nil {
-					if entry, ok := err.(*logrus.Entry); ok {
-						err, _ := (&logrus.JSONFormatter{}).Format(entry)
-						rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
-						return
-					}
-					logrus.Error(err)
+		defer func() {
+			// 错误处理
+			if err := recover(); err != nil {
+				if entry, ok := err.(*logrus.Entry); ok {
+					err, _ := (&logrus.JSONFormatter{}).Format(entry)
 					rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
+					return
 				}
-			}()
-			// 执行handler
-			resp := f(rpcCtx)
-
-			// 回复消息
-			if resp == nil {
-				rpcCtx.SendMsg(nil, message.StatusCode.Successful)
-				return
+				logrus.Error(err)
+				rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
 			}
-
-			// 回复消息
-			rpcCtx.SendMsg(resp.Data, resp.Code)
 		}()
+		go time.AfterFunc(time.Minute, func() {
+			if rpcCtx.GetRequestID() > 0 {
+				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+				rpcCtx.SendMsg(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()), message.StatusCode.Fail)
+			}
+		})
+		// 执行handler
+		f(rpcCtx)
 	} else {
 		handler := rpcCtx.GetHandler()
 

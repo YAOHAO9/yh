@@ -10,16 +10,16 @@ import (
 )
 
 // RegisteHandler 注册Handler
-func (app Application) RegisteHandler(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
+func (app Application) RegisteHandler(name string, f func(rpcCtx *context.RPCCtx)) {
 	reg := regexp.MustCompile(`^__`)
-	handler.Manager.Register(connector.HandlerPrefix+name, func(rpcCtx *context.RPCCtx) *handler.Resp {
+	handler.Manager.Register(connector.HandlerPrefix+name, func(rpcCtx *context.RPCCtx) {
 		rpcCtx.SetHandler(string(reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))))
-		return f(rpcCtx)
+		f(rpcCtx)
 	})
 }
 
 // RegisteRemoter 注册RPC Handler
-func (app Application) RegisteRemoter(name string, f func(rpcCtx *context.RPCCtx) *handler.Resp) {
+func (app Application) RegisteRemoter(name string, f func(rpcCtx *context.RPCCtx)) {
 
 	result, err := regexp.MatchString("^__", name)
 
@@ -34,4 +34,5 @@ func (app Application) RegisteRemoter(name string, f func(rpcCtx *context.RPCCtx
 	}
 
 	handler.Manager.Register(name, f)
+
 }

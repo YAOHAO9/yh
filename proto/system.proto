@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package system;
+
+option go_package = "proto/custom";
+
+message Session {
+    string UID = 1;   // User id
+    string CID = 2; // Connector id
+     
+    map<string,string> Data = 3;
+}
+
+message RPCMsg {
+    string Handler = 1; 
+    optional int32 RequestID = 2; 
+    optional Session Session = 3; 
+    optional bytes Data = 4; 
+}

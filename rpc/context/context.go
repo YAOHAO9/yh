@@ -10,7 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var mutex sync.Mutex
+var sendMsgMutex sync.Mutex
+var requestIDRwMutex sync.RWMutex
 
 // RPCCtx response context
 type RPCCtx struct {
@@ -44,11 +45,19 @@ func (rpcCtx *RPCCtx) SetHandler(handler string) {
 
 // GetRequestID 获取请求的GetRequestID
 func (rpcCtx *RPCCtx) GetRequestID() int {
+
+	requestIDRwMutex.RLock()
+	defer requestIDRwMutex.RUnlock()
+
 	return rpcCtx.requestID
 }
 
 // SendMsg 消息发送失败
 func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
+
+	requestIDRwMutex.Lock()
+	defer requestIDRwMutex.Unlock()
+
 	// Notify的消息，不通知成功
 	if rpcCtx.requestID == 0 {
 		if data == nil {
@@ -62,7 +71,6 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 		logrus.Warn("请勿重复回复消息")
 		return
 	}
-
 	// response
 	rpcResp := message.RPCResp{
 		Handler:   rpcCtx.handler,
@@ -73,12 +81,14 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 	// 标记为已回复消息
 	rpcCtx.requestID = -1
 
-	mutex.Lock()
+	sendMsgMutex.Lock()
+	defer sendMsgMutex.Unlock()
+
 	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
 	if err != nil {
 		logrus.Error(err)
 	}
-	mutex.Unlock()
+
 }
 
 // ToString 格式化消息

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	_ "net/http/pprof"
 	"time"
 
@@ -11,17 +12,10 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/rpc/message"
 )
 
 func main() {
-
-	// slice
-	slice := []interface{}{"hello", "world", "hello", "everyone!"}
-	for index, value := range slice {
-		fmt.Printf("slice %d is: %s\n", index, value)
-	}
 
 	app := application.CreateApp()
 
@@ -35,7 +29,7 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx) *handler.Resp {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx) {
 
 		channelInstance := channelfactory.CreateChannel("101")
 		channelInstance.Add(rpcCtx.Session.UID, rpcCtx.Session)
@@ -54,32 +48,26 @@ func main() {
 			fmt.Println("收到Rpc的回复：", rpcResp.Data)
 		})
 
-		return nil
 	})
 
-	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx) *handler.Resp {
-
-		return &handler.Resp{
-			Data: map[string]interface{}{
-				"name": "盖伦",
-				"sex":  1,
-				"age":  18,
-			},
-		}
+	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx) {
+		rpcCtx.SendMsg(rand.Int(), message.StatusCode.Successful)
 	})
 
 	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
 
-		lastEnterRoomTimeInterface := rpcCtx.Session.Data["lastEnterRoomTime"]
-		if lastEnterRoomTimeInterface != nil {
-			if lastEnterRoomTime, ok := lastEnterRoomTimeInterface.(time.Time); ok && lastEnterRoomTime.Sub(time.Now()) > time.Second {
-				rpcCtx.SendMsg("操作太频繁", message.StatusCode.Fail) // 返回结果
-				return false                                     // 停止执行下个before filter以及hanler
+		if rpcCtx.GetHandler() == "enterRoom" {
+			lastEnterRoomTimeInterface := rpcCtx.Session.Data["lastEnterRoomTime"]
+			if lastEnterRoomTimeInterface != nil {
+				if lastEnterRoomTime, ok := lastEnterRoomTimeInterface.(time.Time); ok && lastEnterRoomTime.Sub(time.Now()) > time.Second {
+					rpcCtx.SendMsg("操作太频繁", message.StatusCode.Fail) // 返回结果
+					return false                                     // 停止执行下个before filter以及hanler
+				}
 			}
-		}
 
-		rpcCtx.Session.Set("lastEnterRoomTime", time.Now())
-		application.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
+			rpcCtx.Session.Set("lastEnterRoomTime", time.Now())
+			application.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
+		}
 		return true // 继续执行下个before filter直到执行handler
 	})
 

@@ -6,6 +6,7 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/go-playground/validator/v10 v10.4.0
+	github.com/golang/protobuf v1.4.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
@@ -17,4 +18,5 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/tebeka/strftime v0.1.5 // indirect
 	golang.org/x/sys v0.0.0-20200929083018-4d22bbb62b3c // indirect
+	google.golang.org/protobuf v1.25.0
 )
