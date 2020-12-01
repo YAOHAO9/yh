@@ -40,7 +40,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Token
 	token := r.URL.Query().Get("token")
 
-	sessionData := make(map[string]interface{})
+	sessionData := make(map[string]string)
 	// 认证
 	err = authFunc(uid, token, sessionData)
 	if err != nil || uid == "" {

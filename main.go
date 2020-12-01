@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	_ "net/http/pprof"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
@@ -27,7 +28,7 @@ func main() {
 
 	app := application.CreateApp()
 
-	app.AsConnector(func(uid string, token string, sessionData map[string]interface{}) error {
+	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 
 		if uid == "" || token == "" {
 			return errors.New("Invalid token")
@@ -64,18 +65,21 @@ func main() {
 
 	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
 
-		if rpcCtx.GetHandler() == "enterRoom" {
-			lastEnterRoomTimeInterface := rpcCtx.Session.Data["lastEnterRoomTime"]
-			if lastEnterRoomTimeInterface != nil {
-				if lastEnterRoomTime, ok := lastEnterRoomTimeInterface.(time.Time); ok && lastEnterRoomTime.Sub(time.Now()) > time.Second {
-					rpcCtx.SendMsg("操作太频繁", message.StatusCode.Fail) // 返回结果
-					return false                                     // 停止执行下个before filter以及hanler
-				}
+		// if rpcCtx.GetHandler() == "enterRoom" {
+		lastEnterRoomTimeInterface := rpcCtx.Session.Data["lastEnterRoomTime"]
+		if lastEnterRoomTimeInterface != "" {
+			timestamp, e := strconv.ParseInt(lastEnterRoomTimeInterface, 10, 64)
+			if e != nil {
+				logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
+			} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
+				rpcCtx.SendMsg("操作太频繁", message.StatusCode.Fail) // 返回结果
+				return false                                     // 停止执行下个before filter以及hanler
 			}
-
-			rpcCtx.Session.Set("lastEnterRoomTime", time.Now())
-			application.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
 		}
+
+		rpcCtx.Session.Set("lastEnterRoomTime", fmt.Sprint(time.Now().Unix()))
+		application.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
+		// }
 		return true // 继续执行下个before filter直到执行handler
 	})
 

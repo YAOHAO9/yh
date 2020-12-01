@@ -2,7 +2,7 @@ package connector
 
 import "errors"
 
-var authFunc = func(uid string, token string, sessionData map[string]interface{}) error {
+var authFunc = func(uid string, token string, sessionData map[string]string) error {
 	if uid == "" || token == "" {
 		return errors.New("认证失败")
 	}
@@ -10,6 +10,6 @@ var authFunc = func(uid string, token string, sessionData map[string]interface{}
 }
 
 // RegisteAuth Registe auth func
-func RegisteAuth(auth func(uid string, token string, sessionData map[string]interface{}) error) {
+func RegisteAuth(auth func(uid string, token string, sessionData map[string]string) error) {
 	authFunc = auth
 }

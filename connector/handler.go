@@ -18,7 +18,7 @@ var HandlerMap = struct {
 
 func init() {
 	// 更新Session
-	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
+	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")

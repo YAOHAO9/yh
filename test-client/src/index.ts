@@ -10,7 +10,12 @@ import Pine from 'pine-client'
     })
 
     const requestData = { name: 'asdf', age: 18 }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 10; i++) {
+        await new Promise(resolve => {
+            setTimeout(() => {
+                resolve()
+            }, 500);
+        })
         pine.request('connector.handler', requestData, (response) => {
             console.warn('Response:', response)
         })

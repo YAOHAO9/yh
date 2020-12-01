@@ -27,17 +27,17 @@ var mutex sync.Mutex
 type Connection struct {
 	uid         string
 	conn        *websocket.Conn
-	data        map[string]interface{}
+	data        map[string]string
 	routeRecord map[string]string
 }
 
 // Get 从session中查找一个值
-func (connection Connection) Get(key string) interface{} {
+func (connection Connection) Get(key string) string {
 	return connection.data[key]
 }
 
 // Set 往session中设置一个键值对
-func (connection Connection) Set(key string, v interface{}) {
+func (connection Connection) Set(key string, v string) {
 	connection.data[key] = v
 }
 
@@ -129,7 +129,7 @@ func (connection Connection) StartReceiveMsg() {
 		rpcCtx := context.GenRespCtx(conn, rpcMsg)
 
 		if !filter.Before.Exec(rpcCtx) {
-			return
+			continue
 		}
 
 		if clientMessage.RequestID == 0 {

@@ -8,7 +8,7 @@ var mutex sync.Mutex
 type Session struct {
 	UID  string // User id
 	CID  string // Connector id
-	Data map[string]interface{}
+	Data map[string]string
 }
 
 // Get a value from session
@@ -17,10 +17,10 @@ func (session Session) Get(key string) interface{} {
 }
 
 // Set a value to session
-func (session Session) Set(key string, v interface{}) {
+func (session Session) Set(key string, v string) {
 	mutex.Lock()
 	if session.Data == nil {
-		session.Data = make(map[string]interface{})
+		session.Data = make(map[string]string)
 	}
 	session.Data[key] = v
 	mutex.Unlock()
