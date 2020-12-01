@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	_ "net/http/pprof"
+	"reflect"
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
@@ -13,7 +14,14 @@ import (
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/sirupsen/logrus"
 )
+
+// TestData TestData
+type TestData struct {
+	Name string
+	Age  int32
+}
 
 func main() {
 
@@ -29,7 +37,7 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx) {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, t *TestData) {
 
 		channelInstance := channelfactory.CreateChannel("101")
 		channelInstance.Add(rpcCtx.Session.UID, rpcCtx.Session)
@@ -47,10 +55,10 @@ func main() {
 		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.RPCResp) {
 			fmt.Println("收到Rpc的回复：", rpcResp.Data)
 		})
-
+		rpcCtx.SendMsg(rand.Int(), message.StatusCode.Successful)
 	})
 
-	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx) {
+	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx, data interface{}) {
 		rpcCtx.SendMsg(rand.Int(), message.StatusCode.Successful)
 	})
 
@@ -94,5 +102,29 @@ func main() {
 		return nil //if return nil, pine will get one rpc client by random
 	})
 
+	addHandler(func(c *context.RPCCtx, a int) {
+
+	})
+
 	app.Start()
+}
+
+func addHandler(handlerFunc interface{}) {
+	handlerType := reflect.TypeOf(handlerFunc)
+	if handlerType.Kind() != reflect.Func {
+		logrus.Error("handler 只能为函数")
+	}
+
+	handlerValue := reflect.TypeOf(handlerFunc)
+
+	if handlerValue.NumIn() != 2 {
+		logrus.Error("handler 参数只能两个")
+	}
+
+	if handlerType.In(0) != reflect.TypeOf(&context.RPCCtx{}) {
+		logrus.Error("handler 第一个参数必须为*context.RPCCtx类型")
+	} else {
+		logrus.Warn("检测通过")
+	}
+
 }

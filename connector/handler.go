@@ -18,16 +18,14 @@ var HandlerMap = struct {
 
 func init() {
 	// 更新Session
-	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx) {
+	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
 		}
 
-		if data, ok := rpcCtx.Data.(map[string]interface{}); ok {
-			for key, value := range data {
-				connection.data[key] = value
-			}
+		for key, value := range data {
+			connection.data[key] = value
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
@@ -37,15 +35,13 @@ func init() {
 	})
 
 	// 推送消息
-	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx) {
+	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
 		}
 
-		if notify, ok := rpcCtx.Data.(map[string]interface{}); ok {
-			connection.notify(notify["Route"].(string), notify["Data"])
-		}
+		connection.notify(data["Route"].(string), data["Data"])
 
 		if rpcCtx.GetRequestID() > 0 {
 			rpcCtx.SendMsg(1, message.StatusCode.Successful)

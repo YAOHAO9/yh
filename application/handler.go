@@ -4,22 +4,17 @@ import (
 	"regexp"
 
 	"github.com/YAOHAO9/pine/connector"
-	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/sirupsen/logrus"
 )
 
 // RegisteHandler 注册Handler
-func (app Application) RegisteHandler(name string, f func(rpcCtx *context.RPCCtx)) {
-	reg := regexp.MustCompile(`^__`)
-	handler.Manager.Register(connector.HandlerPrefix+name, func(rpcCtx *context.RPCCtx) {
-		rpcCtx.SetHandler(string(reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))))
-		f(rpcCtx)
-	})
+func (app Application) RegisteHandler(name string, f interface{}) {
+	handler.Manager.Register(connector.HandlerPrefix+name, f)
 }
 
 // RegisteRemoter 注册RPC Handler
-func (app Application) RegisteRemoter(name string, f func(rpcCtx *context.RPCCtx)) {
+func (app Application) RegisteRemoter(name string, f interface{}) {
 
 	result, err := regexp.MatchString("^__", name)
 

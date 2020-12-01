@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -18,7 +20,7 @@ type Resp struct {
 }
 
 // Map handler函数仓库
-type Map map[string]func(rpcCtx *context.RPCCtx)
+type Map map[string]interface{}
 
 // Handler Handler
 type Handler struct {
@@ -26,14 +28,33 @@ type Handler struct {
 }
 
 // Register handler
-func (handler Handler) Register(name string, f func(rpcCtx *context.RPCCtx)) {
-	handler.Map[name] = f
+func (handler Handler) Register(handlerName string, handlerFunc interface{}) {
+	handlerType := reflect.TypeOf(handlerFunc)
+	if handlerType.Kind() != reflect.Func {
+		logrus.Panic("handler(" + handlerName + ")只能为函数")
+		return
+	}
+
+	handlerValue := reflect.TypeOf(handlerFunc)
+
+	if handlerValue.NumIn() != 2 {
+		logrus.Panic("handler(" + handlerName + ")参数只能两个")
+		return
+	}
+
+	if handlerType.In(0) != reflect.TypeOf(&context.RPCCtx{}) {
+		logrus.Panic("handler(" + handlerName + ")第一个参数必须为*context.RPCCtx类型")
+		return
+	}
+
+	handler.Map[handlerName] = handlerFunc
 }
 
 // Exec 执行handler
 func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
-	f, ok := handler.Map[rpcCtx.GetHandler()]
+	handlerInterface, ok := handler.Map[rpcCtx.GetHandler()]
+
 	if ok {
 		defer func() {
 			// 错误处理
@@ -53,8 +74,22 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 				rpcCtx.SendMsg(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()), message.StatusCode.Fail)
 			}
 		})
+
+		dataInterface := reflect.New(reflect.TypeOf(handlerInterface).In(1)).Interface()
+
+		bdata, e := json.Marshal(rpcCtx.Data)
+		if e != nil {
+			logrus.Panic(e)
+		}
+
+		json.Unmarshal(bdata, dataInterface)
+
 		// 执行handler
-		f(rpcCtx)
+		reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+			reflect.ValueOf(rpcCtx),
+			reflect.ValueOf(dataInterface).Elem(),
+		})
+
 	} else {
 		handler := rpcCtx.GetHandler()
 
