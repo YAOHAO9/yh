@@ -9,7 +9,7 @@ type RPCNotify struct {
 }
 
 // ToBytes To []byte
-func (m RPCNotify) ToBytes() (data []byte) {
-	data, _ = json.Marshal(m)
+func (m RPCNotify) ToBytes() (bytes []byte) {
+	bytes, _ = json.Marshal(m)
 	return
 }

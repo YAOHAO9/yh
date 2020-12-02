@@ -4,13 +4,13 @@ import "encoding/json"
 
 // ClientResp client message response
 type ClientResp struct {
-	RequestID int
+	RequestID int32
 	Code      int
 	Data      interface{} `json:",omitempty"`
 }
 
 // ToBytes To []byte
-func (m ClientResp) ToBytes() (data []byte) {
-	data, _ = json.Marshal(m)
+func (m ClientResp) ToBytes() (bytes []byte) {
+	bytes, _ = json.Marshal(m)
 	return
 }

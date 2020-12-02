@@ -9,13 +9,13 @@ import (
 // RPCMsg 转发消息结构
 type RPCMsg struct {
 	Handler   string
-	Data      interface{} `json:",omitempty"`
+	RawData   []byte `json:",omitempty"`
 	Session   *session.Session
-	RequestID int `json:",omitempty"`
+	RequestID int32 `json:",omitempty"`
 }
 
 // ToBytes To []byte
-func (m RPCMsg) ToBytes() (data []byte) {
-	data, _ = json.Marshal(m)
+func (m RPCMsg) ToBytes() (bytes []byte) {
+	bytes, _ = json.Marshal(m)
 	return
 }

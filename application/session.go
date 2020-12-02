@@ -1,6 +1,8 @@
 package application
 
 import (
+	"encoding/json"
+
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -13,7 +15,8 @@ func UpdateSession(session *session.Session, keys ...string) {
 
 	// 更新session中所有的数据
 	if len(keys) == 0 {
-		rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, session.Data)
+		bytes, _ := json.Marshal(session.Data)
+		rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes)
 		return
 	}
 
@@ -31,8 +34,8 @@ func UpdateSession(session *session.Session, keys ...string) {
 	}
 
 	waitChan := make(chan bool, 1)
-
-	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, data, func(rpcResp *message.RPCResp) {
+	bytes, _ := json.Marshal(data)
+	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes, func(rpcResp *message.RPCResp) {
 		waitChan <- true
 	})
 

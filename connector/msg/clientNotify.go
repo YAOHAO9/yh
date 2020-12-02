@@ -9,7 +9,7 @@ type ClientNotify struct {
 }
 
 // ToBytes To []byte
-func (m ClientNotify) ToBytes() (data []byte) {
-	data, _ = json.Marshal(m)
+func (m ClientNotify) ToBytes() (bytes []byte) {
+	bytes, _ = json.Marshal(m)
 	return
 }

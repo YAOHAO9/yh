@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"encoding/json"
 	"sync"
 
 	"github.com/YAOHAO9/pine/connector"
@@ -84,5 +85,6 @@ func PushMessageBySession(session *session.Session, route string, data interface
 		Route: route,
 		Data:  data,
 	}
-	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.PushMessage, notify)
+	bytes, _ := json.Marshal(notify)
+	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.PushMessage, bytes)
 }

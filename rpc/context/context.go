@@ -16,7 +16,7 @@ var requestIDRwMutex sync.RWMutex
 // RPCCtx response context
 type RPCCtx struct {
 	conn      *websocket.Conn
-	requestID int
+	requestID int32
 	handler   string
 	Data      interface{} `json:",omitempty"`
 	Session   *session.Session
@@ -28,7 +28,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 		conn:      conn,
 		requestID: rpcMsg.RequestID,
 		handler:   rpcMsg.Handler,
-		Data:      rpcMsg.Data,
+		Data:      rpcMsg.RawData,
 		Session:   rpcMsg.Session,
 	}
 }
@@ -44,7 +44,7 @@ func (rpcCtx *RPCCtx) SetHandler(handler string) {
 }
 
 // GetRequestID 获取请求的GetRequestID
-func (rpcCtx *RPCCtx) GetRequestID() int {
+func (rpcCtx *RPCCtx) GetRequestID() int32 {
 
 	requestIDRwMutex.RLock()
 	defer requestIDRwMutex.RUnlock()

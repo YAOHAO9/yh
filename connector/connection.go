@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -9,11 +8,13 @@ import (
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector/filter"
 	"github.com/YAOHAO9/pine/connector/msg"
+	"github.com/YAOHAO9/pine/proto/proto/custom"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -42,7 +43,7 @@ func (connection Connection) Set(key string, v string) {
 }
 
 // 回复request
-func (connection Connection) response(requestID int, code int, data interface{}) {
+func (connection Connection) response(requestID int32, code int, data interface{}) {
 	clientMsgResp := msg.ClientResp{
 		RequestID: requestID,
 		Code:      code,
@@ -86,8 +87,9 @@ func (connection Connection) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		clientMessage := &msg.ClientReq{}
-		err = json.Unmarshal(data, clientMessage)
+		clientMessage := &custom.Request{}
+
+		proto.Unmarshal(data, clientMessage)
 
 		if err != nil {
 			connection.response(clientMessage.RequestID, message.StatusCode.Fail, "消息解析失败，请发送json消息")
@@ -113,7 +115,7 @@ func (connection Connection) StartReceiveMsg() {
 		rpcMsg := &message.RPCMsg{
 			Handler:   handler,
 			RequestID: clientMessage.RequestID,
-			Data:      clientMessage.Data,
+			RawData:   clientMessage.Data,
 			Session:   session,
 		}
 

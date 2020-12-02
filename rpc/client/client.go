@@ -14,12 +14,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var requestID = 1
-var maxInt64Value = 1<<63 - 1
+var requestID int32 = 1
+var maxInt64Value int32 = 1<<31 - 1
 var requestIDMutex sync.Mutex
 
 // 唯一的RequestID
-func genRequestID() int {
+func genRequestID() int32 {
 
 	requestIDMutex.Lock()
 	defer requestIDMutex.Unlock()
@@ -31,7 +31,7 @@ func genRequestID() int {
 	return requestID
 }
 
-var requestMap = make(map[int]func(rpcResp *message.RPCResp))
+var requestMap = make(map[int32]func(rpcResp *message.RPCResp))
 
 var requestMapLock sync.RWMutex
 var websocketWriteLock sync.Mutex
@@ -43,9 +43,9 @@ type RPCClient struct {
 }
 
 // SendMsg 发送消息
-func (client RPCClient) SendMsg(data []byte) {
+func (client RPCClient) SendMsg(bytes []byte) {
 	websocketWriteLock.Lock()
-	client.Conn.WriteMessage(message.TypeEnum.TextMessage, data)
+	client.Conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
 	websocketWriteLock.Unlock()
 }
 

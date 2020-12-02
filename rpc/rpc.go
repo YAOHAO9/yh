@@ -10,11 +10,11 @@ import (
 type notify struct{}
 
 // ToServer Rpc到指定的Server
-func (n notify) ToServer(serverID string, session *session.Session, handler string, data interface{}) {
+func (n notify) ToServer(serverID string, session *session.Session, handler string, bytes []byte) {
 
 	rpcMsg := &message.RPCMsg{
 		Handler: handler,
-		Data:    data,
+		RawData: bytes,
 		Session: session,
 	}
 
@@ -28,10 +28,10 @@ func (n notify) ToServer(serverID string, session *session.Session, handler stri
 }
 
 // ByKind Rpc到指定的Server
-func (n notify) ByKind(serverKind string, session *session.Session, handler string, data interface{}) {
+func (n notify) ByKind(serverKind string, session *session.Session, handler string, bytes []byte) {
 	rpcMsg := &message.RPCMsg{
 		Handler: handler,
-		Data:    data,
+		RawData: bytes,
 		Session: session,
 	}
 
@@ -47,11 +47,11 @@ func (n notify) ByKind(serverKind string, session *session.Session, handler stri
 type request struct{}
 
 // ToServer Rpc到指定的Server
-func (req request) ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
+func (req request) ToServer(serverID string, session *session.Session, handler string, bytes []byte, f func(rpcResp *message.RPCResp)) {
 
 	rpcMsg := &message.RPCMsg{
 		Handler: handler,
-		Data:    data,
+		RawData: bytes,
 		Session: session,
 	}
 
@@ -65,10 +65,10 @@ func (req request) ToServer(serverID string, session *session.Session, handler s
 }
 
 // ByKind Rpc到指定的Server
-func (req request) ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp)) {
+func (req request) ByKind(serverKind string, session *session.Session, handler string, bytes []byte, f func(rpcResp *message.RPCResp)) {
 	rpcMsg := &message.RPCMsg{
 		Handler: handler,
-		Data:    data,
+		RawData: bytes,
 		Session: session,
 	}
 	// 根据类型转发
