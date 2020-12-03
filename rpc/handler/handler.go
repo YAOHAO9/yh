@@ -65,24 +65,24 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 					return
 				}
 				logrus.Error(err)
-				rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
+				if rpcCtx.GetRequestID() > 0 {
+					rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
+				}
 			}
 		}()
-		go time.AfterFunc(time.Minute, func() {
-			if rpcCtx.GetRequestID() > 0 {
-				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
-				rpcCtx.SendMsg(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()), message.StatusCode.Fail)
-			}
-		})
+
+		if rpcCtx.GetRequestID() > 0 {
+			go time.AfterFunc(time.Minute, func() {
+				if rpcCtx.GetRequestID() != -1 {
+					logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+					rpcCtx.SendMsg(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()), message.StatusCode.Fail)
+				}
+			})
+		}
 
 		dataInterface := reflect.New(reflect.TypeOf(handlerInterface).In(1)).Interface()
 
-		bdata, e := json.Marshal(rpcCtx.Data)
-		if e != nil {
-			logrus.Panic(e)
-		}
-
-		json.Unmarshal(bdata, dataInterface)
+		json.Unmarshal(rpcCtx.RawData, dataInterface)
 
 		// 执行handler
 		reflect.ValueOf(handlerInterface).Call([]reflect.Value{

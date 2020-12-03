@@ -1,5 +1,4 @@
 import Pine from 'pine-client'
-import * as util from 'util'
 
 (async () => {
 
@@ -17,7 +16,7 @@ import * as util from 'util'
                 resolve()
             }, 500);
         })
-        pine.request('connector.handler', new util.TextEncoder().encode(JSON.stringify(requestData)), (response) => {
+        pine.request('connector.handler', requestData, (response) => {
             console.warn('Response:', response)
         })
     }

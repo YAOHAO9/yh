@@ -18,7 +18,7 @@ type RPCCtx struct {
 	conn      *websocket.Conn
 	requestID int32
 	handler   string
-	Data      interface{} `json:",omitempty"`
+	RawData   []byte `json:",omitempty"`
 	Session   *session.Session
 }
 
@@ -28,7 +28,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 		conn:      conn,
 		requestID: rpcMsg.RequestID,
 		handler:   rpcMsg.Handler,
-		Data:      rpcMsg.RawData,
+		RawData:   rpcMsg.RawData,
 		Session:   rpcMsg.Session,
 	}
 }
@@ -63,7 +63,7 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 		if data == nil {
 			return
 		}
-		logrus.Error("Notify不需要回复消息")
+		logrus.Error(rpcCtx.GetHandler(), "Notify不需要回复消息")
 		return
 	}
 	// 重复回复
@@ -93,5 +93,5 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 
 // ToString 格式化消息
 func (rpcCtx RPCCtx) ToString() string {
-	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.Data)
+	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.RawData)
 }
