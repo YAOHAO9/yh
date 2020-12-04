@@ -32,7 +32,7 @@ type Request struct {
 
 	Route     string `protobuf:"bytes,1,opt,name=Route,proto3" json:"Route,omitempty"`
 	RequestID int32  `protobuf:"varint,2,opt,name=RequestID,proto3" json:"RequestID,omitempty"`
-	Data      []byte `protobuf:"bytes,3,opt,name=Data,proto3" json:"Data,omitempty"`
+	Data      []byte `protobuf:"bytes,3,opt,name=Data,proto3" json:"Data,omitempty"` // optional Session Session =4;
 }
 
 func (x *Request) Reset() {

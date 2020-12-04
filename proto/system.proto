@@ -11,15 +11,16 @@ option go_package = "proto/custom";
 //     map<string,string> Data = 3;
 // }
 
+message Request {
+    string Route = 1; 
+    int32 RequestID = 2; 
+    bytes Data = 3; 
+    // optional Session Session =4;
+}
+
 // message RPCMsg {
 //     string Handler = 1; 
 //     optional int32 RequestID = 2; 
 //     optional Session Session = 3; 
 //     optional bytes Data = 4; 
 // }
-
-message Request {
-    string Route = 1; 
-    int32 RequestID = 2; 
-    bytes Data = 3; 
-}
