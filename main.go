@@ -43,10 +43,10 @@ func main() {
 		channelInstance := channelfactory.CreateChannel("101")
 		channelInstance.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		channelInstance.PushMessage("onMsg", "PushMessage")                                               // 推送给所有在当前channel中的玩家
-		channelInstance.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg", "PushMessageToOthers") // 推送给除了切片内的channel中的玩家
-		channelInstance.PushMessageToUser(rpcCtx.Session.UID, "onMsg", "PushMessageToUser")               // 只推送给当前玩家
-		channelInstance.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", "PushMessageToUsers")   // 只推送给切片的指定的玩家
+		channelInstance.PushMessage("onMsg", []byte("123"))                                                     // 推送给所有在当前channel中的玩家
+		channelInstance.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg", []byte("abc"))               // 推送给除了切片内的channel中的玩家
+		channelInstance.PushMessageToUser(rpcCtx.Session.UID, "onMsg", []byte("cde"))                           // 只推送给当前玩家
+		channelInstance.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", []byte("PushMessageToUsers")) // 只推送给切片的指定的玩家
 
 		// rpc.Request.ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp))
 		// rpc.Request.ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp))

@@ -9,14 +9,17 @@ import Pine from 'pine-client'
         console.warn('onMsg', data)
     })
 
-    const requestData = { name: 'asdf', age: 18 }
-    for (let i = 0; i < 10; i++) {
+    const requestData = '123'
+    for (let i = 0; i < 1; i++) {
         await new Promise(resolve => {
             setTimeout(() => {
-                resolve()
+                resolve(0)
             }, 500);
         })
         pine.request('connector.handler', requestData, (response) => {
+            console.warn('Response:', response)
+        })
+        pine.request('onMsg', requestData, (response) => {
             console.warn('Response:', response)
         })
     }

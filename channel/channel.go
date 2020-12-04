@@ -16,7 +16,7 @@ var lock sync.RWMutex
 type Channel map[string]*session.Session
 
 // PushMessage 推送消息给所有人
-func (channel Channel) PushMessage(route string, data interface{}) {
+func (channel Channel) PushMessage(route string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -27,7 +27,7 @@ func (channel Channel) PushMessage(route string, data interface{}) {
 }
 
 // PushMessageToOthers 推送消息给其他人
-func (channel Channel) PushMessageToOthers(uids []string, route string, data interface{}) {
+func (channel Channel) PushMessageToOthers(uids []string, route string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -47,7 +47,7 @@ func (channel Channel) PushMessageToOthers(uids []string, route string, data int
 }
 
 // PushMessageToUsers 推送消息给指定玩家
-func (channel Channel) PushMessageToUsers(uids []string, route string, data interface{}) {
+func (channel Channel) PushMessageToUsers(uids []string, route string, data []byte) {
 
 	for _, uid := range uids {
 		channel.PushMessageToUser(uid, route, data)
@@ -56,7 +56,7 @@ func (channel Channel) PushMessageToUsers(uids []string, route string, data inte
 }
 
 // PushMessageToUser 推送消息给指定玩家
-func (channel Channel) PushMessageToUser(uid string, route string, data interface{}) {
+func (channel Channel) PushMessageToUser(uid string, route string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -80,7 +80,7 @@ func (channel Channel) Add(uid string, session *session.Session) {
 }
 
 // PushMessageBySession 通过session推送消息
-func PushMessageBySession(session *session.Session, route string, data interface{}) {
+func PushMessageBySession(session *session.Session, route string, data []byte) {
 	notify := message.RPCNotify{
 		Route: route,
 		Data:  data,

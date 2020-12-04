@@ -58,15 +58,25 @@ func (connection Connection) response(requestID int32, code int, data interface{
 }
 
 // 主动推送消息
-func (connection Connection) notify(route string, data interface{}) {
+func (connection Connection) notify(notify *custom.Request) {
 
-	notify := msg.ClientNotify{
-		Route: route,
-		Data:  data,
+	notify.RequestID = 888
+	bytes, err := proto.Marshal(notify)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	newNotify := &custom.Request{}
+	err = proto.Unmarshal(bytes, newNotify)
+
+	if err != nil {
+		logrus.Error(err)
+		return
 	}
 
+	logrus.Warn("Route: ", notify.Route, ", bytes: ", bytes, ", result:", newNotify)
 	mutex.Lock()
-	err := connection.conn.WriteMessage(message.TypeEnum.TextMessage, notify.ToBytes())
+	err = connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 	mutex.Unlock()
 	if err != nil {
 		logrus.Error(err)

@@ -1,1 +1,1 @@
-protoc --go_out=proto **/system.proto  --experimental_allow_proto3_optional
+protoc --go_out=proto proto/system.proto  --experimental_allow_proto3_optional
