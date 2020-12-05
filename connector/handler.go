@@ -29,7 +29,7 @@ func init() {
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg(1, message.StatusCode.Successful)
+			rpcCtx.SendMsg([]byte("1"))
 		}
 
 	})
@@ -44,7 +44,7 @@ func init() {
 		connection.notify(data)
 
 		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg(1, message.StatusCode.Successful)
+			rpcCtx.SendMsg([]byte("1"))
 		}
 	})
 

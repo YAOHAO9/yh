@@ -11,7 +11,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/channel/channelfactory"
-	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -48,20 +47,20 @@ func main() {
 		channelInstance.PushMessageToUser(rpcCtx.Session.UID, "onMsg", []byte("cde"))                           // 只推送给当前玩家
 		channelInstance.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", []byte("PushMessageToUsers")) // 只推送给切片的指定的玩家
 
-		// rpc.Request.ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp))
-		// rpc.Request.ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.RPCResp))
+		// rpc.Request.ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.PineMessage))
+		// rpc.Request.ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.PineMessage))
 		// rpc.Notify.ToServer(serverID string, session *session.Session, handler string, data interface{})
 		// rpc.Notify.ByKind(serverKind string, session *session.Session, handler string, data interface{})
 
 		logrus.Warn(t)
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.RPCResp) {
-			fmt.Println("收到Rpc的回复：", rpcResp.Data)
-		})
-		rpcCtx.SendMsg(rand.Int(), message.StatusCode.Successful)
+		// rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMessage) {
+		// 	fmt.Println("收到Rpc的回复：", rpcResp.Data)
+		// })
+		rpcCtx.SendMsg([]byte(fmt.Sprint(rand.Int())))
 	})
 
 	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx, data interface{}) {
-		rpcCtx.SendMsg(rand.Int(), message.StatusCode.Successful)
+		rpcCtx.SendMsg([]byte(fmt.Sprint(rand.Int())))
 	})
 
 	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
@@ -73,8 +72,8 @@ func main() {
 				if e != nil {
 					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					rpcCtx.SendMsg("操作太频繁", message.StatusCode.Fail) // 返回结果
-					return false                                     // 停止执行下个before filter以及hanler
+					rpcCtx.SendMsg([]byte("操作太频繁")) // 返回结果
+					return false                    // 停止执行下个before filter以及hanler
 				}
 			}
 
@@ -84,14 +83,14 @@ func main() {
 		return true // 继续执行下个before filter直到执行handler
 	})
 
-	app.RegisteHandlerAfterFilter(func(rpcResp *message.RPCResp) (next bool) {
+	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMessage) (next bool) {
 
 		// 修改pine定义的错误码
-		if rpcResp.Code == message.StatusCode.Fail {
-			rpcResp.Code = 400 // 自定义错误码
-		} else if rpcResp.Code == message.StatusCode.Successful {
-			rpcResp.Code = 200 // 自定义成功码
-		}
+		// if rpcResp.Code == message.StatusCode.Fail {
+		// 	rpcResp.Code = 400 // 自定义错误码
+		// } else if rpcResp.Code == message.StatusCode.Successful {
+		// 	rpcResp.Code = 200 // 自定义成功码
+		// }
 
 		return true // return true继续执行下个after filter, return false停止执行下个after filter
 	})

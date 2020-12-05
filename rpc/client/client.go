@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"sync"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
@@ -31,7 +31,7 @@ func genRequestID() int32 {
 	return requestID
 }
 
-var requestMap = make(map[int32]func(rpcResp *message.RPCResp))
+var requestMap = make(map[int32]func(rpcResp *message.PineMessage))
 
 var requestMapLock sync.RWMutex
 var websocketWriteLock sync.Mutex
@@ -45,7 +45,7 @@ type RPCClient struct {
 // SendMsg 发送消息
 func (client RPCClient) SendMsg(bytes []byte) {
 	websocketWriteLock.Lock()
-	client.Conn.WriteMessage(message.TypeEnum.TextMessage, bytes)
+	client.Conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 	websocketWriteLock.Unlock()
 }
 
@@ -56,7 +56,7 @@ func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.RPCResp)) {
+func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.PineMessage)) {
 
 	rpcMsg.RequestID = genRequestID()
 
@@ -121,23 +121,24 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				break
 			}
 			// 解析消息
-			rpcResp := &message.RPCResp{}
-			err = json.Unmarshal(data, rpcResp)
+			rpcResp := &message.PineMessage{}
+			err = proto.Unmarshal(data, rpcResp)
+
 			if err != nil {
 				logrus.Error("Rpc request's response body parse fail", err)
 				continue
 			}
 
 			// Notify消息，不应有回调信息
-			if rpcResp.RequestID == 0 {
+			if *rpcResp.RequestID == 0 {
 				logrus.Error("Notify消息，不应有回调信息")
 			}
 
 			// 执行回调函数
 			requestMapLock.RLock()
-			requestFunc, ok := requestMap[rpcResp.RequestID]
+			requestFunc, ok := requestMap[*rpcResp.RequestID]
 			if ok {
-				delete(requestMap, rpcResp.RequestID)
+				delete(requestMap, *rpcResp.RequestID)
 				requestFunc(rpcResp)
 			}
 			requestMapLock.RUnlock()

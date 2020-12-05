@@ -9,7 +9,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -61,12 +60,12 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 			if err := recover(); err != nil {
 				if entry, ok := err.(*logrus.Entry); ok {
 					err, _ := (&logrus.JSONFormatter{}).Format(entry)
-					rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
+					rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
 					return
 				}
 				logrus.Error(err)
 				if rpcCtx.GetRequestID() > 0 {
-					rpcCtx.SendMsg(fmt.Sprint(err), message.StatusCode.Fail)
+					rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
 				}
 			}
 		}()
@@ -75,7 +74,7 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 			go time.AfterFunc(time.Minute, func() {
 				if rpcCtx.GetRequestID() != -1 {
 					logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
-					rpcCtx.SendMsg(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()), message.StatusCode.Fail)
+					rpcCtx.SendMsg([]byte(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler())))
 				}
 			})
 		}
@@ -99,10 +98,10 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
 			realHandler := reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))
 			rpcCtx.SetHandler(string(realHandler))
-			rpcCtx.SendMsg(fmt.Sprintf("Handler %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
+			rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler %v 不存在", rpcCtx.GetHandler())))
 
 		} else {
-			rpcCtx.SendMsg(fmt.Sprintf("Remoter %v 不存在", rpcCtx.GetHandler()), message.StatusCode.Fail)
+			rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter %v 不存在", rpcCtx.GetHandler())))
 		}
 
 	}

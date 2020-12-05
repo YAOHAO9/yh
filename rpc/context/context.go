@@ -8,6 +8,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 var sendMsgMutex sync.Mutex
@@ -53,7 +54,7 @@ func (rpcCtx *RPCCtx) GetRequestID() int32 {
 }
 
 // SendMsg 消息发送失败
-func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
+func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 
 	requestIDRwMutex.Lock()
 	defer requestIDRwMutex.Unlock()
@@ -71,20 +72,25 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}, code int) {
 		logrus.Warn("请勿重复回复消息")
 		return
 	}
-	// response
-	rpcResp := message.RPCResp{
-		Handler:   rpcCtx.handler,
-		RequestID: rpcCtx.requestID,
-		Code:      code,
-		Data:      data,
-	}
+	requestID := rpcCtx.requestID
 	// 标记为已回复消息
 	rpcCtx.requestID = -1
+	// response
+	rpcResp := &message.PineMessage{
+		Route:     rpcCtx.handler,
+		RequestID: &requestID,
+		Data:      data,
+	}
+
+	bytes, err := proto.Marshal(rpcResp)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
 
 	sendMsgMutex.Lock()
 	defer sendMsgMutex.Unlock()
-
-	err := rpcCtx.conn.WriteMessage(message.TypeEnum.TextMessage, rpcResp.ToBytes())
+	err = rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 	if err != nil {
 		logrus.Error(err)
 	}

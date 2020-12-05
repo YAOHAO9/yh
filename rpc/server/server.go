@@ -78,7 +78,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcCtx := context.GenRespCtx(conn, rpcMsg)
 
 		if err != nil {
-			rpcCtx.SendMsg("无效的消息类型", message.StatusCode.Fail)
+			rpcCtx.SendMsg([]byte("无效的消息类型"))
 			continue
 		}
 

@@ -9,7 +9,7 @@ import Pine from 'pine-client'
         console.warn('onMsg', data)
     })
 
-    const requestData = '123'
+    const requestData = { Name: 'asdf', age: 18 }
     for (let i = 0; i < 10; i++) {
         await new Promise(resolve => {
             setTimeout(() => {

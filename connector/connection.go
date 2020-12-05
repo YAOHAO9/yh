@@ -7,7 +7,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector/filter"
-	"github.com/YAOHAO9/pine/connector/msg"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
@@ -42,14 +41,14 @@ func (connection Connection) Set(key string, v string) {
 }
 
 // 回复request
-func (connection Connection) response(requestID int32, code int, data interface{}) {
-	clientMsgResp := msg.ClientResp{
-		RequestID: requestID,
-		Code:      code,
-		Data:      data,
+func (connection Connection) response(clientMsgResp *message.PineMessage) {
+	bytes, err := proto.Marshal(clientMsgResp)
+	if err != nil {
+		logrus.Error(err)
+		return
 	}
 	mutex.Lock()
-	err := connection.conn.WriteMessage(message.TypeEnum.TextMessage, clientMsgResp.ToBytes())
+	err = connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 	mutex.Unlock()
 	if err != nil {
 		logrus.Error(err)
@@ -99,12 +98,22 @@ func (connection Connection) StartReceiveMsg() {
 		err = proto.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			connection.response(*clientMessage.RequestID, message.StatusCode.Fail, "消息解析失败，请发送json消息")
+			clientMessageResp := &message.PineMessage{
+				Route:     "__Error__",
+				RequestID: clientMessage.RequestID,
+				Data:      []byte(fmt.Sprint("消息解析失败,data:", data)),
+			}
+			connection.response(clientMessageResp)
 			continue
 		}
 
 		if clientMessage.Route == "" {
-			connection.response(*clientMessage.RequestID, message.StatusCode.Fail, "Route不能为空")
+			clientMessageResp := &message.PineMessage{
+				Route:     "__Error__",
+				RequestID: clientMessage.RequestID,
+				Data:      []byte("Route不能为空"),
+			}
+			connection.response(clientMessageResp)
 			continue
 		}
 
@@ -132,7 +141,14 @@ func (connection Connection) StartReceiveMsg() {
 
 		if rpcClient == nil {
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
-			connection.response(*clientMessage.RequestID, message.StatusCode.Fail, tip)
+
+			clientMessageResp := &message.PineMessage{
+				Route:     clientMessage.Route,
+				RequestID: clientMessage.RequestID,
+				Data:      []byte(tip),
+			}
+
+			connection.response(clientMessageResp)
 			continue
 		}
 
@@ -146,10 +162,11 @@ func (connection Connection) StartReceiveMsg() {
 			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data)
 		} else {
 			// 转发Request
-			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.RPCResp) {
-				rpcResp.RequestID = *clientMessage.RequestID
+			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.PineMessage) {
+				rpcResp.RequestID = clientMessage.RequestID
+				rpcResp.Route = clientMessage.Route
 				filter.After.Exec(rpcResp)
-				connection.response(*clientMessage.RequestID, rpcResp.Code, rpcResp.Data)
+				connection.response(rpcResp)
 			})
 		}
 	}
