@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"github.com/YAOHAO9/pine/proto/proto/custom"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -36,7 +35,7 @@ func init() {
 	})
 
 	// 推送消息
-	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *custom.Request) {
+	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMessage) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")

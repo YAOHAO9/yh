@@ -10,16 +10,13 @@ import Pine from 'pine-client'
     })
 
     const requestData = '123'
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 10; i++) {
         await new Promise(resolve => {
             setTimeout(() => {
                 resolve(0)
             }, 500);
         })
         pine.request('connector.handler', requestData, (response) => {
-            console.warn('Response:', response)
-        })
-        pine.request('onMsg', requestData, (response) => {
             console.warn('Response:', response)
         })
     }
