@@ -11,9 +11,11 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/channelservice"
+	"github.com/YAOHAO9/pine/handlermessage"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,26 +39,34 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, t *TestData) {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
-		channelInstance := channelservice.CreateChannel("101")
-		channelInstance.Add(rpcCtx.Session.UID, rpcCtx.Session)
+		channel := channelservice.CreateChannel("101")
+		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		channelInstance.PushMessage("onMsg", []byte("123"))                                                     // 推送给所有在当前channel中的玩家
-		channelInstance.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg", []byte("abc"))               // 推送给除了切片内的channel中的玩家
-		channelInstance.PushMessageToUser(rpcCtx.Session.UID, "onMsg", []byte("cde"))                           // 只推送给当前玩家
-		channelInstance.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", []byte("PushMessageToUsers")) // 只推送给切片的指定的玩家
+		channel.PushMessage("onMsg", []byte("123"))                                                     // 推送给所有在当前channel中的玩家
+		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg", []byte("啊师傅哈123HHH"))        // 推送给除了切片内的channel中的玩家
+		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsg", []byte("啊师傅哈123HHH"))                    // 只推送给当前玩家
+		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", []byte("PushMessageToUsers")) // 只推送给切片的指定的玩家
 
 		// rpc.Request.ToServer(serverID string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.PineMessage))
 		// rpc.Request.ByKind(serverKind string, session *session.Session, handler string, data interface{}, f func(rpcResp *message.PineMessage))
 		// rpc.Notify.ToServer(serverID string, session *session.Session, handler string, data interface{})
 		// rpc.Notify.ByKind(serverKind string, session *session.Session, handler string, data interface{})
 
-		logrus.Warn(t)
+		logrus.Warn(data)
 		// rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMessage) {
 		// 	fmt.Println("收到Rpc的回复：", rpcResp.Data)
 		// })
-		rpcCtx.SendMsg([]byte(fmt.Sprint(rand.Int())))
+		handlerResp := &handlermessage.HandlerResp{
+			Code:    1,
+			Name:    "HandlerResp",
+			Message: "HandlerResp Message",
+		}
+		handlerResp.Descriptor()
+		proto.Marshal(handlerResp)
+		handlerResp.ProtoMessage()
+		rpcCtx.SendMsg([]byte("啊法师的哈哈哈"))
 	})
 
 	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx, data interface{}) {

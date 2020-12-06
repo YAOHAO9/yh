@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package connector; // server kind
+
+option go_package = "../handlermessage";
+
+message handler {
+    string Name = 1; 
+    int32 Age = 2; 
+}
