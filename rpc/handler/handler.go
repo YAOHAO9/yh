@@ -9,6 +9,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -79,15 +80,41 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 			})
 		}
 
-		dataInterface := reflect.New(reflect.TypeOf(handlerInterface).In(1)).Interface()
+		paramType := reflect.TypeOf(handlerInterface).In(1)
 
-		json.Unmarshal(rpcCtx.RawData, dataInterface)
+		var dataInterface interface{}
+		if paramType.Kind() == reflect.Ptr {
+			dataInterface = reflect.New(paramType.Elem()).Interface()
+		} else {
+			dataInterface = reflect.New(paramType).Interface()
+		}
+
+		msesage, ok := dataInterface.(proto.Message)
+		if ok { // proto buf
+
+			proto.Unmarshal(rpcCtx.RawData, msesage)
+			var param reflect.Value
+			if paramType.Kind() == reflect.Ptr {
+				param = reflect.ValueOf(msesage)
+			} else {
+				param = reflect.ValueOf(msesage).Elem()
+			}
+			// 执行handler
+			reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+				reflect.ValueOf(rpcCtx),
+				param,
+			})
+		} else { // json
+			dataInterface = reflect.New(paramType).Interface()
+			json.Unmarshal(rpcCtx.RawData, dataInterface)
+			// 执行handler
+			reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+				reflect.ValueOf(rpcCtx),
+				reflect.ValueOf(dataInterface).Elem(),
+			})
+		}
 
 		// 执行handler
-		reflect.ValueOf(handlerInterface).Call([]reflect.Value{
-			reflect.ValueOf(rpcCtx),
-			reflect.ValueOf(dataInterface).Elem(),
-		})
 
 	} else {
 		handler := rpcCtx.GetHandler()

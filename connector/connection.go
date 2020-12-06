@@ -119,7 +119,6 @@ func (connection Connection) StartReceiveMsg() {
 
 		handlerInfos := strings.Split(clientMessage.Route, ".")
 
-		logrus.Warn(handlerInfos)
 		serverKind := handlerInfos[0] // 解析出服务器类型
 		handler := handlerInfos[1]    // 真正的handler
 

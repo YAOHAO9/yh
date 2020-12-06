@@ -1,13 +1,14 @@
 package channelservice
 
 import (
-	"encoding/json"
 	"sync"
 
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/golang/protobuf/proto"
 )
 
 var lock sync.RWMutex
@@ -81,10 +82,13 @@ func (channel Channel) Add(uid string, session *session.Session) {
 
 // PushMessageBySession 通过session推送消息
 func PushMessageBySession(session *session.Session, route string, data []byte) {
-	notify := message.RPCNotify{
-		Route: route,
+
+	notify := &message.PineMessage{
+		Route: config.GetServerConfig().Kind + "." + route,
 		Data:  data,
 	}
-	bytes, _ := json.Marshal(notify)
+
+	bytes, _ := proto.Marshal(notify)
+
 	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.PushMessage, bytes)
 }

@@ -64,7 +64,7 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		if data == nil {
 			return
 		}
-		logrus.Error(rpcCtx.GetHandler(), "Notify不需要回复消息")
+		logrus.Warn(rpcCtx.GetHandler(), "Notify不需要回复消息")
 		return
 	}
 	// 重复回复
