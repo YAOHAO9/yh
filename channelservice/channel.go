@@ -1,4 +1,4 @@
-package channel
+package channelservice
 
 import (
 	"encoding/json"

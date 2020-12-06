@@ -1,16 +1,14 @@
-package channelfactory
+package channelservice
 
 import (
 	"sync"
-
-	"github.com/YAOHAO9/pine/channel"
 )
 
 var mutex sync.Mutex
-var channelStore = make(map[string]*channel.Channel)
+var channelStore = make(map[string]*Channel)
 
 // CreateChannel 创建一个channel
-func CreateChannel(channelID string) *channel.Channel {
+func CreateChannel(channelID string) *Channel {
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -19,7 +17,7 @@ func CreateChannel(channelID string) *channel.Channel {
 	if ok {
 		return channelInstance
 	}
-	channelIns := &channel.Channel{}
+	channelIns := &Channel{}
 	channelStore[channelID] = channelIns
 
 	return channelIns

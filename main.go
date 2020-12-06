@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
-	"github.com/YAOHAO9/pine/channel/channelfactory"
+	"github.com/YAOHAO9/pine/channelservice"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -39,7 +39,7 @@ func main() {
 
 	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, t *TestData) {
 
-		channelInstance := channelfactory.CreateChannel("101")
+		channelInstance := channelservice.CreateChannel("101")
 		channelInstance.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
 		channelInstance.PushMessage("onMsg", []byte("123"))                                                     // 推送给所有在当前channel中的玩家
