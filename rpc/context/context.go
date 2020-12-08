@@ -64,12 +64,12 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		if data == nil {
 			return
 		}
-		logrus.Warn(rpcCtx.GetHandler(), "Notify不需要回复消息")
+		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.GetHandler()))
 		return
 	}
 	// 重复回复
 	if rpcCtx.requestID == -1 {
-		logrus.Warn("请勿重复回复消息")
+		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.GetHandler()))
 		return
 	}
 	requestID := rpcCtx.requestID

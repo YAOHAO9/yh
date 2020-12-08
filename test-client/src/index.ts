@@ -20,8 +20,18 @@ import Pine from 'pine-client'
     //     })
     // }
 
+    await pine.fetchProto('connector')
     const requestDataJSON = { Name: 'JSON request', hahahahah: 18 }
-    pine.notify('connector.handler', requestDataJSON)
+    pine.request('connector.handler', requestDataJSON, (data) => {
+        console.warn(data)
+    })
+    // pine.request('connector.FetchProto__', 'ab23', (data) => {
+    //     Object.keys(data).forEach(key => {
+    //         data[key] = JSON.parse(data[key])
+    //     })
+
+    //     console.warn(JSON.stringify(data, null, 2))
+    // })
 })()
 
 

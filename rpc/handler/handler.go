@@ -125,10 +125,18 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
 			realHandler := reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))
 			rpcCtx.SetHandler(string(realHandler))
-			rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler %v 不存在", rpcCtx.GetHandler())))
+			if rpcCtx.GetRequestID() == 0 {
+				logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
+			} else {
+				rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
+			}
 
 		} else {
-			rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter %v 不存在", rpcCtx.GetHandler())))
+			if rpcCtx.GetRequestID() == 0 {
+				logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
+			} else {
+				rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
+			}
 		}
 
 	}
