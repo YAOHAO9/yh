@@ -23,6 +23,9 @@ var HandlerMap = struct {
 	FetchProto:    "__FetchProto__",
 }
 
+var serverProtoCentent []byte
+var clientProtoCentent []byte
+
 func checkFileIsExist(filename string) bool {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return false
@@ -66,24 +69,34 @@ func init() {
 	handler.Manager.Register(HandlerMap.FetchProto, func(rpcCtx *context.RPCCtx, hash string) {
 		pwd, _ := os.Getwd()
 
-		serverProto := path.Join(pwd, "/proto/jsonproto/server.json")
-		clientProto := path.Join(pwd, "/proto/jsonproto/client.json")
-		if !checkFileIsExist(serverProto) || !checkFileIsExist(clientProto) {
+		serverProto := path.Join(pwd, "/proto/server.proto")
+		clientProto := path.Join(pwd, "/proto/client.proto")
+
+		var result map[string]string = map[string]string{}
+
+		if serverProtoCentent == nil && checkFileIsExist(serverProto) {
+			var err error
+			serverProtoCentent, err = ioutil.ReadFile(serverProto)
+
+			if err != nil {
+				logrus.Error(err)
+				return
+			}
+		}
+
+		if clientProtoCentent == nil && checkFileIsExist(clientProto) {
+			var err error
+			clientProtoCentent, err = ioutil.ReadFile(clientProto)
+
+			if err != nil {
+				logrus.Error(err)
+				return
+			}
 
 		}
 
-		serverProtoCentent, err1 := ioutil.ReadFile(serverProto)
-		clientProtoCentent, err2 := ioutil.ReadFile(clientProto)
-
-		if err1 != nil || err2 != nil {
-			logrus.Error(err1, err2)
-			return
-		}
-
-		result := map[string]string{
-			"server": string(serverProtoCentent),
-			"client": string(clientProtoCentent),
-		}
+		result["server"] = string(serverProtoCentent)
+		result["client"] = string(clientProtoCentent)
 
 		bytes, err := json.Marshal(result)
 		if err != nil {
