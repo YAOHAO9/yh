@@ -19,7 +19,7 @@ import (
 )
 
 // HandlerPrefix  Handler 前缀
-var HandlerPrefix = "__"
+var HandlerPrefix = ""
 
 var mutex sync.Mutex
 
@@ -125,7 +125,7 @@ func (connection Connection) StartReceiveMsg() {
 
 		if len(routeBytes) == 2 {
 			serverKind = serverdict.Store.GetKindByCode(routeBytes[0])
-			handler = clientMessage.Route
+			handler = string(routeBytes[1])
 		} else {
 			handlerInfos := strings.Split(clientMessage.Route, ".")
 			serverKind = handlerInfos[0] // 解析出服务器类型

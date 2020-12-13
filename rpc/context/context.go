@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/YAOHAO9/pine/rpc/handler/handlerreocrd"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/gorilla/websocket"
@@ -36,6 +37,13 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 
 // GetHandler 获取请求的Handler
 func (rpcCtx *RPCCtx) GetHandler() string {
+	bytes := []byte(rpcCtx.handler)
+	if len(bytes) == 1 {
+		handlerName := handlerreocrd.GetHandlerByCode(bytes[0])
+		if handlerName != "" {
+			return handlerName
+		}
+	}
 	return rpcCtx.handler
 }
 
@@ -64,12 +72,12 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		if data == nil {
 			return
 		}
-		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.GetHandler()))
+		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
 		return
 	}
 	// 重复回复
 	if rpcCtx.requestID == -1 {
-		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.GetHandler()))
+		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.handler))
 		return
 	}
 	requestID := rpcCtx.requestID

@@ -8,6 +8,7 @@ import (
 
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
+	"github.com/YAOHAO9/pine/rpc/handler/handlerreocrd"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 )
@@ -102,7 +103,7 @@ func init() {
 		result["client"] = string(clientProtoCentent)
 
 		// handlers
-		handlers := handler.Manager.GetHandlers()
+		handlers := handlerreocrd.GetHandlers()
 		result["handlers"] = handlers
 
 		// events

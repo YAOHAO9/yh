@@ -25,6 +25,24 @@
             "args": []
         },
         {
+            "name": "Test-client",
+            "type": "node",
+            "request": "launch",
+            "args": [
+                "test-client/src/index.ts"
+            ],
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register"
+            ],
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
             "name": "Current TS File",
             "type": "node",
             "request": "launch",
