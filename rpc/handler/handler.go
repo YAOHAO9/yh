@@ -24,11 +24,22 @@ type Map map[string]interface{}
 
 // Handler Handler
 type Handler struct {
-	Map Map
+	Map           Map
+	handlerToCode map[string]byte
+	codeToHandler map[byte]string
+	handlers      []string
 }
 
 // Register handler
 func (handler Handler) Register(handlerName string, handlerFunc interface{}) {
+
+	if _, exist := handler.handlerToCode[handlerName]; !exist {
+		code := byte(len(handler.handlerToCode) + 1)
+		handler.handlerToCode[handlerName] = code
+		handler.codeToHandler[code] = handlerName
+		handler.handlers = append(handler.handlers, handlerName)
+	}
+
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {
 		logrus.Panic("handler(" + handlerName + ")只能为函数")
@@ -53,7 +64,16 @@ func (handler Handler) Register(handlerName string, handlerFunc interface{}) {
 // Exec 执行handler
 func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 
-	handlerInterface, ok := handler.Map[rpcCtx.GetHandler()]
+	handlerName := rpcCtx.GetHandler()
+	bytes := []byte(handlerName)
+	if len(bytes) == 1 {
+		handlerStr := handler.GetHandlerByCode(bytes[0])
+		if handlerStr != "" {
+			handlerName = handlerStr
+		}
+	}
+
+	handlerInterface, ok := handler.Map[handlerName]
 
 	if ok {
 		defer func() {
@@ -106,7 +126,17 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 			})
 		} else { // json
 			dataInterface = reflect.New(paramType).Interface()
+			if paramType.Kind() == reflect.Slice && paramType.Elem().Kind() == reflect.Uint8 {
+				// 执行handler
+				reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+					reflect.ValueOf(rpcCtx),
+					reflect.ValueOf(rpcCtx.RawData),
+				})
+				return
+			}
+
 			json.Unmarshal(rpcCtx.RawData, dataInterface)
+
 			// 执行handler
 			reflect.ValueOf(handlerInterface).Call([]reflect.Value{
 				reflect.ValueOf(rpcCtx),
@@ -142,5 +172,31 @@ func (handler Handler) Exec(rpcCtx *context.RPCCtx) {
 	}
 }
 
+// GetHandlerByCode 获取真实Handler
+func (handler Handler) GetHandlerByCode(code byte) string {
+	if value, exist := handler.codeToHandler[code]; exist {
+		return value
+	}
+	return ""
+}
+
+// GetCodeByHandler 获取真实Handler对应的Code
+func (handler Handler) GetCodeByHandler(handlerName string) byte {
+	if value, exist := handler.handlerToCode[handlerName]; exist {
+		return value
+	}
+	return 0
+}
+
+// GetHandlers 获取Handlers切片
+func (handler Handler) GetHandlers() []string {
+	return handler.handlers
+}
+
 // Manager return RPCHandler
-var Manager = &Handler{Map: make(Map)}
+var Manager = &Handler{
+	Map:           make(Map),
+	handlerToCode: make(map[string]byte, 10),
+	codeToHandler: make(map[byte]string, 10),
+	handlers:      make([]string, 10),
+}

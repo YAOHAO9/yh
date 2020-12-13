@@ -6,7 +6,11 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/connector/serverdict"
+	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
+	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -126,8 +130,23 @@ func watch() {
 					if err != nil {
 						logrus.Error(err.Error())
 					}
-					// 创建客户端，并于改服务器连接
+					// 创建客户端，并与该服务器连接
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
+
+					if config.GetServerConfig().IsConnector {
+						serverdict.Store.AddRecord(serverConfig.Kind)
+					}
+
+					if serverConfig.IsConnector {
+						keys := make([]string, len(handler.Manager.Map), len(handler.Manager.Map))
+						i := 0
+						for key := range handler.Manager.Map {
+							keys[i] = key
+							i++
+						}
+						bytes, _ := json.Marshal(keys)
+						rpc.Notify.ToServer(serverConfig.ID, nil, connector.HandlerMap.RouterRecords, bytes)
+					}
 					break
 				}
 			}(serverID)

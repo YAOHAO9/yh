@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	_ "net/http/pprof"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -147,29 +146,9 @@ func main() {
 		return nil //if return nil, pine will get one rpc client by random
 	})
 
-	addHandler(func(c *context.RPCCtx, a int) {
-
-	})
-
 	app.Start()
 }
 
-func addHandler(handlerFunc interface{}) {
-	handlerType := reflect.TypeOf(handlerFunc)
-	if handlerType.Kind() != reflect.Func {
-		logrus.Error("handler 只能为函数")
-	}
-
-	handlerValue := reflect.TypeOf(handlerFunc)
-
-	if handlerValue.NumIn() != 2 {
-		logrus.Error("handler 参数只能两个")
-	}
-
-	if handlerType.In(0) != reflect.TypeOf(&context.RPCCtx{}) {
-		logrus.Error("handler 第一个参数必须为*context.RPCCtx类型")
-	} else {
-		logrus.Warn("检测通过")
-	}
-
+func aa(a string) {
+	fmt.Println(a)
 }

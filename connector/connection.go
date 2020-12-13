@@ -7,6 +7,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector/filter"
+	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
@@ -101,7 +102,7 @@ func (connection Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMessage{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
-				Data:      []byte(fmt.Sprint("消息解析失败,data:", data)),
+				Data:      []byte(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
 			}
 			connection.response(clientMessageResp)
 			continue
@@ -117,10 +118,19 @@ func (connection Connection) StartReceiveMsg() {
 			continue
 		}
 
-		handlerInfos := strings.Split(clientMessage.Route, ".")
+		var serverKind string
+		var handler string
 
-		serverKind := handlerInfos[0] // 解析出服务器类型
-		handler := handlerInfos[1]    // 真正的handler
+		routeBytes := []byte(clientMessage.Route)
+
+		if len(routeBytes) == 2 {
+			serverKind = serverdict.Store.GetKindByCode(routeBytes[0])
+			handler = clientMessage.Route
+		} else {
+			handlerInfos := strings.Split(clientMessage.Route, ".")
+			serverKind = handlerInfos[0] // 解析出服务器类型
+			handler = handlerInfos[1]    // 真正的handler
+		}
 
 		session := &session.Session{
 			UID:  uid,

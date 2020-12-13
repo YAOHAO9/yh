@@ -17,10 +17,12 @@ var HandlerMap = struct {
 	PushMessage   string
 	UpdateSession string
 	FetchProto    string
+	RouterRecords string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
 	FetchProto:    "__FetchProto__",
+	RouterRecords: "__RouterRecords__",
 }
 
 var serverProtoCentent []byte
@@ -72,8 +74,9 @@ func init() {
 		serverProto := path.Join(pwd, "/proto/server.proto")
 		clientProto := path.Join(pwd, "/proto/client.proto")
 
-		var result map[string]string = map[string]string{}
+		var result = map[string]interface{}{}
 
+		// server proto
 		if serverProtoCentent == nil && checkFileIsExist(serverProto) {
 			var err error
 			serverProtoCentent, err = ioutil.ReadFile(serverProto)
@@ -83,7 +86,9 @@ func init() {
 				return
 			}
 		}
+		result["server"] = string(serverProtoCentent)
 
+		// client proto
 		if clientProtoCentent == nil && checkFileIsExist(clientProto) {
 			var err error
 			clientProtoCentent, err = ioutil.ReadFile(clientProto)
@@ -94,9 +99,14 @@ func init() {
 			}
 
 		}
-
-		result["server"] = string(serverProtoCentent)
 		result["client"] = string(clientProtoCentent)
+
+		// handlers
+		handlers := handler.Manager.GetHandlers()
+		result["handlers"] = handlers
+
+		// events
+		result["events"] = []string{"onMsg", "onMsgJSON"}
 
 		bytes, err := json.Marshal(result)
 		if err != nil {
@@ -107,4 +117,8 @@ func init() {
 		rpcCtx.SendMsg(bytes)
 	})
 
+	// 推送消息
+	handler.Manager.Register(HandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
+		logrus.Warn(hash)
+	})
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -65,6 +66,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		data:        sessionData,
 		routeRecord: make(map[string]string),
 	}
+
+	connection.notify(&message.PineMessage{
+		Route: "connector.__serverdict__",
+		Data:  serverdict.Store.ToBytes(),
+	})
 
 	SaveConnection(connection)
 
