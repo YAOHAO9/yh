@@ -9,7 +9,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler/handlerreocrd"
+	"github.com/YAOHAO9/pine/rpc/handler/routercompress"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
@@ -31,7 +31,7 @@ type Handler struct {
 // Register handler
 func (handler *Handler) Register(handlerName string, handlerFunc interface{}) {
 
-	handlerreocrd.AddRecord(handlerName)
+	routercompress.AddHandlerRecord(handlerName)
 
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {

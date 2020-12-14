@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
@@ -13,6 +14,7 @@ type notify struct{}
 func (n notify) ToServer(serverID string, session *session.Session, handler string, bytes []byte) {
 
 	rpcMsg := &message.RPCMsg{
+		From:    config.GetServerConfig().ID,
 		Handler: handler,
 		RawData: bytes,
 		Session: session,
@@ -30,6 +32,7 @@ func (n notify) ToServer(serverID string, session *session.Session, handler stri
 // ByKind Rpc到指定的Server
 func (n notify) ByKind(serverKind string, session *session.Session, handler string, bytes []byte) {
 	rpcMsg := &message.RPCMsg{
+		From:    config.GetServerConfig().ID,
 		Handler: handler,
 		RawData: bytes,
 		Session: session,
@@ -50,6 +53,7 @@ type request struct{}
 func (req request) ToServer(serverID string, session *session.Session, handler string, bytes []byte, f func(rpcResp *message.PineMessage)) {
 
 	rpcMsg := &message.RPCMsg{
+		From:    config.GetServerConfig().ID,
 		Handler: handler,
 		RawData: bytes,
 		Session: session,
@@ -67,6 +71,7 @@ func (req request) ToServer(serverID string, session *session.Session, handler s
 // ByKind Rpc到指定的Server
 func (req request) ByKind(serverKind string, session *session.Session, handler string, bytes []byte, f func(rpcResp *message.PineMessage)) {
 	rpcMsg := &message.RPCMsg{
+		From:    config.GetServerConfig().ID,
 		Handler: handler,
 		RawData: bytes,
 		Session: session,

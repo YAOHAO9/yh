@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -17,18 +18,18 @@ var lock sync.RWMutex
 type Channel map[string]*session.Session
 
 // PushMessage 推送消息给所有人
-func (channel Channel) PushMessage(route string, data []byte) {
+func (channel Channel) PushMessage(event string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
 
 	for _, session := range channel {
-		PushMessageBySession(session, route, data)
+		PushMessageBySession(session, event, data)
 	}
 }
 
 // PushMessageToOthers 推送消息给其他人
-func (channel Channel) PushMessageToOthers(uids []string, route string, data []byte) {
+func (channel Channel) PushMessageToOthers(uids []string, event string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -42,22 +43,22 @@ func (channel Channel) PushMessageToOthers(uids []string, route string, data []b
 			}
 		}
 		if findIndex == -1 {
-			channel.PushMessageToUser(uid, route, data)
+			channel.PushMessageToUser(uid, event, data)
 		}
 	}
 }
 
 // PushMessageToUsers 推送消息给指定玩家
-func (channel Channel) PushMessageToUsers(uids []string, route string, data []byte) {
+func (channel Channel) PushMessageToUsers(uids []string, event string, data []byte) {
 
 	for _, uid := range uids {
-		channel.PushMessageToUser(uid, route, data)
+		channel.PushMessageToUser(uid, event, data)
 	}
 
 }
 
 // PushMessageToUser 推送消息给指定玩家
-func (channel Channel) PushMessageToUser(uid string, route string, data []byte) {
+func (channel Channel) PushMessageToUser(uid string, event string, data []byte) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -67,7 +68,7 @@ func (channel Channel) PushMessageToUser(uid string, route string, data []byte) 
 		return
 	}
 
-	PushMessageBySession(session, route, data)
+	PushMessageBySession(session, event, data)
 
 }
 
@@ -81,11 +82,21 @@ func (channel Channel) Add(uid string, session *session.Session) {
 }
 
 // PushMessageBySession 通过session推送消息
-func PushMessageBySession(session *session.Session, route string, data []byte) {
+func PushMessageBySession(session *session.Session, event string, data []byte) {
 
-	notify := &message.PineMessage{
-		Route: config.GetServerConfig().Kind + "." + route,
-		Data:  data,
+	code := eventcompress.GetCodeByEvent(event)
+
+	var notify *message.PineMessage
+	if code != 0 {
+		notify = &message.PineMessage{
+			Route: string(code),
+			Data:  data,
+		}
+	} else {
+		notify = &message.PineMessage{
+			Route: config.GetServerConfig().Kind + "." + event,
+			Data:  data,
+		}
 	}
 
 	bytes, _ := proto.Marshal(notify)

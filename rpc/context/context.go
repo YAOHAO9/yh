@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/YAOHAO9/pine/rpc/handler/handlerreocrd"
+	"github.com/YAOHAO9/pine/rpc/handler/routercompress"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/gorilla/websocket"
@@ -20,6 +20,7 @@ type RPCCtx struct {
 	conn      *websocket.Conn
 	requestID int32
 	handler   string
+	From      string
 	RawData   []byte `json:",omitempty"`
 	Session   *session.Session
 }
@@ -30,6 +31,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 		conn:      conn,
 		requestID: rpcMsg.RequestID,
 		handler:   rpcMsg.Handler,
+		From:      rpcMsg.From,
 		RawData:   rpcMsg.RawData,
 		Session:   rpcMsg.Session,
 	}
@@ -39,7 +41,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 func (rpcCtx *RPCCtx) GetHandler() string {
 	bytes := []byte(rpcCtx.handler)
 	if len(bytes) == 1 {
-		handlerName := handlerreocrd.GetHandlerByCode(bytes[0])
+		handlerName := routercompress.GetHandlerByCode(bytes[0])
 		if handlerName != "" {
 			return handlerName
 		}

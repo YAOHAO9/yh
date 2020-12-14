@@ -6,9 +6,12 @@ import (
 	"os"
 	"path"
 
+	"github.com/YAOHAO9/pine/channelservice/eventcompress"
+	"github.com/YAOHAO9/pine/connector/serverdict"
+	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
-	"github.com/YAOHAO9/pine/rpc/handler/handlerreocrd"
+	"github.com/YAOHAO9/pine/rpc/handler/routercompress"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 )
@@ -61,6 +64,14 @@ func init() {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
 		}
 
+		if len([]byte(data.Route)) == 1 {
+			client := clientmanager.GetClientByID(rpcCtx.From)
+			if client != nil {
+				code := serverdict.GetCodeByKind(client.ServerConfig.Kind)
+				data.Route = string([]byte{code}) + data.Route
+			}
+		}
+
 		connection.notify(data)
 
 		if rpcCtx.GetRequestID() > 0 {
@@ -103,11 +114,11 @@ func init() {
 		result["client"] = string(clientProtoCentent)
 
 		// handlers
-		handlers := handlerreocrd.GetHandlers()
+		handlers := routercompress.GetHandlers()
 		result["handlers"] = handlers
 
 		// events
-		result["events"] = []string{"onMsg", "onMsgJSON"}
+		result["events"] = eventcompress.GetEvents()
 
 		bytes, err := json.Marshal(result)
 		if err != nil {

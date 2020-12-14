@@ -52,51 +52,45 @@ import (
 // 	}
 // }
 
-// ServerDict int
-type serverDict struct {
-	KindToCode map[string]byte `json:"kindToCode"`
-	CodeToKind map[byte]string `json:"codeToKind"`
-}
+var kindToCode = make(map[string]byte)
+var codeToKind = make(map[byte]string)
 
 // AddRecord add serverKind and serverCode recore
-func (dict *serverDict) AddRecord(serverKind string) {
-	if _, exist := dict.KindToCode[serverKind]; exist {
+func AddRecord(serverKind string) {
+	if _, exist := kindToCode[serverKind]; exist {
 		return
 	}
 
-	code := byte(len(dict.KindToCode) + 1)
-	dict.KindToCode[serverKind] = code
-	dict.CodeToKind[code] = serverKind
+	code := byte(len(kindToCode) + 1)
+	kindToCode[serverKind] = code
+	codeToKind[code] = serverKind
 }
 
 // GetKindByCode get serverKind by serverCode
-func (dict *serverDict) GetKindByCode(code byte) string {
-	if value, exist := dict.CodeToKind[code]; exist {
+func GetKindByCode(code byte) string {
+	if value, exist := codeToKind[code]; exist {
 		return value
 	}
 	return ""
 }
 
 // GetCodeByKind get serverCode by serverKind
-func (dict *serverDict) GetCodeByKind(serverKind string) byte {
-	if value, exist := dict.KindToCode[serverKind]; exist {
+func GetCodeByKind(serverKind string) byte {
+	if value, exist := kindToCode[serverKind]; exist {
 		return value
 	}
 	return 0
 }
 
 // ToBytes get json bytes
-func (dict *serverDict) ToBytes() []byte {
-	bytes, err := json.Marshal(dict)
+func ToBytes() []byte {
+	bytes, err := json.Marshal(map[string]interface{}{
+		"kindToCode": kindToCode,
+		"codeToKind": codeToKind,
+	})
 	if err != nil {
 		logrus.Error(err)
 		return []byte{123, 125}
 	}
 	return bytes
-}
-
-// Store serverdict store
-var Store = &serverDict{
-	KindToCode: make(map[string]byte, 10),
-	CodeToKind: make(map[byte]string, 10),
 }

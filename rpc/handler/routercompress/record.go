@@ -1,4 +1,4 @@
-package handlerreocrd
+package routercompress
 
 var handlerToCode = make(map[string]byte)
 
@@ -6,8 +6,8 @@ var codeToHandler = make(map[byte]string)
 
 var handlers = make([]string, 0, 10)
 
-// AddRecord 添加记录
-func AddRecord(handlerName string) {
+// AddHandlerRecord 添加记录
+func AddHandlerRecord(handlerName string) {
 	if _, exist := handlerToCode[handlerName]; !exist {
 		code := byte(len(handlerToCode) + 1)
 		handlerToCode[handlerName] = code
@@ -35,4 +35,14 @@ func GetCodeByHandler(handlerName string) byte {
 // GetHandlers 获取Handlers切片
 func GetHandlers() []string {
 	return handlers
+}
+
+// AddEventRecord 添加需要压缩的客户端监听的事件
+func AddEventRecord(eventName string) {
+	if _, exist := handlerToCode[eventName]; !exist {
+		code := byte(len(handlerToCode) + 1)
+		handlerToCode[eventName] = code
+		codeToHandler[code] = eventName
+		handlers = append(handlers, eventName)
+	}
 }

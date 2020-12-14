@@ -134,7 +134,7 @@ func watch() {
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
 
 					if config.GetServerConfig().IsConnector {
-						serverdict.Store.AddRecord(serverConfig.Kind)
+						serverdict.AddRecord(serverConfig.Kind)
 					}
 
 					if serverConfig.IsConnector {

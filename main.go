@@ -11,6 +11,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/channelservice"
+	"github.com/YAOHAO9/pine/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/handlermessage"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
@@ -29,6 +30,9 @@ type TestData struct {
 func main() {
 
 	app := application.CreateApp()
+
+	eventcompress.AddEventRecord("onMsg")
+	eventcompress.AddEventRecord("onMsgJSON")
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 

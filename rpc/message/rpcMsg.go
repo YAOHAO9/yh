@@ -8,6 +8,7 @@ import (
 
 // RPCMsg 转发消息结构
 type RPCMsg struct {
+	From      string
 	Handler   string
 	RawData   []byte `json:",omitempty"`
 	Session   *session.Session

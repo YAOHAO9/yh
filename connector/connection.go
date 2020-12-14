@@ -124,7 +124,7 @@ func (connection Connection) StartReceiveMsg() {
 		routeBytes := []byte(clientMessage.Route)
 
 		if len(routeBytes) == 2 {
-			serverKind = serverdict.Store.GetKindByCode(routeBytes[0])
+			serverKind = serverdict.GetKindByCode(routeBytes[0])
 			handler = string(routeBytes[1])
 		} else {
 			handlerInfos := strings.Split(clientMessage.Route, ".")
@@ -139,6 +139,7 @@ func (connection Connection) StartReceiveMsg() {
 		}
 
 		rpcMsg := &message.RPCMsg{
+			From:      config.GetServerConfig().ID,
 			Handler:   handler,
 			RequestID: *clientMessage.RequestID,
 			RawData:   clientMessage.Data,
