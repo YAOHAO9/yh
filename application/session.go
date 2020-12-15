@@ -35,7 +35,7 @@ func UpdateSession(session *session.Session, keys ...string) {
 
 	waitChan := make(chan bool, 1)
 	bytes, _ := json.Marshal(data)
-	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes, func(rpcResp *message.PineMessage) {
+	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes, func(rpcResp *message.PineMsg) {
 		waitChan <- true
 	})
 

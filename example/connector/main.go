@@ -28,12 +28,12 @@ func main() {
 		}
 	})
 
-	app.RegisteHandlerAfterFilter(func(rm *message.PineMessage) (next bool) {
+	app.RegisteHandlerAfterFilter(func(rm *message.PineMsg) (next bool) {
 		// rm.RequestID -= 1000
 		return true
 	})
 
-	app.RegisteHandlerAfterFilter(func(rm *message.PineMessage) (next bool) {
+	app.RegisteHandlerAfterFilter(func(rm *message.PineMsg) (next bool) {
 		// rm.RequestID += 1000
 		return true
 	})

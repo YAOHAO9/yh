@@ -31,7 +31,7 @@ func genRequestID() *int32 {
 	return &requestID
 }
 
-var requestMap = make(map[int32]func(rpcResp *message.PineMessage))
+var requestMap = make(map[int32]func(rpcResp *message.PineMsg))
 
 var requestMapLock sync.RWMutex
 var websocketWriteLock sync.Mutex
@@ -56,7 +56,7 @@ func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.PineMessage)) {
+func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.PineMsg)) {
 
 	rpcMsg.RequestID = genRequestID()
 
@@ -121,7 +121,7 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 				break
 			}
 			// 解析消息
-			rpcResp := &message.PineMessage{}
+			rpcResp := &message.PineMsg{}
 			err = proto.Unmarshal(data, rpcResp)
 
 			if err != nil {

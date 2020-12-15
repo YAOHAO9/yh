@@ -67,7 +67,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		routeRecord: make(map[string]string),
 	}
 
-	connection.notify(&message.PineMessage{
+	connection.notify(&message.PineMsg{
 		Route: "connector.__serverdict__",
 		Data:  serverdict.ToBytes(),
 	})

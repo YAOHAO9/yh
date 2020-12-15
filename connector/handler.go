@@ -58,7 +58,7 @@ func init() {
 	})
 
 	// 推送消息
-	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMessage) {
+	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")

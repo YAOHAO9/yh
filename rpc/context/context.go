@@ -88,7 +88,7 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 	// 标记为已回复消息
 	*rpcCtx.requestID = -1
 	// response
-	rpcResp := &message.PineMessage{
+	rpcResp := &message.PineMsg{
 		Route:     rpcCtx.handler,
 		RequestID: &requestID,
 		Data:      data,

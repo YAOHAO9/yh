@@ -86,14 +86,14 @@ func PushMessageBySession(session *session.Session, event string, data []byte) {
 
 	code := eventcompress.GetCodeByEvent(event)
 
-	var notify *message.PineMessage
+	var notify *message.PineMsg
 	if code != 0 {
-		notify = &message.PineMessage{
+		notify = &message.PineMsg{
 			Route: string(code),
 			Data:  data,
 		}
 	} else {
-		notify = &message.PineMessage{
+		notify = &message.PineMsg{
 			Route: config.GetServerConfig().Kind + "." + event,
 			Data:  data,
 		}

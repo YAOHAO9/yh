@@ -25,7 +25,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type PineMessage struct {
+type PineMsg struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -35,8 +35,8 @@ type PineMessage struct {
 	Data      []byte `protobuf:"bytes,3,opt,name=Data,proto3" json:"Data,omitempty"`
 }
 
-func (x *PineMessage) Reset() {
-	*x = PineMessage{}
+func (x *PineMsg) Reset() {
+	*x = PineMsg{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pineMsg_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -44,13 +44,13 @@ func (x *PineMessage) Reset() {
 	}
 }
 
-func (x *PineMessage) String() string {
+func (x *PineMsg) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PineMessage) ProtoMessage() {}
+func (*PineMsg) ProtoMessage() {}
 
-func (x *PineMessage) ProtoReflect() protoreflect.Message {
+func (x *PineMsg) ProtoReflect() protoreflect.Message {
 	mi := &file_pineMsg_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -62,26 +62,26 @@ func (x *PineMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PineMessage.ProtoReflect.Descriptor instead.
-func (*PineMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use PineMsg.ProtoReflect.Descriptor instead.
+func (*PineMsg) Descriptor() ([]byte, []int) {
 	return file_pineMsg_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *PineMessage) GetRoute() string {
+func (x *PineMsg) GetRoute() string {
 	if x != nil {
 		return x.Route
 	}
 	return ""
 }
 
-func (x *PineMessage) GetRequestID() int32 {
+func (x *PineMsg) GetRequestID() int32 {
 	if x != nil && x.RequestID != nil {
 		return *x.RequestID
 	}
 	return 0
 }
 
-func (x *PineMessage) GetData() []byte {
+func (x *PineMsg) GetData() []byte {
 	if x != nil {
 		return x.Data
 	}
@@ -117,7 +117,7 @@ func file_pineMsg_proto_rawDescGZIP() []byte {
 
 var file_pineMsg_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_pineMsg_proto_goTypes = []interface{}{
-	(*PineMessage)(nil), // 0: message.PineMessage
+	(*PineMsg)(nil), // 0: message.PineMsg
 }
 var file_pineMsg_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -134,7 +134,7 @@ func file_pineMsg_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_pineMsg_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PineMessage); i {
+			switch v := v.(*PineMsg); i {
 			case 0:
 				return &v.state
 			case 1:

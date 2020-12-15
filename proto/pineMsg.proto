@@ -4,7 +4,7 @@ package message;
 
 option go_package = "../rpc/message";
 
-message PineMessage {
+message PineMsg {
     string Route = 1; 
     optional int32 RequestID = 2; 
     bytes Data = 3; 

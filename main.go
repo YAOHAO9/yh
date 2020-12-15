@@ -60,7 +60,7 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMessage) {
+		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMsg) {
 			fmt.Println("收到Rpc的回复：", string(rpcResp.Data))
 		})
 
@@ -91,7 +91,7 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsgJSON", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMessage) {
+		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMsg) {
 			fmt.Println("收到Rpc的回复：", string(rpcResp.Data))
 		})
 
@@ -127,7 +127,7 @@ func main() {
 		return true // 继续执行下个before filter直到执行handler
 	})
 
-	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMessage) (next bool) {
+	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMsg) (next bool) {
 
 		// 修改pine定义的错误码
 		// if rpcResp.Code == message.StatusCode.Fail {

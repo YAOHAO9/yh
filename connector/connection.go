@@ -42,7 +42,7 @@ func (connection Connection) Set(key string, v string) {
 }
 
 // 回复request
-func (connection Connection) response(clientMsgResp *message.PineMessage) {
+func (connection Connection) response(clientMsgResp *message.PineMsg) {
 	bytes, err := proto.Marshal(clientMsgResp)
 	if err != nil {
 		logrus.Error(err)
@@ -57,14 +57,14 @@ func (connection Connection) response(clientMsgResp *message.PineMessage) {
 }
 
 // 主动推送消息
-func (connection Connection) notify(notify *message.PineMessage) {
+func (connection Connection) notify(notify *message.PineMsg) {
 
 	bytes, err := proto.Marshal(notify)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	newNotify := &message.PineMessage{}
+	newNotify := &message.PineMsg{}
 	err = proto.Unmarshal(bytes, newNotify)
 
 	if err != nil {
@@ -94,12 +94,12 @@ func (connection Connection) StartReceiveMsg() {
 			break
 		}
 		// 解析消息
-		clientMessage := &message.PineMessage{}
+		clientMessage := &message.PineMsg{}
 
 		err = proto.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			clientMessageResp := &message.PineMessage{
+			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
 				Data:      []byte(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
@@ -109,7 +109,7 @@ func (connection Connection) StartReceiveMsg() {
 		}
 
 		if clientMessage.Route == "" {
-			clientMessageResp := &message.PineMessage{
+			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
 				Data:      []byte("Route不能为空"),
@@ -152,7 +152,7 @@ func (connection Connection) StartReceiveMsg() {
 		if rpcClient == nil {
 			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
 
-			clientMessageResp := &message.PineMessage{
+			clientMessageResp := &message.PineMsg{
 				Route:     clientMessage.Route,
 				RequestID: clientMessage.RequestID,
 				Data:      []byte(tip),
@@ -172,7 +172,7 @@ func (connection Connection) StartReceiveMsg() {
 			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data)
 		} else {
 			// 转发Request
-			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.PineMessage) {
+			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.PineMsg) {
 				rpcResp.RequestID = clientMessage.RequestID
 				rpcResp.Route = clientMessage.Route
 				filter.After.Exec(rpcResp)

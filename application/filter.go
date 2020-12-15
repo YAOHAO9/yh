@@ -12,6 +12,6 @@ func (app Application) RegisteHandlerBeforeFilter(f func(rpcCtx *context.RPCCtx)
 }
 
 // RegisteHandlerAfterFilter 注册after filter
-func (app Application) RegisteHandlerAfterFilter(f func(rpcResp *message.PineMessage) (next bool)) {
+func (app Application) RegisteHandlerAfterFilter(f func(rpcResp *message.PineMsg) (next bool)) {
 	filter.After.Register(f)
 }
