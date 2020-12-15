@@ -19,7 +19,7 @@ var maxInt64Value int32 = 1<<31 - 1
 var requestIDMutex sync.Mutex
 
 // 唯一的RequestID
-func genRequestID() int32 {
+func genRequestID() *int32 {
 
 	requestIDMutex.Lock()
 	defer requestIDMutex.Unlock()
@@ -28,7 +28,7 @@ func genRequestID() int32 {
 	if requestID >= maxInt64Value {
 		requestID = 1
 	}
-	return requestID
+	return &requestID
 }
 
 var requestMap = make(map[int32]func(rpcResp *message.PineMessage))
@@ -52,7 +52,7 @@ func (client RPCClient) SendMsg(bytes []byte) {
 // SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
-	client.SendMsg(rpcMsg.ToBytes())
+	client.SendMsg(message.ToBytes(rpcMsg))
 }
 
 // SendRPCRequest 发送RPC请求
@@ -63,7 +63,7 @@ func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *
 	requestMapLock.Lock()
 	requestMap[requestID] = cb
 	requestMapLock.Unlock()
-	client.SendMsg(rpcMsg.ToBytes())
+	client.SendMsg(message.ToBytes(rpcMsg))
 }
 
 // StartClient websocket client

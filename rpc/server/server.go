@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
@@ -73,7 +73,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// 解析消息
 		rpcMsg := &message.RPCMsg{}
-		err = json.Unmarshal(data, rpcMsg)
+		err = proto.Unmarshal(data, rpcMsg)
 
 		rpcCtx := context.GenRespCtx(conn, rpcMsg)
 

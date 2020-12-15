@@ -141,7 +141,7 @@ func (connection Connection) StartReceiveMsg() {
 		rpcMsg := &message.RPCMsg{
 			From:      config.GetServerConfig().ID,
 			Handler:   handler,
-			RequestID: *clientMessage.RequestID,
+			RequestID: clientMessage.RequestID,
 			RawData:   clientMessage.Data,
 			Session:   session,
 		}

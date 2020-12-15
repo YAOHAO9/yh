@@ -13,12 +13,11 @@ import (
 )
 
 var sendMsgMutex sync.Mutex
-var requestIDRwMutex sync.RWMutex
 
 // RPCCtx response context
 type RPCCtx struct {
 	conn      *websocket.Conn
-	requestID int32
+	requestID *int32
 	handler   string
 	From      string
 	RawData   []byte `json:",omitempty"`
@@ -54,37 +53,40 @@ func (rpcCtx *RPCCtx) SetHandler(handler string) {
 	rpcCtx.handler = handler
 }
 
-// GetRequestID 获取请求的GetRequestID
+// GetRequestID 获取请求的RequestID
 func (rpcCtx *RPCCtx) GetRequestID() int32 {
 
-	requestIDRwMutex.RLock()
-	defer requestIDRwMutex.RUnlock()
+	if rpcCtx.requestID == nil {
+		return 0
+	}
 
-	return rpcCtx.requestID
+	return *rpcCtx.requestID
+}
+
+// SetRequestID 设置请求的RequestID
+func (rpcCtx *RPCCtx) SetRequestID(id int32) {
+	rpcCtx.requestID = &id
 }
 
 // SendMsg 消息发送失败
 func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 
-	requestIDRwMutex.Lock()
-	defer requestIDRwMutex.Unlock()
-
 	// Notify的消息，不通知成功
-	if rpcCtx.requestID == 0 {
+	if rpcCtx.GetRequestID() == 0 {
 		if data == nil {
 			return
 		}
-		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
+		logrus.Error(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
 		return
 	}
 	// 重复回复
-	if rpcCtx.requestID == -1 {
+	if rpcCtx.GetRequestID() == -1 {
 		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.handler))
 		return
 	}
-	requestID := rpcCtx.requestID
+	requestID := rpcCtx.GetRequestID()
 	// 标记为已回复消息
-	rpcCtx.requestID = -1
+	*rpcCtx.requestID = -1
 	// response
 	rpcResp := &message.PineMessage{
 		Route:     rpcCtx.handler,
@@ -109,5 +111,5 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 
 // ToString 格式化消息
 func (rpcCtx RPCCtx) ToString() string {
-	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.requestID, rpcCtx.RawData)
+	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.GetRequestID(), rpcCtx.RawData)
 }
