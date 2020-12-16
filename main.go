@@ -11,7 +11,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/channelservice"
-	"github.com/YAOHAO9/pine/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/handlermessage"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
@@ -21,18 +20,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TestData TestData
-type TestData struct {
-	Name string
-	Age  int32
-}
-
 func main() {
 
 	app := application.CreateApp()
 
-	eventcompress.AddEventRecord("onMsg")
-	eventcompress.AddEventRecord("onMsgJSON")
+	app.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 
