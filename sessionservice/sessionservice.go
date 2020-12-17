@@ -1,4 +1,4 @@
-package application
+package sessionservice
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,4 +41,16 @@ func UpdateSession(session *session.Session, keys ...string) {
 	})
 
 	<-waitChan
+}
+
+// GetSession 获取session
+func GetSession(CID, UID string) (sessionInc *session.Session) {
+	waitChan := make(chan bool, 1)
+	rpc.Request.ToServer(CID, nil, connector.HandlerMap.GetSession, nil, func(rpcResp *message.PineMsg) {
+		sessionInc := &session.Session{}
+		util.FromBytes(rpcResp.Data, sessionInc)
+		waitChan <- true
+	})
+	<-waitChan
+	return
 }

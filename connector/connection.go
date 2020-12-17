@@ -80,10 +80,19 @@ func (connection Connection) notify(notify *message.PineMsg) {
 	}
 }
 
+// GetSession 获取session
+func (connection Connection) GetSession() *session.Session {
+	session := &session.Session{
+		UID:  connection.uid,
+		CID:  config.GetServerConfig().ID,
+		Data: connection.data,
+	}
+	return session
+}
+
 // StartReceiveMsg 开始接收消息
 func (connection Connection) StartReceiveMsg() {
 
-	uid := connection.uid
 	conn := connection.conn
 
 	// 开始接收消息
@@ -132,11 +141,7 @@ func (connection Connection) StartReceiveMsg() {
 			handler = handlerInfos[1]    // 真正的handler
 		}
 
-		session := &session.Session{
-			UID:  uid,
-			CID:  config.GetServerConfig().ID,
-			Data: connection.data,
-		}
+		session := connection.GetSession()
 
 		rpcMsg := &message.RPCMsg{
 			From:      config.GetServerConfig().ID,
