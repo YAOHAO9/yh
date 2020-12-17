@@ -16,6 +16,8 @@ import (
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/sessionservice"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
@@ -52,8 +54,8 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMsg) {
-			fmt.Println("收到Rpc的回复：", string(rpcResp.Data))
+		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(data []byte) {
+			fmt.Println("收到Rpc的回复：", string(data))
 		})
 
 		handlerResp := &handlermessage.HandlerResp{
@@ -61,6 +63,12 @@ func main() {
 			Name:    "HandlerResp",
 			Message: "HandlerResp Message",
 		}
+
+		rpcCtx.Session.Set("hhhaaa", "有点一次=====")
+		sessionservice.UpdateSession(rpcCtx.Session)
+		sessionservice.GetSession(rpcCtx.Session.CID, rpcCtx.Session.UID, func(session *session.Session) {
+			logrus.Debug(session.Get("hhhaaa"))
+		})
 
 		bytes, _ = proto.Marshal(handlerResp)
 
@@ -83,8 +91,8 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsgJSON", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(rpcResp *message.PineMsg) {
-			fmt.Println("收到Rpc的回复：", string(rpcResp.Data))
+		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(data []byte) {
+			fmt.Println("收到Rpc的回复：", string(data))
 		})
 
 		bytes, _ = json.Marshal(map[string]interface{}{
@@ -114,7 +122,7 @@ func main() {
 			}
 
 			rpcCtx.Session.Set("lastEnterRoomTime", fmt.Sprint(time.Now().Unix()))
-			application.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
+			sessionservice.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
 		}
 		return true // 继续执行下个before filter直到执行handler
 	})

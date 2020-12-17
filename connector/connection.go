@@ -42,8 +42,8 @@ func (connection Connection) Set(key string, v string) {
 }
 
 // 回复request
-func (connection Connection) response(clientMsgResp *message.PineMsg) {
-	bytes, err := proto.Marshal(clientMsgResp)
+func (connection Connection) response(pineMsg *message.PineMsg) {
+	bytes, err := proto.Marshal(pineMsg)
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -177,11 +177,16 @@ func (connection Connection) StartReceiveMsg() {
 			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data)
 		} else {
 			// 转发Request
-			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(rpcResp *message.PineMsg) {
-				rpcResp.RequestID = clientMessage.RequestID
-				rpcResp.Route = clientMessage.Route
-				filter.After.Exec(rpcResp)
-				connection.response(rpcResp)
+			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(data []byte) {
+
+				pineMsg := &message.PineMsg{
+					RequestID: clientMessage.RequestID,
+					Route:     clientMessage.Route,
+					Data:      data,
+				}
+
+				filter.After.Exec(pineMsg)
+				connection.response(pineMsg)
 			})
 		}
 	}

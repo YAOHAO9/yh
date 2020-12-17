@@ -1,8 +1,10 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
+	"reflect"
 	"sync"
 	"time"
 
@@ -31,7 +33,7 @@ func genRequestID() *int32 {
 	return &requestID
 }
 
-var requestMap = make(map[int32]func(rpcResp *message.PineMsg))
+var requestMap = make(map[int32]interface{})
 
 var requestMapLock sync.RWMutex
 var websocketWriteLock sync.Mutex
@@ -45,8 +47,8 @@ type RPCClient struct {
 // SendMsg 发送消息
 func (client RPCClient) SendMsg(bytes []byte) {
 	websocketWriteLock.Lock()
+	defer websocketWriteLock.Unlock()
 	client.Conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
-	websocketWriteLock.Unlock()
 }
 
 // SendRPCNotify 发送RPC通知
@@ -56,7 +58,7 @@ func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb func(rpcResp *message.PineMsg)) {
+func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
 
 	rpcMsg.RequestID = genRequestID()
 
@@ -135,13 +137,51 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			}
 
 			// 执行回调函数
-			requestMapLock.RLock()
 			requestFunc, ok := requestMap[*rpcResp.RequestID]
+
 			if ok {
 				delete(requestMap, *rpcResp.RequestID)
-				requestFunc(rpcResp)
+				paramType := reflect.TypeOf(requestFunc).In(0)
+
+				var dataInterface interface{}
+				if paramType.Kind() == reflect.Ptr {
+					dataInterface = reflect.New(paramType.Elem()).Interface()
+				} else {
+					dataInterface = reflect.New(paramType).Interface()
+				}
+
+				msesage, ok := dataInterface.(proto.Message)
+				if ok { // proto buf
+
+					proto.Unmarshal(rpcResp.Data, msesage)
+					var param reflect.Value
+					if paramType.Kind() == reflect.Ptr {
+						param = reflect.ValueOf(msesage)
+					} else {
+						param = reflect.ValueOf(msesage).Elem()
+					}
+					// 执行handler
+					reflect.ValueOf(requestFunc).Call([]reflect.Value{
+						param,
+					})
+				} else { // json
+					dataInterface = reflect.New(paramType).Interface()
+					if paramType.Kind() == reflect.Slice && paramType.Elem().Kind() == reflect.Uint8 {
+						// 执行handler
+						reflect.ValueOf(requestFunc).Call([]reflect.Value{
+							reflect.ValueOf(rpcResp.Data),
+						})
+						continue
+					}
+
+					json.Unmarshal(rpcResp.Data, dataInterface)
+
+					// 执行handler
+					reflect.ValueOf(requestFunc).Call([]reflect.Value{
+						reflect.ValueOf(dataInterface).Elem(),
+					})
+				}
 			}
-			requestMapLock.RUnlock()
 		}
 	}()
 

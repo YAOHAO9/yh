@@ -5,7 +5,6 @@ import (
 
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
-	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
@@ -34,23 +33,18 @@ func UpdateSession(session *session.Session, keys ...string) {
 		return
 	}
 
-	waitChan := make(chan bool, 1)
 	bytes, _ := json.Marshal(data)
-	rpc.Request.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes, func(rpcResp *message.PineMsg) {
-		waitChan <- true
-	})
+	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes)
 
-	<-waitChan
 }
 
 // GetSession 获取session
-func GetSession(CID, UID string) (sessionInc *session.Session) {
-	waitChan := make(chan bool, 1)
-	rpc.Request.ToServer(CID, nil, connector.HandlerMap.GetSession, nil, func(rpcResp *message.PineMsg) {
-		sessionInc := &session.Session{}
-		util.FromBytes(rpcResp.Data, sessionInc)
-		waitChan <- true
-	})
-	<-waitChan
+func GetSession(CID, UID string, f func(session *session.Session)) {
+
+	data := map[string]string{
+		"UID": UID,
+		"CID": CID,
+	}
+	rpc.Request.ToServer(CID, nil, connector.HandlerMap.GetSession, util.ToBytes(data), f)
 	return
 }
