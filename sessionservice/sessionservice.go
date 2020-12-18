@@ -5,6 +5,7 @@ import (
 
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
@@ -16,7 +17,12 @@ func UpdateSession(session *session.Session, keys ...string) {
 	// 更新session中所有的数据
 	if len(keys) == 0 {
 		bytes, _ := json.Marshal(session.Data)
-		rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes)
+		rpcMsg := &message.RPCMsg{
+			Session: session,
+			Handler: connector.HandlerMap.UpdateSession,
+			RawData: bytes,
+		}
+		rpc.Notify.ToServer(session.CID, rpcMsg)
 		return
 	}
 
@@ -34,7 +40,12 @@ func UpdateSession(session *session.Session, keys ...string) {
 	}
 
 	bytes, _ := json.Marshal(data)
-	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.UpdateSession, bytes)
+	rpcMsg := &message.RPCMsg{
+		Session: session,
+		Handler: connector.HandlerMap.UpdateSession,
+		RawData: bytes,
+	}
+	rpc.Notify.ToServer(session.CID, rpcMsg)
 
 }
 
@@ -45,6 +56,10 @@ func GetSession(CID, UID string, f func(session *session.Session)) {
 		"UID": UID,
 		"CID": CID,
 	}
-	rpc.Request.ToServer(CID, nil, connector.HandlerMap.GetSession, util.ToBytes(data), f)
+	rpcMsg := &message.RPCMsg{
+		Handler: connector.HandlerMap.GetSession,
+		RawData: util.ToBytes(data),
+	}
+	rpc.Request.ToServer(CID, rpcMsg, f)
 	return
 }

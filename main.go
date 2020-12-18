@@ -54,7 +54,13 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(data []byte) {
+
+		rpcMsg := &message.RPCMsg{
+			Handler: "getOneRobot",
+			RawData: []byte{},
+		}
+
+		rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
 			fmt.Println("收到Rpc的回复：", string(data))
 		})
 
@@ -91,7 +97,10 @@ func main() {
 		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsgJSON", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpc.Request.ByKind("connector", nil, "getOneRobot", nil, func(data []byte) {
+		rpcMsg := &message.RPCMsg{
+			Handler: "getOneRobot",
+		}
+		rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
 			fmt.Println("收到Rpc的回复：", string(data))
 		})
 

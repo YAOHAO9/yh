@@ -18,9 +18,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// HandlerPrefix  Handler 前缀
-var HandlerPrefix = ""
-
 var mutex sync.Mutex
 
 // Connection 用户连接信息
@@ -146,6 +143,7 @@ func (connection Connection) StartReceiveMsg() {
 		rpcMsg := &message.RPCMsg{
 			From:      config.GetServerConfig().ID,
 			Handler:   handler,
+			Type:      message.RemoterTypeEnum.HANDLER,
 			RequestID: clientMessage.RequestID,
 			RawData:   clientMessage.Data,
 			Session:   session,
@@ -174,10 +172,10 @@ func (connection Connection) StartReceiveMsg() {
 		}
 
 		if *clientMessage.RequestID == 0 {
-			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data)
+			rpc.Notify.ToServer(rpcClient.ServerConfig.ID, rpcMsg)
 		} else {
 			// 转发Request
-			rpc.Request.ToServer(rpcClient.ServerConfig.ID, session, HandlerPrefix+handler, clientMessage.Data, func(data []byte) {
+			rpc.Request.ToServer(rpcClient.ServerConfig.ID, rpcMsg, func(data []byte) {
 
 				pineMsg := &message.PineMsg{
 					RequestID: clientMessage.RequestID,

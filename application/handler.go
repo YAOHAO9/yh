@@ -1,33 +1,16 @@
 package application
 
 import (
-	"regexp"
-
-	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc/handler"
-	"github.com/sirupsen/logrus"
+	"github.com/YAOHAO9/pine/rpc/handler/remoter"
 )
 
 // RegisteHandler 注册Handler
 func (app Application) RegisteHandler(name string, f interface{}) {
-	handler.Manager.Register(connector.HandlerPrefix+name, f)
+	handler.Manager.Register(name, f)
 }
 
 // RegisteRemoter 注册RPC Handler
 func (app Application) RegisteRemoter(name string, f interface{}) {
-
-	result, err := regexp.MatchString("^__", name)
-
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	if result {
-		logrus.Error("Remote can not start with __")
-		return
-	}
-
-	handler.Manager.Register(name, f)
-
+	remoter.Manager.Register(name, f)
 }

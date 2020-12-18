@@ -25,6 +25,15 @@ var TypeEnum = struct {
 	PongMessage:   10,
 }
 
+// RemoterTypeEnum 消息类型枚举
+var RemoterTypeEnum = struct {
+	HANDLER int32
+	REMOTER int32
+}{
+	REMOTER: 1,
+	HANDLER: 2,
+}
+
 // StatusCode 消息状态码
 var StatusCode = struct {
 	Successful int

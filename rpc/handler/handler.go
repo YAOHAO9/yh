@@ -4,21 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"regexp"
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler/routercompress"
+	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
+	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
-
-// Resp handler返回值
-type Resp struct {
-	Code int
-	Data interface{}
-}
 
 // Map handler函数仓库
 type Map map[string]interface{}
@@ -31,7 +26,7 @@ type Handler struct {
 // Register handler
 func (handler *Handler) Register(handlerName string, handlerFunc interface{}) {
 
-	routercompress.AddHandlerRecord(handlerName)
+	handlercompress.AddHandlerRecord(handlerName)
 
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {
@@ -55,105 +50,86 @@ func (handler *Handler) Register(handlerName string, handlerFunc interface{}) {
 }
 
 // Exec 执行handler
-func (handler *Handler) Exec(rpcCtx *context.RPCCtx) {
+func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 
-	handlerInterface, ok := handler.Map[rpcCtx.GetHandler()]
-
-	if ok {
-		defer func() {
-			// 错误处理
-			if err := recover(); err != nil {
-				if entry, ok := err.(*logrus.Entry); ok {
-					err, _ := (&logrus.JSONFormatter{}).Format(entry)
-					rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
-					return
-				}
-				logrus.Error(err)
-				if rpcCtx.GetRequestID() > 0 {
-					rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
-				}
-			}
-		}()
-
-		if rpcCtx.GetRequestID() > 0 {
-			go time.AfterFunc(time.Minute, func() {
-				if rpcCtx.GetRequestID() != -1 {
-					logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
-					rpcCtx.SendMsg([]byte(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler())))
-				}
-			})
-		}
-
-		paramType := reflect.TypeOf(handlerInterface).In(1)
-
-		var dataInterface interface{}
-		if paramType.Kind() == reflect.Ptr {
-			dataInterface = reflect.New(paramType.Elem()).Interface()
-		} else {
-			dataInterface = reflect.New(paramType).Interface()
-		}
-
-		msesage, ok := dataInterface.(proto.Message)
-		if ok { // proto buf
-
-			proto.Unmarshal(rpcCtx.RawData, msesage)
-			var param reflect.Value
-			if paramType.Kind() == reflect.Ptr {
-				param = reflect.ValueOf(msesage)
-			} else {
-				param = reflect.ValueOf(msesage).Elem()
-			}
-			// 执行handler
-			reflect.ValueOf(handlerInterface).Call([]reflect.Value{
-				reflect.ValueOf(rpcCtx),
-				param,
-			})
-		} else { // json
-			dataInterface = reflect.New(paramType).Interface()
-			if paramType.Kind() == reflect.Slice && paramType.Elem().Kind() == reflect.Uint8 {
-				// 执行handler
-				reflect.ValueOf(handlerInterface).Call([]reflect.Value{
-					reflect.ValueOf(rpcCtx),
-					reflect.ValueOf(rpcCtx.RawData),
-				})
+	defer func() {
+		// 错误处理
+		if err := recover(); err != nil {
+			if entry, ok := err.(*logrus.Entry); ok {
+				err, _ := (&logrus.JSONFormatter{}).Format(entry)
+				rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
 				return
 			}
+			fmt.Println(err)
+			logrus.Error(err)
+			logrus.Warn(rpcCtx)
+			if rpcCtx.GetRequestID() > 0 {
+				rpcCtx.SendMsg(util.ToBytes(&session.Session{UID: "adfasdfasdf"}))
+			}
+		}
+	}()
 
-			json.Unmarshal(rpcCtx.RawData, dataInterface)
+	handlerInterface, exist := handler.Map[rpcCtx.GetHandler()]
 
+	if !exist {
+		return
+	}
+
+	if rpcCtx.GetRequestID() > 0 {
+		go time.AfterFunc(time.Minute, func() {
+			if rpcCtx.GetRequestID() != -1 {
+				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+				rpcCtx.SendMsg([]byte(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler())))
+			}
+		})
+	}
+
+	paramType := reflect.TypeOf(handlerInterface).In(1)
+
+	var dataInterface interface{}
+	if paramType.Kind() == reflect.Ptr {
+		dataInterface = reflect.New(paramType.Elem()).Interface()
+	} else {
+		dataInterface = reflect.New(paramType).Interface()
+	}
+
+	msesage, ok := dataInterface.(proto.Message)
+	if ok { // proto buf
+
+		proto.Unmarshal(rpcCtx.RawData, msesage)
+		var param reflect.Value
+		if paramType.Kind() == reflect.Ptr {
+			param = reflect.ValueOf(msesage)
+		} else {
+			param = reflect.ValueOf(msesage).Elem()
+		}
+		// 执行handler
+		reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+			reflect.ValueOf(rpcCtx),
+			param,
+		})
+	} else { // json
+		dataInterface = reflect.New(paramType).Interface()
+		if paramType.Kind() == reflect.Slice && paramType.Elem().Kind() == reflect.Uint8 {
 			// 执行handler
 			reflect.ValueOf(handlerInterface).Call([]reflect.Value{
 				reflect.ValueOf(rpcCtx),
-				reflect.ValueOf(dataInterface).Elem(),
+				reflect.ValueOf(rpcCtx.RawData),
 			})
+			return
 		}
+
+		json.Unmarshal(rpcCtx.RawData, dataInterface)
 
 		// 执行handler
-
-	} else {
-		handler := rpcCtx.GetHandler()
-
-		reg, _ := regexp.Compile("^__")
-
-		if reg.MatchString(handler) {
-
-			realHandler := reg.ReplaceAll([]byte(rpcCtx.GetHandler()), []byte(""))
-			rpcCtx.SetHandler(string(realHandler))
-			if rpcCtx.GetRequestID() == 0 {
-				logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
-			} else {
-				rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
-			}
-
-		} else {
-			if rpcCtx.GetRequestID() == 0 {
-				logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
-			} else {
-				rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
-			}
-		}
-
+		reflect.ValueOf(handlerInterface).Call([]reflect.Value{
+			reflect.ValueOf(rpcCtx),
+			reflect.ValueOf(dataInterface).Elem(),
+		})
 	}
+
+	return
+
 }
 
 // Manager return RPCHandler

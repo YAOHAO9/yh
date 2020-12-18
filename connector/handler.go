@@ -11,7 +11,8 @@ import (
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
-	"github.com/YAOHAO9/pine/rpc/handler/routercompress"
+	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
+	"github.com/YAOHAO9/pine/rpc/handler/remoter"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/util"
@@ -45,7 +46,11 @@ func checkFileIsExist(filename string) bool {
 
 func init() {
 	// 更新Session
-	handler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
+	remoter.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
+		if rpcCtx.Session == nil {
+			logrus.Error("Session 为 nil")
+			return
+		}
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
@@ -62,7 +67,7 @@ func init() {
 	})
 
 	// 推送消息
-	handler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
+	remoter.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
@@ -118,7 +123,7 @@ func init() {
 		result["client"] = string(clientProtoCentent)
 
 		// handlers
-		handlers := routercompress.GetHandlers()
+		handlers := handlercompress.GetHandlers()
 		result["handlers"] = handlers
 
 		// events
@@ -134,12 +139,12 @@ func init() {
 	})
 
 	// 推送消息
-	handler.Manager.Register(HandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
+	remoter.Manager.Register(HandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
 		logrus.Warn(hash)
 	})
 
 	// 获取Session
-	handler.Manager.Register(HandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
+	remoter.Manager.Register(HandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
 		CID string
 		UID string
 	}) {

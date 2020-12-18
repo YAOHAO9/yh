@@ -10,6 +10,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
@@ -54,7 +55,7 @@ func (client RPCClient) SendMsg(bytes []byte) {
 // SendRPCNotify 发送RPC通知
 func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
-	client.SendMsg(message.ToBytes(rpcMsg))
+	client.SendMsg(util.ToBytes(rpcMsg))
 }
 
 // SendRPCRequest 发送RPC请求
@@ -65,7 +66,7 @@ func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
 	requestMapLock.Lock()
 	requestMap[requestID] = cb
 	requestMapLock.Unlock()
-	client.SendMsg(message.ToBytes(rpcMsg))
+	client.SendMsg(util.ToBytes(rpcMsg))
 }
 
 // StartClient websocket client
@@ -137,7 +138,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			}
 
 			// 执行回调函数
+			requestMapLock.RLock()
 			requestFunc, ok := requestMap[*rpcResp.RequestID]
+			requestMapLock.RUnlock()
 
 			if ok {
 				delete(requestMap, *rpcResp.RequestID)

@@ -100,6 +100,10 @@ func PushMessageBySession(session *session.Session, event string, data []byte) {
 	}
 
 	bytes, _ := proto.Marshal(notify)
-
-	rpc.Notify.ToServer(session.CID, session, connector.HandlerMap.PushMessage, bytes)
+	rpcMsg := &message.RPCMsg{
+		Handler: connector.HandlerMap.PushMessage,
+		RawData: bytes,
+		Session: session,
+	}
+	rpc.Notify.ToServer(session.CID, rpcMsg)
 }

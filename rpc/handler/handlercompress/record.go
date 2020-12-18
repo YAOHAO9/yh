@@ -1,4 +1,4 @@
-package routercompress
+package handlercompress
 
 var handlerToCode = make(map[string]byte)
 

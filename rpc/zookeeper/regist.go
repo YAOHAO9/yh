@@ -11,6 +11,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/handler"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -145,7 +146,11 @@ func watch() {
 							i++
 						}
 						bytes, _ := json.Marshal(keys)
-						rpc.Notify.ToServer(serverConfig.ID, nil, connector.HandlerMap.RouterRecords, bytes)
+						rpcMsg := &message.RPCMsg{
+							Handler: connector.HandlerMap.RouterRecords,
+							RawData: bytes,
+						}
+						rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
 					}
 					break
 				}

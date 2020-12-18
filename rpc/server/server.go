@@ -8,6 +8,7 @@ import (
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
+	"github.com/YAOHAO9/pine/rpc/handler/remoter"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
 	"github.com/golang/protobuf/proto"
@@ -82,7 +83,28 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		handler.Manager.Exec(rpcCtx)
+		if rpcMsg.Type == message.RemoterTypeEnum.HANDLER {
+			ok := handler.Manager.Exec(rpcCtx)
+			if !ok {
+				if rpcCtx.GetRequestID() == 0 {
+					logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
+				} else {
+					rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
+				}
+			}
+
+		} else if rpcMsg.Type == message.RemoterTypeEnum.REMOTER {
+			ok := remoter.Manager.Exec(rpcCtx)
+			if !ok {
+				if rpcCtx.GetRequestID() == 0 {
+					logrus.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
+				} else {
+					rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
+				}
+			}
+		} else {
+			logrus.Panic("无效的消息类型")
+		}
 	}
 }
 

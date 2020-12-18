@@ -5,10 +5,12 @@ import "session.proto";
 
 option go_package = "../rpc/message";
 
+
 message RPCMsg {
-    string From      =1;
-	string Handler   =2;
-    bytes  RawData   =3;
-    optional int32 RequestID =4;
-	Session Session   =5;
+    string From                 =1;
+    string Handler              =2;
+    int32 Type                   =3;
+    bytes  RawData              =4;
+    optional int32 RequestID    =5;
+	Session Session             =6;
 }
