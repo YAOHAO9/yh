@@ -8,7 +8,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
@@ -25,8 +24,6 @@ type Handler struct {
 
 // Register handler
 func (handler *Handler) Register(handlerName string, handlerFunc interface{}) {
-
-	handlercompress.AddHandlerRecord(handlerName)
 
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {
@@ -127,12 +124,5 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 			reflect.ValueOf(dataInterface).Elem(),
 		})
 	}
-
 	return
-
-}
-
-// Manager return RPCHandler
-var Manager = &Handler{
-	Map: make(Map),
 }

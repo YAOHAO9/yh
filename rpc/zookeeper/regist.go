@@ -10,8 +10,8 @@ import (
 	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
-	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -139,9 +139,9 @@ func watch() {
 					}
 
 					if serverConfig.IsConnector {
-						keys := make([]string, len(handler.Manager.Map), len(handler.Manager.Map))
+						keys := make([]string, len(clienthandler.Manager.Map), len(clienthandler.Manager.Map))
 						i := 0
-						for key := range handler.Manager.Map {
+						for key := range clienthandler.Manager.Map {
 							keys[i] = key
 							i++
 						}

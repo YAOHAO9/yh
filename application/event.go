@@ -1,6 +1,6 @@
 package application
 
-import "github.com/YAOHAO9/pine/channelservice/eventcompress"
+import "github.com/YAOHAO9/pine/application/channelservice/eventcompress"
 
 // // AddEventCompressRecord 添加路由压缩记录
 // func (app *Application) AddEventCompressRecord(eventName string) {

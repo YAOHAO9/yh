@@ -3,8 +3,8 @@ package channelservice
 import (
 	"sync"
 
+	"github.com/YAOHAO9/pine/application/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/application/config"
-	"github.com/YAOHAO9/pine/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"

@@ -7,9 +7,9 @@ import (
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler"
-	"github.com/YAOHAO9/pine/rpc/handler/remoter"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
+	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -84,7 +84,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if rpcMsg.Type == message.RemoterTypeEnum.HANDLER {
-			ok := handler.Manager.Exec(rpcCtx)
+			ok := clienthandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
@@ -94,7 +94,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else if rpcMsg.Type == message.RemoterTypeEnum.REMOTER {
-			ok := remoter.Manager.Exec(rpcCtx)
+			ok := serverhandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))

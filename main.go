@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
-	"github.com/YAOHAO9/pine/channelservice"
+	"github.com/YAOHAO9/pine/application/channelservice"
+	"github.com/YAOHAO9/pine/application/sessionservice"
 	"github.com/YAOHAO9/pine/handlermessage"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
-	"github.com/YAOHAO9/pine/sessionservice"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
