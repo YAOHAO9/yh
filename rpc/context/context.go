@@ -6,7 +6,7 @@ import (
 
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
-	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
+	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -40,7 +40,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 func (rpcCtx *RPCCtx) GetHandler() string {
 	bytes := []byte(rpcCtx.handler)
 	if len(bytes) == 1 {
-		handlerName := handlercompress.GetHandlerByCode(bytes[0])
+		handlerName := compressservice.Handler.GetHandlerByCode(bytes[0])
 		if handlerName != "" {
 			return handlerName
 		}

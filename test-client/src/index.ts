@@ -13,14 +13,15 @@ import Pine from 'pine-client'
         console.warn('onMsgJSON', data)
     })
 
-    // const requestData = { Name: 'Proto request', Age: 18 }
-    // for (let i = 0; i < 100; i++) {
-    //     pine.request('connector.handler', requestData, (response) => {
-    //         console.warn('Response:', response)
-    //     })
-    // }
-
     await pine.fetchProto('connector')
+    const requestData = { Name: 'Proto request', Age: 18 }
+    for (let i = 0; i < 10; i++) {
+        pine.request('connector.handler', requestData, (response) => {
+            console.warn('Response:', response)
+        })
+    }
+
+
     const requestDataJSON = { Name: 'JSON request', hahahahah: 18 }
     pine.request('connector.handler', requestDataJSON, (data) => {
         console.warn(data)

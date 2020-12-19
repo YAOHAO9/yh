@@ -3,12 +3,12 @@ package channelservice
 import (
 	"sync"
 
-	"github.com/YAOHAO9/pine/application/channelservice/eventcompress"
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -84,7 +84,7 @@ func (channel Channel) Add(uid string, session *session.Session) {
 // PushMessageBySession 通过session推送消息
 func PushMessageBySession(session *session.Session, event string, data []byte) {
 
-	code := eventcompress.GetCodeByEvent(event)
+	code := compressservice.Event.GetCodeByEvent(event)
 
 	var notify *message.PineMsg
 	if code != 0 {

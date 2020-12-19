@@ -2,7 +2,7 @@ package clienthandler
 
 import (
 	"github.com/YAOHAO9/pine/rpc/handler"
-	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
+	"github.com/YAOHAO9/pine/service/compressservice"
 )
 
 // ClientHandler rpc
@@ -19,6 +19,6 @@ var Manager = &ClientHandler{
 
 // Register remoter
 func (clienthandler *ClientHandler) Register(handlerName string, remoterFunc interface{}) {
-	handlercompress.AddHandlerRecord(handlerName)
+	compressservice.Handler.AddHandlerRecord(handlerName)
 	clienthandler.Handler.Register(handlerName, remoterFunc)
 }

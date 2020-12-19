@@ -6,15 +6,13 @@ import (
 	"os"
 	"path"
 
-	"github.com/YAOHAO9/pine/application/channelservice/eventcompress"
-	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
-	"github.com/YAOHAO9/pine/rpc/handler/handlercompress"
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
@@ -76,7 +74,7 @@ func init() {
 		if len([]byte(data.Route)) == 1 {
 			client := clientmanager.GetClientByID(rpcCtx.From)
 			if client != nil {
-				code := serverdict.GetCodeByKind(client.ServerConfig.Kind)
+				code := compressservice.Server.GetCodeByKind(client.ServerConfig.Kind)
 				data.Route = string([]byte{code}) + data.Route
 			}
 		}
@@ -123,11 +121,11 @@ func init() {
 		result["client"] = string(clientProtoCentent)
 
 		// handlers
-		handlers := handlercompress.GetHandlers()
+		handlers := compressservice.Handler.GetHandlers()
 		result["handlers"] = handlers
 
 		// events
-		result["events"] = eventcompress.GetEvents()
+		result["events"] = compressservice.Event.GetEvents()
 
 		bytes, err := json.Marshal(result)
 		if err != nil {

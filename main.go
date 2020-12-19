@@ -10,14 +10,15 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
-	"github.com/YAOHAO9/pine/application/channelservice"
-	"github.com/YAOHAO9/pine/application/sessionservice"
 	"github.com/YAOHAO9/pine/handlermessage"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/service/channelservice"
+	"github.com/YAOHAO9/pine/service/compressservice"
+	"github.com/YAOHAO9/pine/service/sessionservice"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +27,7 @@ func main() {
 
 	app := application.CreateApp()
 
-	app.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
+	compressservice.Event.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 

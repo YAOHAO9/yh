@@ -7,11 +7,11 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
-	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
-	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
+	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -135,7 +135,7 @@ func watch() {
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
 
 					if config.GetServerConfig().IsConnector {
-						serverdict.AddRecord(serverConfig.Kind)
+						compressservice.Server.AddRecord(serverConfig.Kind)
 					}
 
 					if serverConfig.IsConnector {

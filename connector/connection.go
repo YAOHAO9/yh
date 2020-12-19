@@ -7,12 +7,12 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector/filter"
-	"github.com/YAOHAO9/pine/connector/serverdict"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -130,7 +130,7 @@ func (connection Connection) StartReceiveMsg() {
 		routeBytes := []byte(clientMessage.Route)
 
 		if len(routeBytes) == 2 {
-			serverKind = serverdict.GetKindByCode(routeBytes[0])
+			serverKind = compressservice.Server.GetKindByCode(routeBytes[0])
 			handler = string(routeBytes[1])
 		} else {
 			handlerInfos := strings.Split(clientMessage.Route, ".")
