@@ -7,9 +7,9 @@ import (
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/compressservice"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/proto"
 )
 
 var sendMsgMutex sync.Mutex
@@ -94,15 +94,9 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		Data:      data,
 	}
 
-	bytes, err := proto.Marshal(rpcResp)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
 	sendMsgMutex.Lock()
 	defer sendMsgMutex.Unlock()
-	err = rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
+	err := rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(rpcResp))
 	if err != nil {
 		logrus.Error(err)
 	}

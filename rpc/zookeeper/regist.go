@@ -12,6 +12,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/service/compressservice"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -54,11 +55,6 @@ func initNode() {
 		zkClient.create(rootPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
 	}
 
-	// 解析服务器配置信息
-	nodeInfo, err := json.Marshal(serverConfig)
-	if err != nil {
-		logrus.Panic(err)
-	}
 	// 检查服务器数据节点是否存在，不存在则创建
 	nodePath := fmt.Sprint(rootPath, "/", serverConfig.ID)
 
@@ -80,7 +76,7 @@ func initNode() {
 		logrus.Panic(fmt.Sprint("Duplicated server."))
 	}
 
-	zkClient.create(nodePath, nodeInfo, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	zkClient.create(nodePath, util.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	zkClient.serverID = serverConfig.ID
 	logrus.Info("Node created:", nodePath)
 }
@@ -145,10 +141,9 @@ func watch() {
 							keys[i] = key
 							i++
 						}
-						bytes, _ := json.Marshal(keys)
 						rpcMsg := &message.RPCMsg{
-							Handler: connector.HandlerMap.RouterRecords,
-							RawData: bytes,
+							Handler: connector.SysHandlerMap.RouterRecords,
+							RawData: util.ToBytes(keys),
 						}
 						rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
 					}

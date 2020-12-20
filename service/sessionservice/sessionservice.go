@@ -1,8 +1,6 @@
 package sessionservice
 
 import (
-	"encoding/json"
-
 	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
@@ -16,11 +14,10 @@ func UpdateSession(session *session.Session, keys ...string) {
 
 	// 更新session中所有的数据
 	if len(keys) == 0 {
-		bytes, _ := json.Marshal(session.Data)
 		rpcMsg := &message.RPCMsg{
 			Session: session,
-			Handler: connector.HandlerMap.UpdateSession,
-			RawData: bytes,
+			Handler: connector.SysHandlerMap.UpdateSession,
+			RawData: util.ToBytes(session.Data),
 		}
 		rpc.Notify.ToServer(session.CID, rpcMsg)
 		return
@@ -39,11 +36,10 @@ func UpdateSession(session *session.Session, keys ...string) {
 		return
 	}
 
-	bytes, _ := json.Marshal(data)
 	rpcMsg := &message.RPCMsg{
 		Session: session,
-		Handler: connector.HandlerMap.UpdateSession,
-		RawData: bytes,
+		Handler: connector.SysHandlerMap.UpdateSession,
+		RawData: util.ToBytes(data),
 	}
 	rpc.Notify.ToServer(session.CID, rpcMsg)
 
@@ -52,8 +48,8 @@ func UpdateSession(session *session.Session, keys ...string) {
 // CreateSession create session
 func CreateSession(CID, UID string) *session.Session {
 	session := &session.Session{
-		UID:  CID,
-		CID:  UID,
+		UID:  UID,
+		CID:  CID,
 		Data: make(map[string]string),
 	}
 	return session
@@ -67,7 +63,7 @@ func GetSession(CID, UID string, f func(session *session.Session)) {
 		"CID": CID,
 	}
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.HandlerMap.GetSession,
+		Handler: connector.SysHandlerMap.GetSession,
 		RawData: util.ToBytes(data),
 	}
 	rpc.Request.ToServer(CID, rpcMsg, f)
@@ -82,11 +78,9 @@ func KickBySession(session *session.Session, data interface{}) {
 // Kick 将玩家踢下线
 func Kick(CID, UID string, data interface{}) {
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.HandlerMap.Kick,
-		RawData: util.ToBytes(map[string]interface{}{
-			"UID":  UID,
-			"Data": util.ToBytes(data),
-		}),
+		Handler: connector.SysHandlerMap.Kick,
+		Session: CreateSession(CID, UID),
+		RawData: util.ToBytes(data),
 	}
 	rpc.Notify.ToServer(CID, rpcMsg)
 }

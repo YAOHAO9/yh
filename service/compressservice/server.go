@@ -1,9 +1,7 @@
 package compressservice
 
 import (
-	"encoding/json"
-
-	"github.com/sirupsen/logrus"
+	"github.com/YAOHAO9/pine/util"
 )
 
 type serverCompress struct {
@@ -40,15 +38,11 @@ func (sc *serverCompress) GetCodeByKind(serverKind string) byte {
 
 // ToBytes get json bytes
 func (sc *serverCompress) ToBytes() []byte {
-	bytes, err := json.Marshal(map[string]interface{}{
+
+	return util.ToBytes(map[string]interface{}{
 		"kindToCode": sc.kindToCode,
 		"codeToKind": sc.codeToKind,
 	})
-	if err != nil {
-		logrus.Error(err)
-		return []byte{123, 125}
-	}
-	return bytes
 }
 
 // Server map

@@ -9,7 +9,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/golang/protobuf/proto"
+	"github.com/YAOHAO9/pine/util"
 )
 
 var lock sync.RWMutex
@@ -17,8 +17,16 @@ var lock sync.RWMutex
 // Channel ChannelService
 type Channel map[string]*session.Session
 
+func compressEvent(event string) string {
+	code := compressservice.Event.GetCodeByEvent(event)
+	if code != 0 {
+		return string(code)
+	}
+	return config.GetServerConfig().Kind + "." + event
+}
+
 // PushMessage 推送消息给所有人
-func (channel Channel) PushMessage(event string, data []byte) {
+func (channel Channel) PushMessage(event string, data interface{}) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -29,7 +37,7 @@ func (channel Channel) PushMessage(event string, data []byte) {
 }
 
 // PushMessageToOthers 推送消息给其他人
-func (channel Channel) PushMessageToOthers(uids []string, event string, data []byte) {
+func (channel Channel) PushMessageToOthers(uids []string, event string, data interface{}) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -49,7 +57,7 @@ func (channel Channel) PushMessageToOthers(uids []string, event string, data []b
 }
 
 // PushMessageToUsers 推送消息给指定玩家
-func (channel Channel) PushMessageToUsers(uids []string, event string, data []byte) {
+func (channel Channel) PushMessageToUsers(uids []string, event string, data interface{}) {
 
 	for _, uid := range uids {
 		channel.PushMessageToUser(uid, event, data)
@@ -58,7 +66,7 @@ func (channel Channel) PushMessageToUsers(uids []string, event string, data []by
 }
 
 // PushMessageToUser 推送消息给指定玩家
-func (channel Channel) PushMessageToUser(uid string, event string, data []byte) {
+func (channel Channel) PushMessageToUser(uid string, event string, data interface{}) {
 
 	lock.RLock()
 	defer lock.RUnlock()
@@ -82,28 +90,33 @@ func (channel Channel) Add(uid string, session *session.Session) {
 }
 
 // PushMessageBySession 通过session推送消息
-func PushMessageBySession(session *session.Session, event string, data []byte) {
+func PushMessageBySession(session *session.Session, event string, data interface{}) {
 
-	code := compressservice.Event.GetCodeByEvent(event)
-
-	var notify *message.PineMsg
-	if code != 0 {
-		notify = &message.PineMsg{
-			Route: string(code),
-			Data:  data,
-		}
-	} else {
-		notify = &message.PineMsg{
-			Route: config.GetServerConfig().Kind + "." + event,
-			Data:  data,
-		}
+	notify := &message.PineMsg{
+		Route: compressEvent(event),
+		Data:  util.ToBytes(data),
 	}
 
-	bytes, _ := proto.Marshal(notify)
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.HandlerMap.PushMessage,
-		RawData: bytes,
+		Handler: connector.SysHandlerMap.PushMessage,
+		RawData: util.ToBytes(notify),
 		Session: session,
 	}
 	rpc.Notify.ToServer(session.CID, rpcMsg)
+}
+
+// BroadCast 广播
+func BroadCast(event string, data interface{}) {
+
+	pineMsg := &message.PineMsg{
+		Route: compressEvent(event),
+		Data:  util.ToBytes(data),
+	}
+
+	rpcMsg := &message.RPCMsg{
+		Handler: connector.SysHandlerMap.BroadCast,
+		RawData: util.ToBytes(pineMsg),
+	}
+
+	rpc.BroadCast(rpcMsg)
 }

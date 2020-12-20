@@ -75,6 +75,20 @@ func (req request) ByKind(serverKind string, rpcMsg *message.RPCMsg, f interface
 	rpcClient.SendRPCRequest(rpcMsg, f)
 }
 
+// BroadCast 广播
+func BroadCast(rpcMsg *message.RPCMsg) {
+	clients := clientmanager.GetClientsByKind("connector")
+
+	rpcMsg.From = config.GetServerConfig().ID
+	if rpcMsg.Type == 0 {
+		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
+	}
+
+	for _, rpcClient := range clients {
+		rpcClient.SendRPCNotify(rpcMsg)
+	}
+}
+
 // Notify 实例
 var Notify notify
 

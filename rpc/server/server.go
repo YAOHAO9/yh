@@ -2,7 +2,10 @@ package server
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
@@ -11,6 +14,8 @@ import (
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
+	"github.com/YAOHAO9/pine/service/compressservice"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
@@ -111,4 +116,60 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 // 注册到zookeeper
 func registToZk() {
 	zookeeper.Start()
+}
+
+func checkFileIsExist(filename string) bool {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func init() {
+	var serverProtoCentent []byte
+	var clientProtoCentent []byte
+
+	// 获取proto file
+	clienthandler.Manager.Register("__FetchProto__", func(rpcCtx *context.RPCCtx, hash string) {
+		pwd, _ := os.Getwd()
+
+		serverProto := path.Join(pwd, "/proto/server.proto")
+		clientProto := path.Join(pwd, "/proto/client.proto")
+
+		var result = map[string]interface{}{}
+
+		// server proto
+		if serverProtoCentent == nil && checkFileIsExist(serverProto) {
+			var err error
+			serverProtoCentent, err = ioutil.ReadFile(serverProto)
+
+			if err != nil {
+				logrus.Error(err)
+				return
+			}
+		}
+		result["server"] = string(serverProtoCentent)
+
+		// client proto
+		if clientProtoCentent == nil && checkFileIsExist(clientProto) {
+			var err error
+			clientProtoCentent, err = ioutil.ReadFile(clientProto)
+
+			if err != nil {
+				logrus.Error(err)
+				return
+			}
+
+		}
+		result["client"] = string(clientProtoCentent)
+
+		// handlers
+		handlers := compressservice.Handler.GetHandlers()
+		result["handlers"] = handlers
+
+		// events
+		result["events"] = compressservice.Event.GetEvents()
+
+		rpcCtx.SendMsg(util.ToBytes(result))
+	})
 }

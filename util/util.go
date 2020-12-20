@@ -23,7 +23,7 @@ func ToBytes(v interface{}) []byte {
 	if err != nil {
 		logrus.Error("JSON消息encode失败", err)
 
-		return []byte{}
+		return []byte{123, 125}
 	}
 	return bytes
 }

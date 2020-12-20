@@ -1,14 +1,8 @@
 package connector
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path"
-
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
@@ -17,36 +11,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// HandlerMap 系统PRC枚举
-var HandlerMap = struct {
+// SysHandlerMap 系统PRC枚举
+var SysHandlerMap = struct {
 	PushMessage   string
 	UpdateSession string
-	FetchProto    string
 	RouterRecords string
 	GetSession    string
 	Kick          string
+	BroadCast     string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
-	FetchProto:    "__FetchProto__",
 	RouterRecords: "__RouterRecords__",
 	GetSession:    "__GetSession__",
 	Kick:          "__Kick__",
-}
-
-var serverProtoCentent []byte
-var clientProtoCentent []byte
-
-func checkFileIsExist(filename string) bool {
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return false
-	}
-	return true
+	BroadCast:     "__BroadCast__",
 }
 
 func init() {
+
 	// 更新Session
-	serverhandler.Manager.Register(HandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
+	serverhandler.Manager.Register(SysHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
 		if rpcCtx.Session == nil {
 			logrus.Error("Session 为 nil")
 			return
@@ -68,7 +53,7 @@ func init() {
 	})
 
 	// 推送消息
-	serverhandler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
+	serverhandler.Manager.Register(SysHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
@@ -90,63 +75,13 @@ func init() {
 		}
 	})
 
-	// 获取proto file
-	clienthandler.Manager.Register(HandlerMap.FetchProto, func(rpcCtx *context.RPCCtx, hash string) {
-		pwd, _ := os.Getwd()
-
-		serverProto := path.Join(pwd, "/proto/server.proto")
-		clientProto := path.Join(pwd, "/proto/client.proto")
-
-		var result = map[string]interface{}{}
-
-		// server proto
-		if serverProtoCentent == nil && checkFileIsExist(serverProto) {
-			var err error
-			serverProtoCentent, err = ioutil.ReadFile(serverProto)
-
-			if err != nil {
-				logrus.Error(err)
-				return
-			}
-		}
-		result["server"] = string(serverProtoCentent)
-
-		// client proto
-		if clientProtoCentent == nil && checkFileIsExist(clientProto) {
-			var err error
-			clientProtoCentent, err = ioutil.ReadFile(clientProto)
-
-			if err != nil {
-				logrus.Error(err)
-				return
-			}
-
-		}
-		result["client"] = string(clientProtoCentent)
-
-		// handlers
-		handlers := compressservice.Handler.GetHandlers()
-		result["handlers"] = handlers
-
-		// events
-		result["events"] = compressservice.Event.GetEvents()
-
-		bytes, err := json.Marshal(result)
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
-
-		rpcCtx.SendMsg(bytes)
-	})
-
 	// 获取路由记录
-	serverhandler.Manager.Register(HandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
+	serverhandler.Manager.Register(SysHandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
 		logrus.Warn(hash)
 	})
 
 	// 获取Session
-	serverhandler.Manager.Register(HandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
+	serverhandler.Manager.Register(SysHandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
 		CID string
 		UID string
 	}) {
@@ -161,14 +96,20 @@ func init() {
 
 	})
 
-	serverhandler.Manager.Register(HandlerMap.Kick, func(rpcCtx *context.RPCCtx, data struct {
-		UID  string
-		Data []byte
-	}) {
-		connection := GetConnection(data.UID)
+	// 踢下线
+	serverhandler.Manager.Register(SysHandlerMap.Kick, func(rpcCtx *context.RPCCtx, data []byte) {
+		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			return
 		}
-		connection.Kick(data.Data)
+		connection.Kick(data)
 	})
+
+	// 广播
+	serverhandler.Manager.Register(SysHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
+		for _, connection := range connStore {
+			connection.notify(notify)
+		}
+	})
+
 }

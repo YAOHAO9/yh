@@ -13,6 +13,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/compressservice"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -40,13 +41,8 @@ func (connection *Connection) Set(key string, v string) {
 
 // 回复request
 func (connection *Connection) response(pineMsg *message.PineMsg) {
-	bytes, err := proto.Marshal(pineMsg)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
 	mutex.Lock()
-	err = connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
+	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(pineMsg))
 	mutex.Unlock()
 	if err != nil {
 		logrus.Error(err)
@@ -56,23 +52,10 @@ func (connection *Connection) response(pineMsg *message.PineMsg) {
 // 主动推送消息
 func (connection *Connection) notify(notify *message.PineMsg) {
 
-	bytes, err := proto.Marshal(notify)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	newNotify := &message.PineMsg{}
-	err = proto.Unmarshal(bytes, newNotify)
-
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	err = connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
+	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(notify))
 
 	if err != nil {
 		logrus.Error(err)
@@ -197,7 +180,7 @@ func (connection *Connection) Kick(data []byte) {
 	notify := &message.PineMsg{
 		Route: string([]byte{
 			compressservice.Server.GetCodeByKind(config.GetServerConfig().Kind),
-			compressservice.Event.GetCodeByEvent(HandlerMap.Kick)}),
+			compressservice.Event.GetCodeByEvent(SysHandlerMap.Kick)}),
 		Data: data,
 	}
 	connection.notify(notify)
@@ -206,5 +189,5 @@ func (connection *Connection) Kick(data []byte) {
 }
 
 func init() {
-	compressservice.Event.AddEventRecord(HandlerMap.Kick)
+	compressservice.Event.AddEventRecord(SysHandlerMap.Kick)
 }

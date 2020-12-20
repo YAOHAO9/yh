@@ -19,7 +19,7 @@ import (
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
-	"github.com/golang/protobuf/proto"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,15 +44,27 @@ func main() {
 		channel := channelservice.CreateChannel("101")
 		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		bytes, _ := json.Marshal(map[string]string{
+		channelservice.BroadCast("onMsg2", "==========广播广播广播广播广播==========")
+		// 推送给所有在当前channel中的玩家
+		channel.PushMessage("onMsg1", map[string]string{
 			"Name": "onMsg",
 			"Data": "啊哈哈傻法师打上发发",
 		})
-
-		channel.PushMessage("onMsg1", bytes)                                       // 推送给所有在当前channel中的玩家
-		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg2", bytes) // 推送给除了切片内的channel中的玩家
-		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsg3", bytes)             // 只推送给当前玩家
-		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg4", bytes)  // 只推送给切片的指定的玩家
+		// 推送给除了切片内的channel中的玩家
+		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg2", map[string]string{
+			"Name": "onMsg",
+			"Data": "啊哈哈傻法师打上发发",
+		})
+		// 只推送给当前玩家
+		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsg3", map[string]string{
+			"Name": "onMsg",
+			"Data": "啊哈哈傻法师打上发发",
+		})
+		// 只推送给切片的指定的玩家
+		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg4", map[string]string{
+			"Name": "onMsg",
+			"Data": "啊哈哈傻法师打上发发",
+		})
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
 
@@ -77,39 +89,16 @@ func main() {
 			logrus.Debug(session.Get("hhhaaa"))
 		})
 
-		bytes, _ = proto.Marshal(handlerResp)
-
-		rpcCtx.SendMsg(bytes)
+		rpcCtx.SendMsg(util.ToBytes(handlerResp))
 
 		sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
 	})
 
 	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 
-		channel := channelservice.CreateChannel("101")
-		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
-
 		bytes, _ := json.Marshal(map[string]interface{}{
 			"Route":     "onMsgJSON",
 			"heiheihie": "heiheihei",
-		})
-
-		channel.PushMessage("onMsgJSON", bytes)                                       // 推送给所有在当前channel中的玩家
-		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsgJSON", bytes) // 推送给除了切片内的channel中的玩家
-		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsgJSON", bytes)             // 只推送给当前玩家
-		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsgJSON", bytes)  // 只推送给切片的指定的玩家
-
-		logrus.Warn(fmt.Sprintf("%#v", data))
-		rpcMsg := &message.RPCMsg{
-			Handler: "getOneRobot",
-		}
-		rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
-			fmt.Println("收到Rpc的回复：", string(data))
-		})
-
-		bytes, _ = json.Marshal(map[string]interface{}{
-			"Route":      "handlerResponseJSON",
-			"hahahahah ": 122222222222222,
 		})
 
 		rpcCtx.SendMsg(bytes)
