@@ -71,8 +71,10 @@ func (rpcCtx *RPCCtx) SetRequestID(id int32) {
 // SendMsg 消息发送失败
 func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 
+	requestID := rpcCtx.GetRequestID()
+
 	// Notify的消息，不通知成功
-	if rpcCtx.GetRequestID() == 0 {
+	if requestID == 0 {
 		if data == nil {
 			return
 		}
@@ -80,11 +82,10 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		return
 	}
 	// 重复回复
-	if rpcCtx.GetRequestID() == -1 {
+	if requestID == -1 {
 		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.handler))
 		return
 	}
-	requestID := rpcCtx.GetRequestID()
 	// 标记为已回复消息
 	*rpcCtx.requestID = -1
 	// response
@@ -104,6 +105,6 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 }
 
 // ToString 格式化消息
-func (rpcCtx RPCCtx) ToString() string {
+func (rpcCtx *RPCCtx) ToString() string {
 	return fmt.Sprintf("Handler %s, RequestID: %d, Data: %+v", rpcCtx.GetHandler(), rpcCtx.GetRequestID(), rpcCtx.RawData)
 }

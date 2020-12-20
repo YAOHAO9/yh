@@ -54,7 +54,7 @@ func init() {
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg([]byte("1"))
+			rpcCtx.SendMsg([]byte{})
 		}
 
 	})
@@ -78,7 +78,7 @@ func init() {
 		connection.notify(data)
 
 		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg([]byte("1"))
+			rpcCtx.SendMsg([]byte{})
 		}
 	})
 

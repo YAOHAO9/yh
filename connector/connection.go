@@ -19,14 +19,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var mutex sync.Mutex
-
 // Connection 用户连接信息
 type Connection struct {
 	uid         string
 	conn        *websocket.Conn
 	data        map[string]string
 	routeRecord map[string]string
+	mutex       sync.Mutex
 }
 
 // Get 从session中查找一个值
@@ -41,9 +40,10 @@ func (connection *Connection) Set(key string, v string) {
 
 // 回复request
 func (connection *Connection) response(pineMsg *message.PineMsg) {
-	mutex.Lock()
+	connection.mutex.Lock()
+	defer connection.mutex.Unlock()
 	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(pineMsg))
-	mutex.Unlock()
+
 	if err != nil {
 		logrus.Error(err)
 	}
@@ -52,8 +52,8 @@ func (connection *Connection) response(pineMsg *message.PineMsg) {
 // 主动推送消息
 func (connection *Connection) notify(notify *message.PineMsg) {
 
-	mutex.Lock()
-	defer mutex.Unlock()
+	connection.mutex.Lock()
+	defer connection.mutex.Unlock()
 
 	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(notify))
 

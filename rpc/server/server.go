@@ -84,7 +84,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcCtx := context.GenRespCtx(conn, rpcMsg)
 
 		if err != nil {
-			rpcCtx.SendMsg([]byte("无效的消息类型"))
+			logrus.Error(err)
 			continue
 		}
 
@@ -94,7 +94,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					rpcCtx.SendMsg([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
+					logrus.Warn([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
 				}
 			}
 
@@ -104,7 +104,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					rpcCtx.SendMsg([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
+					logrus.Warn([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
 				}
 			}
 		} else {

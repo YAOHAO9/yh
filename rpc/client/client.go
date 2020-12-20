@@ -19,7 +19,11 @@ import (
 
 var requestID int32 = 1
 var maxInt64Value int32 = 1<<31 - 1
+var requestMap = make(map[int32]interface{})
+
 var requestIDMutex sync.Mutex
+var requestMapLock sync.RWMutex
+var websocketWriteLock sync.Mutex
 
 // 唯一的RequestID
 func genRequestID() *int32 {
@@ -31,13 +35,11 @@ func genRequestID() *int32 {
 	if requestID >= maxInt64Value {
 		requestID = 1
 	}
-	return &requestID
+
+	newRequestID := requestID
+	logrus.Warn("newRequestID:", &newRequestID, "requestIDL", &requestID)
+	return &newRequestID
 }
-
-var requestMap = make(map[int32]interface{})
-
-var requestMapLock sync.RWMutex
-var websocketWriteLock sync.Mutex
 
 // RPCClient websocket client 连接信息
 type RPCClient struct {
@@ -64,8 +66,23 @@ func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
 	rpcMsg.RequestID = genRequestID()
 
 	requestMapLock.Lock()
-	requestMap[requestID] = cb
-	requestMapLock.Unlock()
+	defer requestMapLock.Unlock()
+
+	requestMap[*rpcMsg.RequestID] = cb
+
+	go time.AfterFunc(time.Minute, func() {
+		requestMapLock.Lock()
+		defer requestMapLock.Unlock()
+
+		_, ok := requestMap[*rpcMsg.RequestID]
+
+		if ok {
+			logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcMsg.Handler))
+			delete(requestMap, *rpcMsg.RequestID)
+		}
+
+	})
+
 	client.SendMsg(util.ToBytes(rpcMsg))
 }
 
@@ -140,10 +157,10 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			// 执行回调函数
 			requestMapLock.RLock()
 			requestFunc, ok := requestMap[*rpcResp.RequestID]
+			delete(requestMap, *rpcResp.RequestID)
 			requestMapLock.RUnlock()
-
 			if ok {
-				delete(requestMap, *rpcResp.RequestID)
+
 				paramType := reflect.TypeOf(requestFunc).In(0)
 
 				var dataInterface interface{}

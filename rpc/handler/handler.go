@@ -2,13 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
-	"time"
 
-	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 )
@@ -53,15 +49,10 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 		if err := recover(); err != nil {
 			if entry, ok := err.(*logrus.Entry); ok {
 				err, _ := (&logrus.JSONFormatter{}).Format(entry)
-				rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
+				logrus.Error(err, "\nRpcCtx：", rpcCtx.ToString())
 				return
 			}
-
 			logrus.Error(err, "\nRpcCtx：", rpcCtx.ToString())
-
-			if rpcCtx.GetRequestID() > 0 {
-				rpcCtx.SendMsg(util.ToBytes(err))
-			}
 		}
 	}()
 
@@ -71,14 +62,13 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 		return
 	}
 
-	if rpcCtx.GetRequestID() > 0 {
-		go time.AfterFunc(time.Minute, func() {
-			if rpcCtx.GetRequestID() != -1 {
-				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
-				rpcCtx.SendMsg([]byte(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler())))
-			}
-		})
-	}
+	// if rpcCtx.GetRequestID() > 0 {
+	// 	go time.AfterFunc(time.Minute, func() {
+	// 		if rpcCtx.GetRequestID() != -1 {
+	// 			logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+	// 		}
+	// 	})
+	// }
 
 	paramType := reflect.TypeOf(handlerInterface).In(1)
 

@@ -47,11 +47,13 @@ type request struct{}
 func (req request) ToServer(serverID string, rpcMsg *message.RPCMsg, f interface{}) {
 
 	rpcMsg.From = config.GetServerConfig().ID
+
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
 	}
 
 	rpcClient := clientmanager.GetClientByID(serverID)
+
 	if rpcClient == nil {
 		logrus.Error("Rpc Request(ToServer) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
 		return

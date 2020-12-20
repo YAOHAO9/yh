@@ -74,7 +74,7 @@ func main() {
 		}
 
 		rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
-			fmt.Println("收到Rpc的回复：", string(data))
+			logrus.Info("收到Rpc的回复：", string(data))
 		})
 
 		handlerResp := &handlermessage.HandlerResp{
@@ -91,7 +91,7 @@ func main() {
 
 		rpcCtx.SendMsg(util.ToBytes(handlerResp))
 
-		sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
+		// sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
 	})
 
 	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
@@ -117,8 +117,8 @@ func main() {
 				if e != nil {
 					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					rpcCtx.SendMsg([]byte("操作太频繁")) // 返回结果
-					return false                    // 停止执行下个before filter以及hanler
+					logrus.Error([]byte("操作太频繁")) // 返回结果
+					return false                  // 停止执行下个before filter以及hanler
 				}
 			}
 

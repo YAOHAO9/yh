@@ -29,7 +29,7 @@
             "type": "node",
             "request": "launch",
             "args": [
-                "test-client/src/index.ts"
+                "src/index.ts"
             ],
             "runtimeArgs": [
                 "--nolazy",
@@ -37,7 +37,7 @@
                 "ts-node/register"
             ],
             "sourceMaps": true,
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceRoot}/test-client",
             "protocol": "inspector",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"

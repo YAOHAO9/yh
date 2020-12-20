@@ -6,11 +6,8 @@ Server:
   Port: 3014 
   Token: ksYNdrAo # 集群认证Token
   LogType: "Console" # Console File 
-  LogLevel: "Debug" # Debug Info Warn Error
+  LogLevel: "Error" # Debug Info Warn Error
 
 Zookeeper:
   Host: 127.0.0.1
   Port: 2182
-
-Test: 123
-Haahaha: "hahahah"
