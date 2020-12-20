@@ -23,7 +23,6 @@ var requestMap = make(map[int32]interface{})
 
 var requestIDMutex sync.Mutex
 var requestMapLock sync.RWMutex
-var websocketWriteLock sync.Mutex
 
 // 唯一的RequestID
 func genRequestID() *int32 {
@@ -37,7 +36,7 @@ func genRequestID() *int32 {
 	}
 
 	newRequestID := requestID
-	logrus.Warn("newRequestID:", &newRequestID, "requestIDL", &requestID)
+
 	return &newRequestID
 }
 
@@ -45,23 +44,24 @@ func genRequestID() *int32 {
 type RPCClient struct {
 	Conn         *websocket.Conn
 	ServerConfig *config.ServerConfig
+	mutex        sync.Mutex
 }
 
 // SendMsg 发送消息
-func (client RPCClient) SendMsg(bytes []byte) {
-	websocketWriteLock.Lock()
-	defer websocketWriteLock.Unlock()
+func (client *RPCClient) SendMsg(bytes []byte) {
+	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	client.Conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 }
 
 // SendRPCNotify 发送RPC通知
-func (client RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
+func (client *RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
 	client.SendMsg(util.ToBytes(rpcMsg))
 }
 
 // SendRPCRequest 发送RPC请求
-func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
+func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
 
 	rpcMsg.RequestID = genRequestID()
 
@@ -70,20 +70,20 @@ func (client RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) {
 
 	requestMap[*rpcMsg.RequestID] = cb
 
-	go time.AfterFunc(time.Minute, func() {
-		requestMapLock.Lock()
-		defer requestMapLock.Unlock()
-
-		_, ok := requestMap[*rpcMsg.RequestID]
-
-		if ok {
-			logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcMsg.Handler))
-			delete(requestMap, *rpcMsg.RequestID)
-		}
-
-	})
-
 	client.SendMsg(util.ToBytes(rpcMsg))
+
+	// go time.AfterFunc(time.Minute, func() {
+	// 	requestMapLock.RLock()
+	// 	defer requestMapLock.RUnlock()
+
+	// 	_, ok := requestMap[*rpcMsg.RequestID]
+
+	// 	if ok {
+	// 		logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcMsg.Handler))
+	// 		delete(requestMap, *rpcMsg.RequestID)
+	// 	}
+
+	// })
 }
 
 // StartClient websocket client
@@ -155,10 +155,10 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			}
 
 			// 执行回调函数
-			requestMapLock.RLock()
+			requestMapLock.Lock()
 			requestFunc, ok := requestMap[*rpcResp.RequestID]
 			delete(requestMap, *rpcResp.RequestID)
-			requestMapLock.RUnlock()
+			requestMapLock.Unlock()
 			if ok {
 
 				paramType := reflect.TypeOf(requestFunc).In(0)

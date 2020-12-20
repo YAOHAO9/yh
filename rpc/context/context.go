@@ -12,8 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var sendMsgMutex sync.Mutex
-
 // RPCCtx response context
 type RPCCtx struct {
 	conn      *websocket.Conn
@@ -22,10 +20,11 @@ type RPCCtx struct {
 	From      string
 	RawData   []byte `json:",omitempty"`
 	Session   *session.Session
+	mutex     *sync.Mutex
 }
 
 // GenRespCtx 创建一个response上下文
-func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
+func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg, connLock *sync.Mutex) *RPCCtx {
 	return &RPCCtx{
 		conn:      conn,
 		requestID: rpcMsg.RequestID,
@@ -33,6 +32,7 @@ func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg) *RPCCtx {
 		From:      rpcMsg.From,
 		RawData:   rpcMsg.RawData,
 		Session:   rpcMsg.Session,
+		mutex:     connLock,
 	}
 }
 
@@ -95,8 +95,8 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 		Data:      data,
 	}
 
-	sendMsgMutex.Lock()
-	defer sendMsgMutex.Unlock()
+	rpcCtx.mutex.Lock()
+	defer rpcCtx.mutex.Unlock()
 	err := rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(rpcResp))
 	if err != nil {
 		logrus.Error(err)

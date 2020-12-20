@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
@@ -70,6 +71,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}
+	connLock := &sync.Mutex{}
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -81,7 +83,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcMsg := &message.RPCMsg{}
 		err = proto.Unmarshal(data, rpcMsg)
 
-		rpcCtx := context.GenRespCtx(conn, rpcMsg)
+		rpcCtx := context.GenRespCtx(conn, rpcMsg, connLock)
 
 		if err != nil {
 			logrus.Error(err)

@@ -11,11 +11,9 @@ import (
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/handlermessage"
-	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
@@ -44,7 +42,7 @@ func main() {
 		channel := channelservice.CreateChannel("101")
 		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		channelservice.BroadCast("onMsg2", "==========广播广播广播广播广播==========")
+		// channelservice.BroadCast("onMsg2", "==========广播广播广播广播广播==========")
 		// 推送给所有在当前channel中的玩家
 		channel.PushMessage("onMsg1", map[string]string{
 			"Name": "onMsg",
@@ -68,14 +66,14 @@ func main() {
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
 
-		rpcMsg := &message.RPCMsg{
-			Handler: "getOneRobot",
-			RawData: []byte{},
-		}
+		// rpcMsg := &message.RPCMsg{
+		// 	Handler: "getOneRobot",
+		// 	RawData: []byte{},
+		// }
 
-		rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
-			logrus.Info("收到Rpc的回复：", string(data))
-		})
+		// rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
+		// 	logrus.Info("收到Rpc的回复：", string(data))
+		// })
 
 		handlerResp := &handlermessage.HandlerResp{
 			Code:    1,
@@ -83,11 +81,11 @@ func main() {
 			Message: "HandlerResp Message",
 		}
 
-		rpcCtx.Session.Set("hhhaaa", "有点一次=====")
-		sessionservice.UpdateSession(rpcCtx.Session)
-		sessionservice.GetSession(rpcCtx.Session.CID, rpcCtx.Session.UID, func(session *session.Session) {
-			logrus.Debug(session.Get("hhhaaa"))
-		})
+		// rpcCtx.Session.Set("hhhaaa", "有点一次=====")
+		// sessionservice.UpdateSession(rpcCtx.Session)
+		// sessionservice.GetSession(rpcCtx.Session.CID, rpcCtx.Session.UID, func(session *session.Session) {
+		// 	logrus.Debug(session.Get("hhhaaa"))
+		// })
 
 		rpcCtx.SendMsg(util.ToBytes(handlerResp))
 

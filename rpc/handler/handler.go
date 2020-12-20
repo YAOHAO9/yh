@@ -2,8 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"time"
 
+	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -62,13 +65,13 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 		return
 	}
 
-	// if rpcCtx.GetRequestID() > 0 {
-	// 	go time.AfterFunc(time.Minute, func() {
-	// 		if rpcCtx.GetRequestID() != -1 {
-	// 			logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
-	// 		}
-	// 	})
-	// }
+	if rpcCtx.GetRequestID() > 0 {
+		go time.AfterFunc(time.Minute, func() {
+			if rpcCtx.GetRequestID() != -1 {
+				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+			}
+		})
+	}
 
 	paramType := reflect.TypeOf(handlerInterface).In(1)
 

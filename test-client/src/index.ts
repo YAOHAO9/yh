@@ -29,7 +29,7 @@ import Pine from 'pine-client'
 
     await pine.fetchProto('connector')
     const requestData = { Name: 'Proto request', Age: 18 }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
         pine.request('connector.handler', requestData, (response) => {
             // console.warn('Response:', response)
         })

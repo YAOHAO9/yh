@@ -76,7 +76,7 @@ func (connection *Connection) GetSession() *session.Session {
 func (connection *Connection) StartReceiveMsg() {
 
 	conn := connection.conn
-
+	connLock := &sync.Mutex{}
 	// 开始接收消息
 	for {
 		_, data, err := conn.ReadMessage()
@@ -150,7 +150,7 @@ func (connection *Connection) StartReceiveMsg() {
 			continue
 		}
 
-		rpcCtx := context.GenRespCtx(conn, rpcMsg)
+		rpcCtx := context.GenRespCtx(conn, rpcMsg, connLock)
 
 		if !filter.Before.Exec(rpcCtx) {
 			continue
