@@ -8,7 +8,6 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/context"
-	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -57,11 +56,11 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 				rpcCtx.SendMsg([]byte(fmt.Sprint(err)))
 				return
 			}
-			fmt.Println(err)
-			logrus.Error(err)
-			logrus.Warn(rpcCtx)
+
+			logrus.Error(err, "\nRpcCtx：", rpcCtx.ToString())
+
 			if rpcCtx.GetRequestID() > 0 {
-				rpcCtx.SendMsg(util.ToBytes(&session.Session{UID: "adfasdfasdf"}))
+				rpcCtx.SendMsg(util.ToBytes(err))
 			}
 		}
 	}()

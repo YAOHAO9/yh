@@ -49,6 +49,16 @@ func UpdateSession(session *session.Session, keys ...string) {
 
 }
 
+// CreateSession create session
+func CreateSession(CID, UID string) *session.Session {
+	session := &session.Session{
+		UID:  CID,
+		CID:  UID,
+		Data: make(map[string]string),
+	}
+	return session
+}
+
 // GetSession 获取session
 func GetSession(CID, UID string, f func(session *session.Session)) {
 
@@ -62,4 +72,21 @@ func GetSession(CID, UID string, f func(session *session.Session)) {
 	}
 	rpc.Request.ToServer(CID, rpcMsg, f)
 	return
+}
+
+// KickBySession 踢下线
+func KickBySession(session *session.Session, data interface{}) {
+	Kick(session.CID, session.UID, data)
+}
+
+// Kick 将玩家踢下线
+func Kick(CID, UID string, data interface{}) {
+	rpcMsg := &message.RPCMsg{
+		Handler: connector.HandlerMap.Kick,
+		RawData: util.ToBytes(map[string]interface{}{
+			"UID":  UID,
+			"Data": util.ToBytes(data),
+		}),
+	}
+	rpc.Notify.ToServer(CID, rpcMsg)
 }

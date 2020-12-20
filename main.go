@@ -27,7 +27,7 @@ func main() {
 
 	app := application.CreateApp()
 
-	compressservice.Event.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
+	compressservice.Event.AddEventCompressRecords("onMsg1", "onMsgJSON") // 需要压缩的Event
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 
@@ -44,15 +44,15 @@ func main() {
 		channel := channelservice.CreateChannel("101")
 		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		bytes, _ := proto.Marshal(&handlermessage.OnMsg{
-			Name: "onMsg",
-			Data: "啊哈哈傻法师打上发发",
+		bytes, _ := json.Marshal(map[string]string{
+			"Name": "onMsg",
+			"Data": "啊哈哈傻法师打上发发",
 		})
 
-		channel.PushMessage("onMsg", bytes)                                       // 推送给所有在当前channel中的玩家
-		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg", bytes) // 推送给除了切片内的channel中的玩家
-		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsg", bytes)             // 只推送给当前玩家
-		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg", bytes)  // 只推送给切片的指定的玩家
+		channel.PushMessage("onMsg1", bytes)                                       // 推送给所有在当前channel中的玩家
+		channel.PushMessageToOthers([]string{rpcCtx.Session.UID}, "onMsg2", bytes) // 推送给除了切片内的channel中的玩家
+		channel.PushMessageToUser(rpcCtx.Session.UID, "onMsg3", bytes)             // 只推送给当前玩家
+		channel.PushMessageToUsers([]string{rpcCtx.Session.UID}, "onMsg4", bytes)  // 只推送给切片的指定的玩家
 
 		logrus.Warn(fmt.Sprintf("%#v", data))
 
@@ -80,6 +80,8 @@ func main() {
 		bytes, _ = proto.Marshal(handlerResp)
 
 		rpcCtx.SendMsg(bytes)
+
+		sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
 	})
 
 	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {

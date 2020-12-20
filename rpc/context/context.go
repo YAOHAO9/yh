@@ -111,5 +111,5 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 
 // ToString 格式化消息
 func (rpcCtx RPCCtx) ToString() string {
-	return fmt.Sprintf("RPC RequestID: %d, Data: %+v", rpcCtx.GetRequestID(), rpcCtx.RawData)
+	return fmt.Sprintf("Handler %s, RequestID: %d, Data: %+v", rpcCtx.GetHandler(), rpcCtx.GetRequestID(), rpcCtx.RawData)
 }

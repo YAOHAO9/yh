@@ -29,17 +29,17 @@ type Connection struct {
 }
 
 // Get 从session中查找一个值
-func (connection Connection) Get(key string) string {
+func (connection *Connection) Get(key string) string {
 	return connection.data[key]
 }
 
 // Set 往session中设置一个键值对
-func (connection Connection) Set(key string, v string) {
+func (connection *Connection) Set(key string, v string) {
 	connection.data[key] = v
 }
 
 // 回复request
-func (connection Connection) response(pineMsg *message.PineMsg) {
+func (connection *Connection) response(pineMsg *message.PineMsg) {
 	bytes, err := proto.Marshal(pineMsg)
 	if err != nil {
 		logrus.Error(err)
@@ -54,7 +54,7 @@ func (connection Connection) response(pineMsg *message.PineMsg) {
 }
 
 // 主动推送消息
-func (connection Connection) notify(notify *message.PineMsg) {
+func (connection *Connection) notify(notify *message.PineMsg) {
 
 	bytes, err := proto.Marshal(notify)
 	if err != nil {
@@ -70,15 +70,17 @@ func (connection Connection) notify(notify *message.PineMsg) {
 	}
 
 	mutex.Lock()
+	defer mutex.Unlock()
+
 	err = connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
-	mutex.Unlock()
+
 	if err != nil {
 		logrus.Error(err)
 	}
 }
 
 // GetSession 获取session
-func (connection Connection) GetSession() *session.Session {
+func (connection *Connection) GetSession() *session.Session {
 	session := &session.Session{
 		UID:  connection.uid,
 		CID:  config.GetServerConfig().ID,
@@ -88,7 +90,7 @@ func (connection Connection) GetSession() *session.Session {
 }
 
 // StartReceiveMsg 开始接收消息
-func (connection Connection) StartReceiveMsg() {
+func (connection *Connection) StartReceiveMsg() {
 
 	conn := connection.conn
 
@@ -188,4 +190,21 @@ func (connection Connection) StartReceiveMsg() {
 			})
 		}
 	}
+}
+
+// Kick this coonnection
+func (connection *Connection) Kick(data []byte) {
+	notify := &message.PineMsg{
+		Route: string([]byte{
+			compressservice.Server.GetCodeByKind(config.GetServerConfig().Kind),
+			compressservice.Event.GetCodeByEvent(HandlerMap.Kick)}),
+		Data: data,
+	}
+	connection.notify(notify)
+	DelConnection(connection.uid)
+	connection.conn.Close()
+}
+
+func init() {
+	compressservice.Event.AddEventRecord(HandlerMap.Kick)
 }

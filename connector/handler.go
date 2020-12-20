@@ -24,12 +24,14 @@ var HandlerMap = struct {
 	FetchProto    string
 	RouterRecords string
 	GetSession    string
+	Kick          string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
 	FetchProto:    "__FetchProto__",
 	RouterRecords: "__RouterRecords__",
 	GetSession:    "__GetSession__",
+	Kick:          "__Kick__",
 }
 
 var serverProtoCentent []byte
@@ -51,7 +53,8 @@ func init() {
 		}
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
-			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
+			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
+			return
 		}
 
 		for key, value := range data {
@@ -68,7 +71,8 @@ func init() {
 	serverhandler.Manager.Register(HandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
-			logrus.Error("无效的Uid", rpcCtx.Session.UID, "没有找到对应的客户端连接")
+			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
+			return
 		}
 
 		if len([]byte(data.Route)) == 1 {
@@ -86,7 +90,7 @@ func init() {
 		}
 	})
 
-	// 推送消息
+	// 获取proto file
 	clienthandler.Manager.Register(HandlerMap.FetchProto, func(rpcCtx *context.RPCCtx, hash string) {
 		pwd, _ := os.Getwd()
 
@@ -136,7 +140,7 @@ func init() {
 		rpcCtx.SendMsg(bytes)
 	})
 
-	// 推送消息
+	// 获取路由记录
 	serverhandler.Manager.Register(HandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
 		logrus.Warn(hash)
 	})
@@ -149,10 +153,22 @@ func init() {
 		connection := GetConnection(data.UID)
 		var session *session.Session
 		if connection == nil {
-			session = nil
+			rpcCtx.SendMsg([]byte{})
 		} else {
 			session = connection.GetSession()
+			rpcCtx.SendMsg(util.ToBytes(session))
 		}
-		rpcCtx.SendMsg(util.ToBytes(session))
+
+	})
+
+	serverhandler.Manager.Register(HandlerMap.Kick, func(rpcCtx *context.RPCCtx, data struct {
+		UID  string
+		Data []byte
+	}) {
+		connection := GetConnection(data.UID)
+		if connection == nil {
+			return
+		}
+		connection.Kick(data.Data)
 	})
 }
