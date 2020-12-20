@@ -11,6 +11,8 @@ import (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+	config.ParseConfig()
+	logger.SetLogMode(config.GetServerConfig().LogType)
 }
 
 // Application app
@@ -19,10 +21,6 @@ type Application struct {
 
 // Start start application
 func (app Application) Start() {
-	parseConfig()
-
-	logger.SetLogMode(config.GetServerConfig().LogType)
-
 	RpcServer.Start()
 }
 
@@ -35,6 +33,7 @@ func CreateApp() *Application {
 	if App != nil {
 		return App
 	}
+
 	App = &Application{}
 
 	return App

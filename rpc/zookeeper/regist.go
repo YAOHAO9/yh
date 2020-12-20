@@ -6,11 +6,7 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
-	"github.com/YAOHAO9/pine/connector"
-	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
-	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
-	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
@@ -134,19 +130,19 @@ func watch() {
 						compressservice.Server.AddRecord(serverConfig.Kind)
 					}
 
-					if serverConfig.IsConnector {
-						keys := make([]string, len(clienthandler.Manager.Map), len(clienthandler.Manager.Map))
-						i := 0
-						for key := range clienthandler.Manager.Map {
-							keys[i] = key
-							i++
-						}
-						rpcMsg := &message.RPCMsg{
-							Handler: connector.SysHandlerMap.RouterRecords,
-							RawData: util.ToBytes(keys),
-						}
-						rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
-					}
+					// if serverConfig.IsConnector {
+					// 	keys := make([]string, len(clienthandler.Manager.Map), len(clienthandler.Manager.Map))
+					// 	i := 0
+					// 	for key := range clienthandler.Manager.Map {
+					// 		keys[i] = key
+					// 		i++
+					// 	}
+					// 	rpcMsg := &message.RPCMsg{
+					// 		Handler: connector.SysHandlerMap.RouterRecords,
+					// 		RawData: util.ToBytes(keys),
+					// 	}
+					// 	rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
+					// }
 					break
 				}
 			}(serverID)

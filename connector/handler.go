@@ -28,6 +28,13 @@ var SysHandlerMap = struct {
 	BroadCast:     "__BroadCast__",
 }
 
+//SysEventMap 系统Event枚举
+var SysEventMap = struct {
+	Error string
+}{
+	Error: "__Error__",
+}
+
 func init() {
 
 	// 更新Session

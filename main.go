@@ -153,7 +153,3 @@ func main() {
 
 	app.Start()
 }
-
-func aa(a string) {
-	fmt.Println(a)
-}
