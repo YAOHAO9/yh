@@ -66,9 +66,8 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 	rpcMsg.RequestID = genRequestID()
 
 	requestMapLock.Lock()
-	defer requestMapLock.Unlock()
-
 	requestMap[*rpcMsg.RequestID] = cb
+	requestMapLock.Unlock()
 
 	client.SendMsg(util.ToBytes(rpcMsg))
 
@@ -157,10 +156,10 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 			// 执行回调函数
 			requestMapLock.Lock()
 			requestFunc, ok := requestMap[*rpcResp.RequestID]
-			delete(requestMap, *rpcResp.RequestID)
-			requestMapLock.Unlock()
-			if ok {
 
+			if ok {
+				delete(requestMap, *rpcResp.RequestID)
+				requestMapLock.Unlock()
 				paramType := reflect.TypeOf(requestFunc).In(0)
 
 				var dataInterface interface{}
@@ -201,6 +200,9 @@ func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Durati
 						reflect.ValueOf(dataInterface).Elem(),
 					})
 				}
+			} else {
+				delete(requestMap, *rpcResp.RequestID)
+				requestMapLock.Unlock()
 			}
 		}
 	}()

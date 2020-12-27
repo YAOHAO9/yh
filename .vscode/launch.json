@@ -18,7 +18,7 @@
                 "Server_Port": 3014,
                 "Server_Token": "ksYNdrAo",
                 "Server_LogType": "Console",
-                "Server_LogLevel": "Debug",
+                "Server_LogLevel": "Error",
                 "Zookeeper_Host": "127.0.0.1",
                 "Zookeeper_Port": 2181,
             },

@@ -3,10 +3,16 @@ package zookeeper
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
+	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
@@ -18,6 +24,13 @@ var zkClient *ZkClient
 
 // zkSessionTimeout Session timeout of zookeeper connection
 var zkSessionTimeout = time.Second * 3
+
+func checkFileIsExist(filename string) bool {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
 
 // Start zookeeper
 func Start() {
@@ -80,11 +93,12 @@ func initNode() {
 func watch() {
 	// 服务器配置
 	serverConfig := config.GetServerConfig()
-	path := fmt.Sprint("/", serverConfig.SystemName)
-
+	zkpath := fmt.Sprint("/", serverConfig.SystemName)
+	var serverProtoCentent []byte
+	var clientProtoCentent []byte
 	for {
 		// 遍历所有的serverID
-		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(path)
+		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(zkpath)
 		if err != nil {
 			logrus.Panic(err)
 		}
@@ -99,8 +113,8 @@ func watch() {
 			func(serverID string) {
 
 				for i := 0; i < 30; i++ {
-					path := fmt.Sprint(path, "/", serverID)
-					isExists, _, err := zkClient.conn.Exists(path)
+					zkpath := fmt.Sprint(zkpath, "/", serverID)
+					isExists, _, err := zkClient.conn.Exists(zkpath)
 					if err != nil {
 						logrus.Panic(err)
 					}
@@ -111,7 +125,7 @@ func watch() {
 					}
 
 					// 监听服务器变化
-					data, _, err := zkClient.conn.Get(path)
+					data, _, err := zkClient.conn.Get(zkpath)
 					if err != nil {
 						clientmanager.DelClientByID(serverID)
 						logrus.Error(err.Error())
@@ -130,19 +144,55 @@ func watch() {
 						compressservice.Server.AddRecord(serverConfig.Kind)
 					}
 
-					// if serverConfig.IsConnector {
-					// 	keys := make([]string, len(clienthandler.Manager.Map), len(clienthandler.Manager.Map))
-					// 	i := 0
-					// 	for key := range clienthandler.Manager.Map {
-					// 		keys[i] = key
-					// 		i++
-					// 	}
-					// 	rpcMsg := &message.RPCMsg{
-					// 		Handler: connector.SysHandlerMap.RouterRecords,
-					// 		RawData: util.ToBytes(keys),
-					// 	}
-					// 	rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
-					// }
+					if serverConfig.IsConnector {
+						pwd, _ := os.Getwd()
+						serverProto := path.Join(pwd, "/proto/server.proto")
+						clientProto := path.Join(pwd, "/proto/client.proto")
+
+						var result = map[string]interface{}{}
+
+						// server proto
+						if serverProtoCentent == nil && checkFileIsExist(serverProto) {
+							var err error
+							serverProtoCentent, err = ioutil.ReadFile(serverProto)
+
+							if err != nil {
+								logrus.Error(err)
+								return
+							}
+						}
+						result["server"] = string(serverProtoCentent)
+
+						// client proto
+						if clientProtoCentent == nil && checkFileIsExist(clientProto) {
+							var err error
+							clientProtoCentent, err = ioutil.ReadFile(clientProto)
+
+							if err != nil {
+								logrus.Error(err)
+								return
+							}
+
+						}
+						result["client"] = string(clientProtoCentent)
+
+						// handlers
+						handlers := compressservice.Handler.GetHandlers()
+						result["handlers"] = handlers
+
+						// events
+						result["events"] = compressservice.Event.GetEvents()
+
+						// serverKind
+						result["serverKind"] = config.GetServerConfig().Kind
+
+						rpcMsg := &message.RPCMsg{
+							Handler: connector.SysHandlerMap.Compress,
+							RawData: util.ToBytes(result),
+						}
+
+						rpc.Notify.ToServer(serverConfig.ID, rpcMsg)
+					}
 					break
 				}
 			}(serverID)

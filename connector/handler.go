@@ -19,6 +19,7 @@ var SysHandlerMap = struct {
 	GetSession    string
 	Kick          string
 	BroadCast     string
+	Compress      string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
@@ -26,6 +27,7 @@ var SysHandlerMap = struct {
 	GetSession:    "__GetSession__",
 	Kick:          "__Kick__",
 	BroadCast:     "__BroadCast__",
+	Compress:      "__Compress__",
 }
 
 //SysEventMap 系统Event枚举
@@ -36,6 +38,8 @@ var SysEventMap = struct {
 }
 
 func init() {
+	// Event压缩
+	compressservice.Event.AddEventRecord("__Compress__")
 
 	// 更新Session
 	serverhandler.Manager.Register(SysHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
@@ -43,6 +47,7 @@ func init() {
 			logrus.Error("Session 为 nil")
 			return
 		}
+
 		connection := GetConnection(rpcCtx.Session.UID)
 		if connection == nil {
 			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
@@ -56,7 +61,6 @@ func init() {
 		if rpcCtx.GetRequestID() > 0 {
 			rpcCtx.SendMsg([]byte{})
 		}
-
 	})
 
 	// 推送消息
@@ -66,13 +70,24 @@ func init() {
 			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
 			return
 		}
+		client := clientmanager.GetClientByID(rpcCtx.From)
 
 		if len([]byte(data.Route)) == 1 {
-			client := clientmanager.GetClientByID(rpcCtx.From)
 			if client != nil {
 				code := compressservice.Server.GetCodeByKind(client.ServerConfig.Kind)
 				data.Route = string([]byte{code}) + data.Route
 			}
+		}
+
+		if _, ok := connection.compressRecord[client.ServerConfig.Kind]; !ok {
+			// serverCode := compressservice.Server.GetCodeByKind("connector")
+			// eventCode := compressservice.Event.GetCodeByEvent("__Compress__")
+			connection.compressRecord[client.ServerConfig.Kind] = true
+			pineMsg := &message.PineMsg{
+				Route: "connector.__Compress__",
+				Data:  util.ToBytes(GetCompressData(client.ServerConfig.Kind)),
+			}
+			connection.notify(pineMsg)
 		}
 
 		connection.notify(data)
@@ -116,6 +131,15 @@ func init() {
 	serverhandler.Manager.Register(SysHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
 		for _, connection := range connStore {
 			connection.notify(notify)
+		}
+	})
+
+	// 压缩配置
+	serverhandler.Manager.Register(SysHandlerMap.Compress, func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
+
+		client := clientmanager.GetClientByID(rpcCtx.From)
+		if client != nil {
+			SetCompressData(client.ServerConfig.Kind, data)
 		}
 	})
 

@@ -21,11 +21,12 @@ import (
 
 // Connection 用户连接信息
 type Connection struct {
-	uid         string
-	conn        *websocket.Conn
-	data        map[string]string
-	routeRecord map[string]string
-	mutex       sync.Mutex
+	uid            string
+	conn           *websocket.Conn
+	data           map[string]string
+	routeRecord    map[string]string
+	compressRecord map[string]bool
+	mutex          sync.Mutex
 }
 
 // Get 从session中查找一个值
@@ -36,6 +37,14 @@ func (connection *Connection) Get(key string) string {
 // Set 往session中设置一个键值对
 func (connection *Connection) Set(key string, v string) {
 	connection.data[key] = v
+}
+
+func (connection *Connection) sendCompressData(serverKind string) {
+	pineMsg := &message.PineMsg{
+		Route: "connector.__Compress__",
+		Data:  util.ToBytes(GetCompressData(serverKind)),
+	}
+	connection.notify(pineMsg)
 }
 
 // 回复request
@@ -121,6 +130,8 @@ func (connection *Connection) StartReceiveMsg() {
 			handlerInfos := strings.Split(clientMessage.Route, ".")
 			serverKind = handlerInfos[0] // 解析出服务器类型
 			handler = handlerInfos[1]    // 真正的handler
+
+			connection.sendCompressData(serverKind)
 		}
 
 		session := connection.GetSession()

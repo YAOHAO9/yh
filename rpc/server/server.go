@@ -172,6 +172,9 @@ func init() {
 		// events
 		result["events"] = compressservice.Event.GetEvents()
 
+		// serverKind
+		result["serverKind"] = config.GetServerConfig().Kind
+
 		rpcCtx.SendMsg(util.ToBytes(result))
 	})
 }

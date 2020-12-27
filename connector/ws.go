@@ -61,10 +61,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 保存连接信息
 	connection := &Connection{
-		uid:         uid,
-		conn:        conn,
-		data:        sessionData,
-		routeRecord: make(map[string]string),
+		uid:            uid,
+		conn:           conn,
+		data:           sessionData,
+		routeRecord:    make(map[string]string),
+		compressRecord: make(map[string]bool),
 	}
 
 	connection.notify(&message.PineMsg{
