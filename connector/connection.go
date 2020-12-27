@@ -39,14 +39,6 @@ func (connection *Connection) Set(key string, v string) {
 	connection.data[key] = v
 }
 
-func (connection *Connection) sendCompressData(serverKind string) {
-	pineMsg := &message.PineMsg{
-		Route: "connector.__Compress__",
-		Data:  util.ToBytes(GetCompressData(serverKind)),
-	}
-	connection.notify(pineMsg)
-}
-
 // 回复request
 func (connection *Connection) response(pineMsg *message.PineMsg) {
 	connection.mutex.Lock()
@@ -130,8 +122,6 @@ func (connection *Connection) StartReceiveMsg() {
 			handlerInfos := strings.Split(clientMessage.Route, ".")
 			serverKind = handlerInfos[0] // 解析出服务器类型
 			handler = handlerInfos[1]    // 真正的handler
-
-			connection.sendCompressData(serverKind)
 		}
 
 		session := connection.GetSession()

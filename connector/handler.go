@@ -19,7 +19,6 @@ var SysHandlerMap = struct {
 	GetSession    string
 	Kick          string
 	BroadCast     string
-	Compress      string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
@@ -27,7 +26,6 @@ var SysHandlerMap = struct {
 	GetSession:    "__GetSession__",
 	Kick:          "__Kick__",
 	BroadCast:     "__BroadCast__",
-	Compress:      "__Compress__",
 }
 
 //SysEventMap 系统Event枚举
@@ -38,8 +36,6 @@ var SysEventMap = struct {
 }
 
 func init() {
-	// Event压缩
-	compressservice.Event.AddEventRecord("__Compress__")
 
 	// 更新Session
 	serverhandler.Manager.Register(SysHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
@@ -77,17 +73,6 @@ func init() {
 				code := compressservice.Server.GetCodeByKind(client.ServerConfig.Kind)
 				data.Route = string([]byte{code}) + data.Route
 			}
-		}
-
-		if _, ok := connection.compressRecord[client.ServerConfig.Kind]; !ok {
-			// serverCode := compressservice.Server.GetCodeByKind("connector")
-			// eventCode := compressservice.Event.GetCodeByEvent("__Compress__")
-			connection.compressRecord[client.ServerConfig.Kind] = true
-			pineMsg := &message.PineMsg{
-				Route: "connector.__Compress__",
-				Data:  util.ToBytes(GetCompressData(client.ServerConfig.Kind)),
-			}
-			connection.notify(pineMsg)
 		}
 
 		connection.notify(data)
@@ -131,15 +116,6 @@ func init() {
 	serverhandler.Manager.Register(SysHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
 		for _, connection := range connStore {
 			connection.notify(notify)
-		}
-	})
-
-	// 压缩配置
-	serverhandler.Manager.Register(SysHandlerMap.Compress, func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
-
-		client := clientmanager.GetClientByID(rpcCtx.From)
-		if client != nil {
-			SetCompressData(client.ServerConfig.Kind, data)
 		}
 	})
 

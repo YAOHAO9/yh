@@ -29,8 +29,8 @@ import Pine from 'pine-client'
         console.warn('我被踢下线了啊', data)
     })
 
-    // await pine.fetchProto('connector')
     const requestData = { Name: 'Proto request', Age: 18 }
+
     for (let i = 0; i < 1; i++) {
         pine.request('connector.handler', requestData, (response) => {
             console.warn('Response:', response)
