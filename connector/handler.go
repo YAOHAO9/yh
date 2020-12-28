@@ -76,10 +76,6 @@ func init() {
 		}
 
 		connection.notify(data)
-
-		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg([]byte{})
-		}
 	})
 
 	// 获取路由记录

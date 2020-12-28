@@ -11,9 +11,10 @@
         "allowJs": false,
         "sourceMap": true,
         "noImplicitReturns": true,
-        "noUnusedParameters": true,
-        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "noUnusedLocals": false,
         "lib": [
+            "DOM",
             "es2015",
             "es2017",
             "es2015.promise",

@@ -6,3 +6,5 @@ log
 
 vendor
 handlermessage
+.cache
+dist
