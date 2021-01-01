@@ -7,7 +7,6 @@ import (
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -55,7 +54,7 @@ func init() {
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
-			rpcCtx.SendMsg([]byte{})
+			rpcCtx.SendMsg("")
 		}
 	})
 
@@ -91,10 +90,10 @@ func init() {
 		connection := GetConnection(data.UID)
 		var session *session.Session
 		if connection == nil {
-			rpcCtx.SendMsg([]byte{})
+			rpcCtx.SendMsg("")
 		} else {
 			session = connection.GetSession()
-			rpcCtx.SendMsg(util.ToBytes(session))
+			rpcCtx.SendMsg(session)
 		}
 
 	})

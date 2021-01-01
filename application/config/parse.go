@@ -19,7 +19,7 @@ func ParseConfig() {
 
 	// 保存配置
 	viper.SetConfigName("config")
-	viper.SetConfigType("yml")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
 	err := viper.ReadInConfig()

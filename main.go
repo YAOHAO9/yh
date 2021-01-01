@@ -1,23 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/handlermessage"
+	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,10 +37,16 @@ func main() {
 
 	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
+		// 直接通过session推送消息
+		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg1", "hahahah")
+
+		// 广播给所有人
+		channelservice.BroadCast("onMsg2", "==========广播广播广播广播广播==========")
+
+		// 创建channel。通过channel推送消息
 		channel := channelservice.CreateChannel("101")
 		channel.Add(rpcCtx.Session.UID, rpcCtx.Session)
 
-		// channelservice.BroadCast("onMsg2", "==========广播广播广播广播广播==========")
 		// 推送给所有在当前channel中的玩家
 		channel.PushMessage("onMsg1", map[string]string{
 			"Name": "onMsg",
@@ -64,16 +68,14 @@ func main() {
 			"Data": "啊哈哈傻法师打上发发",
 		})
 
-		logrus.Warn(fmt.Sprintf("%#v", data))
+		rpcMsg := &message.RPCMsg{
+			Handler: "getOneRobot",
+			RawData: []byte{},
+		}
 
-		// rpcMsg := &message.RPCMsg{
-		// 	Handler: "getOneRobot",
-		// 	RawData: []byte{},
-		// }
-
-		// rpc.Request.ByKind("connector", rpcMsg, func(data []byte) {
-		// 	logrus.Info("收到Rpc的回复：", string(data))
-		// })
+		rpc.Request.ByKind("connector", rpcMsg, func(data map[string]interface{}) {
+			logrus.Info("收到Rpc的回复：", fmt.Sprint(data))
+		})
 
 		handlerResp := &handlermessage.HandlerResp{
 			Code:    1,
@@ -87,23 +89,26 @@ func main() {
 		// 	logrus.Debug(session.Get("hhhaaa"))
 		// })
 
-		rpcCtx.SendMsg(util.ToBytes(handlerResp))
+		rpcCtx.SendMsg(handlerResp)
 
 		// sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
 	})
 
 	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 
-		bytes, _ := json.Marshal(map[string]interface{}{
+		rpcCtx.SendMsg(map[string]interface{}{
 			"Route":     "onMsgJSON",
 			"heiheihie": "heiheihei",
 		})
-
-		rpcCtx.SendMsg(bytes)
 	})
 
 	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx, data interface{}) {
-		rpcCtx.SendMsg([]byte(fmt.Sprint(rand.Int())))
+
+		rpcCtx.SendMsg(map[string]interface{}{
+			"name": "盖伦",
+			"sex":  1,
+			"age":  18,
+		})
 	})
 
 	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
@@ -127,14 +132,6 @@ func main() {
 	})
 
 	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMsg) (next bool) {
-
-		// 修改pine定义的错误码
-		// if rpcResp.Code == message.StatusCode.Fail {
-		// 	rpcResp.Code = 400 // 自定义错误码
-		// } else if rpcResp.Code == message.StatusCode.Successful {
-		// 	rpcResp.Code = 200 // 自定义成功码
-		// }
-
 		return true // return true继续执行下个after filter, return false停止执行下个after filter
 	})
 

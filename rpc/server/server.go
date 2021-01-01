@@ -16,7 +16,6 @@ import (
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
@@ -175,6 +174,6 @@ func init() {
 		// serverKind
 		result["serverKind"] = config.GetServerConfig().Kind
 
-		rpcCtx.SendMsg(util.ToBytes(result))
+		rpcCtx.SendMsg(result)
 	})
 }

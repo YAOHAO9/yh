@@ -69,7 +69,7 @@ func (rpcCtx *RPCCtx) SetRequestID(id int32) {
 }
 
 // SendMsg 消息发送失败
-func (rpcCtx *RPCCtx) SendMsg(data []byte) {
+func (rpcCtx *RPCCtx) SendMsg(data interface{}) {
 
 	requestID := rpcCtx.GetRequestID()
 
@@ -92,7 +92,7 @@ func (rpcCtx *RPCCtx) SendMsg(data []byte) {
 	rpcResp := &message.PineMsg{
 		Route:     rpcCtx.handler,
 		RequestID: &requestID,
-		Data:      data,
+		Data:      util.ToBytes(data),
 	}
 
 	rpcCtx.mutex.Lock()
