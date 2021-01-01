@@ -23,7 +23,7 @@ func main() {
 
 	app := application.CreateApp()
 
-	compressservice.Event.AddEventCompressRecords("onMsg1", "onMsgJSON") // 需要压缩的Event
+	compressservice.Event.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 
@@ -36,6 +36,23 @@ func main() {
 	})
 
 	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
+
+		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", &handlermessage.OnMsg{
+			Name: "From onMsg",
+			Data: "哈哈哈哈哈",
+		})
+
+		handlerResp := &handlermessage.HandlerResp{
+			Code:    1,
+			Name:    "HandlerResp",
+			Message: "HandlerResp Message",
+		}
+
+		rpcCtx.SendMsg(handlerResp)
+
+	})
+
+	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 
 		// 直接通过session推送消息
 		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg1", "hahahah")
@@ -76,25 +93,6 @@ func main() {
 		rpc.Request.ByKind("connector", rpcMsg, func(data map[string]interface{}) {
 			logrus.Info("收到Rpc的回复：", fmt.Sprint(data))
 		})
-
-		handlerResp := &handlermessage.HandlerResp{
-			Code:    1,
-			Name:    "HandlerResp",
-			Message: "HandlerResp Message",
-		}
-
-		// rpcCtx.Session.Set("hhhaaa", "有点一次=====")
-		// sessionservice.UpdateSession(rpcCtx.Session)
-		// sessionservice.GetSession(rpcCtx.Session.CID, rpcCtx.Session.UID, func(session *session.Session) {
-		// 	logrus.Debug(session.Get("hhhaaa"))
-		// })
-
-		rpcCtx.SendMsg(handlerResp)
-
-		// sessionservice.KickBySession(rpcCtx.Session, "====啊师傅打死====")
-	})
-
-	app.RegisteHandler("handlerJSON", func(rpcCtx *context.RPCCtx, data map[string]interface{}) {
 
 		rpcCtx.SendMsg(map[string]interface{}{
 			"Route":     "onMsgJSON",

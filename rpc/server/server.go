@@ -147,7 +147,7 @@ func init() {
 				return
 			}
 		}
-		result["protobuf"] = string(serverProtoCentent)
+		result["proto"] = string(serverProtoCentent)
 
 		// handlers
 		handlers := compressservice.Handler.GetHandlers()
