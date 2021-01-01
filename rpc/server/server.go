@@ -128,14 +128,12 @@ func checkFileIsExist(filename string) bool {
 
 func init() {
 	var serverProtoCentent []byte
-	var clientProtoCentent []byte
 
 	// 获取proto file
 	clienthandler.Manager.Register("__FetchProto__", func(rpcCtx *context.RPCCtx, hash string) {
 		pwd, _ := os.Getwd()
 
 		serverProto := path.Join(pwd, "/proto/server.proto")
-		clientProto := path.Join(pwd, "/proto/client.proto")
 
 		var result = map[string]interface{}{}
 
@@ -149,20 +147,7 @@ func init() {
 				return
 			}
 		}
-		result["server"] = string(serverProtoCentent)
-
-		// client proto
-		if clientProtoCentent == nil && checkFileIsExist(clientProto) {
-			var err error
-			clientProtoCentent, err = ioutil.ReadFile(clientProto)
-
-			if err != nil {
-				logrus.Error(err)
-				return
-			}
-
-		}
-		result["client"] = string(clientProtoCentent)
+		result["protobuf"] = string(serverProtoCentent)
 
 		// handlers
 		handlers := compressservice.Handler.GetHandlers()
