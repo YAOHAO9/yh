@@ -10,5 +10,5 @@ Server:
   LogLevel: "Debug" # Debug Info Warn Error
 
 Zookeeper:
-  Host: 192.168.43.126
+  Host: 127.0.0.1
   Port: 2181 

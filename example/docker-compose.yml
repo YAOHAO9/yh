@@ -3,45 +3,30 @@ services:
   connector:
     image: pine
     container_name: connector
+    ports:
+      - 3014:3014
     environment: 
         server_systemname: "docker-compose"
         server_id: connector-0 # 唯一ID
         server_kind: connector # 服务器类型
-        Server_Kind: connector # 服务器类型
-        server_host: esyd
+        server_host: connector
         server_port: 3014 
         server_token: ksYNdrAo # 集群认证Token
         server_logtype: "Console" # Console File 
         server_loglevel: "Debug" # Debug Info Warn Error
-        zookeeper_host: 192.168.43.126
+        zookeeper_host: 192.168.200.193
         zookeeper_port: 2182
-  ddz:
+  game1:
     image: pine
-    container_name: ddz
+    container_name: game1
     environment: 
         server_systemname: "docker-compose"
-        server_id: ddz-0 # 唯一ID
-        server_kind: connector # 服务器类型
-        Server_Kind: connector # 服务器类型
-        server_host: esyd
+        server_id: game1-0 # 唯一ID
+        server_kind: game1 # 服务器类型
+        server_host: game1
         server_port: 3014 
         server_token: ksYNdrAo # 集群认证Token
         server_logtype: "Console" # Console File 
         server_loglevel: "Debug" # Debug Info Warn Error
-        zookeeper_host: 192.168.43.126
-        zookeeper_port: 2182
-  esyd:
-    image: pine
-    container_name: esyd
-    environment: 
-        server_systemname: "docker-compose"
-        server_id: esyd-0 # 唯一ID
-        server_kind: connector # 服务器类型
-        Server_Kind: connector # 服务器类型
-        server_host: esyd
-        server_port: 3014 
-        server_token: ksYNdrAo # 集群认证Token
-        server_logtype: "Console" # Console File 
-        server_loglevel: "Debug" # Debug Info Warn Error
-        zookeeper_host: 192.168.43.126
+        zookeeper_host: 192.168.200.193
         zookeeper_port: 2182
