@@ -18,6 +18,7 @@ var SysHandlerMap = struct {
 	GetSession    string
 	Kick          string
 	BroadCast     string
+	ServerCode    string
 }{
 	PushMessage:   "__PushMessage__",
 	UpdateSession: "__UpdateSession__",
@@ -25,6 +26,7 @@ var SysHandlerMap = struct {
 	GetSession:    "__GetSession__",
 	Kick:          "__Kick__",
 	BroadCast:     "__BroadCast__",
+	ServerCode:    "__ServerCode__",
 }
 
 //SysEventMap 系统Event枚举
@@ -111,6 +113,16 @@ func init() {
 	serverhandler.Manager.Register(SysHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
 		for _, connection := range connStore {
 			connection.notify(notify)
+		}
+	})
+
+	// 获取serverCode
+	serverhandler.Manager.Register(SysHandlerMap.ServerCode, func(rpcCtx *context.RPCCtx) {
+		client := clientmanager.GetClientByID(rpcCtx.From)
+
+		if client != nil {
+			code := compressservice.Server.GetCodeByKind(client.ServerConfig.Kind)
+			rpcCtx.SendMsg(code)
 		}
 	})
 

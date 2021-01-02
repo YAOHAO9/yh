@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -67,11 +66,6 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		routeRecord:    make(map[string]string),
 		compressRecord: make(map[string]bool),
 	}
-
-	connection.notify(&message.PineMsg{
-		Route: "connector.__serverdict__",
-		Data:  compressservice.Server.ToBytes(),
-	})
 
 	SaveConnection(connection)
 

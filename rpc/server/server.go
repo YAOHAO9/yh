@@ -10,6 +10,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
@@ -95,7 +96,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					logrus.Warn([]byte(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler())))
+					logrus.Warn(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler()))
 				}
 			}
 
@@ -105,7 +106,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 				if rpcCtx.GetRequestID() == 0 {
 					logrus.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					logrus.Warn([]byte(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler())))
+					logrus.Warn(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler()))
 				}
 			}
 		} else {
@@ -159,6 +160,14 @@ func init() {
 		// serverKind
 		result["serverKind"] = config.GetServerConfig().Kind
 
-		rpcCtx.SendMsg(result)
+		rpcMsg := &message.RPCMsg{
+			Handler: connector.SysHandlerMap.ServerCode,
+		}
+
+		rpc.Request.ToServer(rpcCtx.From, rpcMsg, func(serverCode byte) {
+			// serverCode
+			result["serverCode"] = serverCode
+			rpcCtx.SendMsg(result)
+		})
 	})
 }
