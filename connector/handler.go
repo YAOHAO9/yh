@@ -36,7 +36,7 @@ var SysEventMap = struct {
 	Error: "__Error__",
 }
 
-func init() {
+func registerConnectorHandler() {
 
 	// 更新Session
 	serverhandler.Manager.Register(SysHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {

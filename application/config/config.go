@@ -3,7 +3,7 @@ package config
 // ==========================================
 // ServerConfig
 // ==========================================
-var serverCOnfig *ServerConfig
+var serverConfig *ServerConfig
 
 // ServerConfig 服务器配置 配置文件
 type ServerConfig struct {
@@ -20,12 +20,12 @@ type ServerConfig struct {
 
 // SetServerConfig 保存服务器配置
 func SetServerConfig(sc *ServerConfig) {
-	serverCOnfig = sc
+	serverConfig = sc
 }
 
 // GetServerConfig 获取服务器配置
 func GetServerConfig() *ServerConfig {
-	return serverCOnfig
+	return serverConfig
 }
 
 // ==========================================

@@ -27,7 +27,7 @@ var upgrader = websocket.Upgrader{}
 
 // Start rpc server
 func Start() {
-
+	registerProtoHandler()
 	// 注册到zookeeper
 	go registToZk()
 
@@ -127,7 +127,7 @@ func checkFileIsExist(filename string) bool {
 	return true
 }
 
-func init() {
+func registerProtoHandler() {
 	var serverProtoCentent []byte
 
 	// 获取proto file

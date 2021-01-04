@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -44,7 +45,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 认证
 	err = authFunc(uid, token, sessionData)
 	if err != nil || uid == "" {
-		err := conn.WriteMessage(message.TypeEnum.BinaryMessage, []byte("认证失败"))
+		err := conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes("认证失败"))
 		if err != nil {
 			logrus.Warn("发送认证失败消息失败: ", err.Error())
 		}

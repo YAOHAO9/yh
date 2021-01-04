@@ -35,12 +35,14 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data handlermessage.Handler) {
 
 		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", &handlermessage.OnMsg{
 			Name: "From onMsg",
 			Data: "哈哈哈哈哈",
 		})
+
+		logrus.Warn(data)
 
 		handlerResp := &handlermessage.HandlerResp{
 			Code:    1,
@@ -118,8 +120,8 @@ func main() {
 				if e != nil {
 					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					logrus.Error([]byte("操作太频繁")) // 返回结果
-					return false                  // 停止执行下个before filter以及hanler
+					logrus.Error("操作太频繁") // 返回结果
+					return false          // 停止执行下个before filter以及hanler
 				}
 			}
 

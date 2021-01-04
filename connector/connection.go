@@ -76,6 +76,8 @@ func (connection *Connection) GetSession() *session.Session {
 // StartReceiveMsg 开始接收消息
 func (connection *Connection) StartReceiveMsg() {
 
+	registerConnectorHandler()
+
 	conn := connection.conn
 	connLock := &sync.Mutex{}
 	// 开始接收消息
@@ -94,7 +96,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
-				Data:      []byte(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
+				Data:      util.ToBytes(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
 			}
 			connection.response(clientMessageResp)
 			continue
@@ -104,7 +106,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
-				Data:      []byte("Route不能为空"),
+				Data:      util.ToBytes("Route不能为空"),
 			}
 			connection.response(clientMessageResp)
 			continue
@@ -144,7 +146,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     clientMessage.Route,
 				RequestID: clientMessage.RequestID,
-				Data:      []byte(tip),
+				Data:      util.ToBytes(tip),
 			}
 
 			connection.response(clientMessageResp)

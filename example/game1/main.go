@@ -15,6 +15,7 @@ import (
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
+	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -107,8 +108,8 @@ func main() {
 				if e != nil {
 					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					logrus.Error([]byte("操作太频繁")) // 返回结果
-					return false                  // 停止执行下个before filter以及hanler
+					logrus.Error(util.ToBytes("操作太频繁")) // 返回结果
+					return false                        // 停止执行下个before filter以及hanler
 				}
 			}
 

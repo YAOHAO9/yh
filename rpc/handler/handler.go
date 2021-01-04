@@ -22,31 +22,8 @@ type Handler struct {
 
 // Register handler
 func (handler *Handler) Register(handlerName string, handlerFunc interface{}) {
-
-	handlerType := reflect.TypeOf(handlerFunc)
-	if handlerType.Kind() != reflect.Func {
-		logrus.Panic("handler(" + handlerName + ")只能为函数")
-		return
-	}
-
-	handlerValue := reflect.TypeOf(handlerFunc)
-
-	if handlerValue.NumIn() < 1 {
-		logrus.Panic("handler(" + handlerName + ")参数不能少于1个")
-		return
-	}
-
-	if handlerType.In(0) != reflect.TypeOf(&context.RPCCtx{}) {
-		logrus.Panic("handler(" + handlerName + ")第一个参数必须为*context.RPCCtx类型")
-		return
-	}
-
-	if handlerValue.NumIn() > 2 {
-		logrus.Panic("handler(" + handlerName + ")参数不能多于2个")
-		return
-	}
-
 	handler.Map[handlerName] = handlerFunc
+	return
 }
 
 // Exec 执行handler
