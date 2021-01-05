@@ -14,6 +14,7 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 // ClientHandler rpc
@@ -54,32 +55,41 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 		return
 	}
 
-	if handlerValue.NumIn() == 2 {
-		pwd, _ := os.Getwd()
-		protoFilePath := path.Join(pwd, "/proto/server.proto")
-		//加载并解析 proto文件,得到一组 FileDescriptor
-		descriptors, err := (protoparse.Parser{}).ParseFiles(protoFilePath)
-		if err == nil && len(descriptors) != 0 {
+	pwd, _ := os.Getwd()
+	protoFilePath := path.Join(pwd, "/proto/server.proto")
+	//加载并解析 proto文件,得到一组 FileDescriptor
+	descriptors, err := (protoparse.Parser{}).ParseFiles(protoFilePath)
+	if err == nil && len(descriptors) != 0 {
+		tip := "请检测第二个参数是否与(" + protoFilePath + ")描述的一致。HandlerName(" + handlerName + ")"
 
-			protoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName)
-			if protoDescriptor != nil {
-				if !checkProtoInstance(handlerType.In(1), protoDescriptor) {
-					logrus.Panic("请检测第二个参数是否与(" + protoFilePath + ")描述的一致。HandlerName(" + handlerName + ")")
-					return
-				}
-			}
+		if handlerValue.NumIn() == 1 {
+			logrus.Panic(tip)
+			return
 		}
 
+		protoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName)
+		if protoDescriptor != nil {
+			if !checkProtoInstance(handlerType.In(1), protoDescriptor) {
+				logrus.Panic(tip)
+				return
+			}
+		}
 	}
+
 	compressservice.Handler.AddHandlerRecord(handlerName)
 	clienthandler.Handler.Register(handlerName, handlerFunc)
 }
 
 func checkProtoInstance(structType reflect.Type, protoDescriptor *desc.MessageDescriptor) bool {
 
+	if !structType.Implements(reflect.TypeOf((*proto.Message)(nil)).Elem()) {
+		return false
+	}
+
 	if structType.Kind() == reflect.Ptr {
 		structType = structType.Elem()
 	}
+
 	if structType.Kind() != reflect.Struct {
 		return false
 	}
