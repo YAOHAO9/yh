@@ -12,8 +12,8 @@ import (
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -43,7 +43,7 @@ func (connection *Connection) Set(key string, v string) {
 func (connection *Connection) response(pineMsg *message.PineMsg) {
 	connection.mutex.Lock()
 	defer connection.mutex.Unlock()
-	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(pineMsg))
+	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, serializer.ToBytes(pineMsg))
 
 	if err != nil {
 		logrus.Error(err)
@@ -56,7 +56,7 @@ func (connection *Connection) notify(notify *message.PineMsg) {
 	connection.mutex.Lock()
 	defer connection.mutex.Unlock()
 
-	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(notify))
+	err := connection.conn.WriteMessage(message.TypeEnum.BinaryMessage, serializer.ToBytes(notify))
 
 	if err != nil {
 		logrus.Error(err)
@@ -96,7 +96,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
-				Data:      util.ToBytes(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
+				Data:      serializer.ToBytes(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
 			}
 			connection.response(clientMessageResp)
 			continue
@@ -106,7 +106,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     "__Error__",
 				RequestID: clientMessage.RequestID,
-				Data:      util.ToBytes("Route不能为空"),
+				Data:      serializer.ToBytes("Route不能为空"),
 			}
 			connection.response(clientMessageResp)
 			continue
@@ -146,7 +146,7 @@ func (connection *Connection) StartReceiveMsg() {
 			clientMessageResp := &message.PineMsg{
 				Route:     clientMessage.Route,
 				RequestID: clientMessage.RequestID,
-				Data:      util.ToBytes(tip),
+				Data:      serializer.ToBytes(tip),
 			}
 
 			connection.response(clientMessageResp)

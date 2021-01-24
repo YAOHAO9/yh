@@ -1,7 +1,7 @@
 package compressservice
 
 import (
-	"github.com/YAOHAO9/pine/util"
+	"github.com/YAOHAO9/pine/serializer"
 )
 
 type serverCompress struct {
@@ -39,7 +39,7 @@ func (sc *serverCompress) GetCodeByKind(serverKind string) byte {
 // ToBytes get json bytes
 func (sc *serverCompress) ToBytes() []byte {
 
-	return util.ToBytes(map[string]interface{}{
+	return serializer.ToBytes(map[string]interface{}{
 		"kindToCode": sc.kindToCode,
 		"codeToKind": sc.codeToKind,
 	})

@@ -5,7 +5,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
-	"github.com/YAOHAO9/pine/util"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ func UpdateSession(session *session.Session, keys ...string) {
 		rpcMsg := &message.RPCMsg{
 			Session: session,
 			Handler: connector.SysHandlerMap.UpdateSession,
-			RawData: util.ToBytes(session.Data),
+			RawData: serializer.ToBytes(session.Data),
 		}
 		rpc.Notify.ToServer(session.CID, rpcMsg)
 		return
@@ -39,7 +39,7 @@ func UpdateSession(session *session.Session, keys ...string) {
 	rpcMsg := &message.RPCMsg{
 		Session: session,
 		Handler: connector.SysHandlerMap.UpdateSession,
-		RawData: util.ToBytes(data),
+		RawData: serializer.ToBytes(data),
 	}
 	rpc.Notify.ToServer(session.CID, rpcMsg)
 
@@ -64,7 +64,7 @@ func GetSession(CID, UID string, f func(session *session.Session)) {
 	}
 	rpcMsg := &message.RPCMsg{
 		Handler: connector.SysHandlerMap.GetSession,
-		RawData: util.ToBytes(data),
+		RawData: serializer.ToBytes(data),
 	}
 	rpc.Request.ToServer(CID, rpcMsg, f)
 	return
@@ -80,7 +80,7 @@ func Kick(CID, UID string, data interface{}) {
 	rpcMsg := &message.RPCMsg{
 		Handler: connector.SysHandlerMap.Kick,
 		Session: CreateSession(CID, UID),
-		RawData: util.ToBytes(data),
+		RawData: serializer.ToBytes(data),
 	}
 	rpc.Notify.ToServer(CID, rpcMsg)
 }

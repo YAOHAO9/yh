@@ -10,7 +10,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/YAOHAO9/pine/util"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 
@@ -57,7 +57,7 @@ func (client *RPCClient) SendMsg(bytes []byte) {
 // SendRPCNotify 发送RPC通知
 func (client *RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
 
-	client.SendMsg(util.ToBytes(rpcMsg))
+	client.SendMsg(serializer.ToBytes(rpcMsg))
 }
 
 // SendRPCRequest 发送RPC请求
@@ -69,7 +69,7 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 	requestMap[*rpcMsg.RequestID] = cb
 	requestMapLock.Unlock()
 
-	client.SendMsg(util.ToBytes(rpcMsg))
+	client.SendMsg(serializer.ToBytes(rpcMsg))
 
 	// go time.AfterFunc(time.Minute, func() {
 	// 	requestMapLock.RLock()

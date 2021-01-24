@@ -8,8 +8,8 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
@@ -80,7 +80,7 @@ func initNode() {
 		logrus.Panic(fmt.Sprint("Duplicated server."))
 	}
 
-	zkClient.create(nodePath, util.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	zkClient.create(nodePath, serializer.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	zkClient.serverID = serverConfig.ID
 	logrus.Info("Node created:", nodePath)
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 )
 
 // Channel ChannelService
@@ -77,12 +77,12 @@ func PushMessageBySession(session *session.Session, event string, data interface
 
 	notify := &message.PineMsg{
 		Route: compressEvent(event),
-		Data:  util.ToBytes(data),
+		Data:  serializer.ToBytes(data),
 	}
 
 	rpcMsg := &message.RPCMsg{
 		Handler: connector.SysHandlerMap.PushMessage,
-		RawData: util.ToBytes(notify),
+		RawData: serializer.ToBytes(notify),
 		Session: session,
 	}
 	rpc.Notify.ToServer(session.CID, rpcMsg)
@@ -93,12 +93,12 @@ func BroadCast(event string, data interface{}) {
 
 	pineMsg := &message.PineMsg{
 		Route: compressEvent(event),
-		Data:  util.ToBytes(data),
+		Data:  serializer.ToBytes(data),
 	}
 
 	rpcMsg := &message.RPCMsg{
 		Handler: connector.SysHandlerMap.BroadCast,
-		RawData: util.ToBytes(pineMsg),
+		RawData: serializer.ToBytes(pineMsg),
 	}
 
 	rpc.BroadCast(rpcMsg)

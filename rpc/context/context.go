@@ -6,8 +6,8 @@ import (
 
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
+	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/YAOHAO9/pine/util"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -92,12 +92,12 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}) {
 	rpcResp := &message.PineMsg{
 		Route:     rpcCtx.handler,
 		RequestID: &requestID,
-		Data:      util.ToBytes(data),
+		Data:      serializer.ToBytes(data),
 	}
 
 	rpcCtx.mutex.Lock()
 	defer rpcCtx.mutex.Unlock()
-	err := rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, util.ToBytes(rpcResp))
+	err := rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, serializer.ToBytes(rpcResp))
 	if err != nil {
 		logrus.Error(err)
 	}
