@@ -35,7 +35,7 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data handlermessage.Handler) {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
 		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", &handlermessage.OnMsg{
 			Name: "From onMsg",

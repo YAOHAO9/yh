@@ -11,7 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {
-                "Server_SystemName": "pine",
+                "Server_SystemName": "awesome_pine",
                 "Server_ID": "Connector-0",
                 "Server_Kind": "connector",
                 "Server_Host": "127.0.0.1",
@@ -41,7 +41,7 @@
             "cwd": "${workspaceRoot}/test-client",
             "protocol": "inspector",
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "name": "Current TS File",
