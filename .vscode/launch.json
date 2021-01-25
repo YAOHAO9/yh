@@ -40,7 +40,6 @@
             "sourceMaps": true,
             "cwd": "${workspaceRoot}/test-client",
             "protocol": "inspector",
-            "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
@@ -68,7 +67,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {
-                "Server_SystemName": "pine",
+                "Server_SystemName": "awesome_pine",
                 "Server_ID": "Ddz-0",
                 "Server_Kind": "Ddz",
                 "Server_Host": "127.0.0.1",
@@ -79,7 +78,8 @@
                 "Zookeeper_Host": "127.0.0.1",
                 "Zookeeper_Port": 2181,
             },
-            "args": []
+            "args": [],
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "name": "Qznn",
@@ -88,7 +88,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {
-                "Server_SystemName": "pine",
+                "Server_SystemName": "awesome_pine",
                 "Server_ID": "Qznn-0",
                 "Server_Kind": "Qznn",
                 "Server_Host": "127.0.0.1",

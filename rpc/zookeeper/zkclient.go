@@ -14,7 +14,7 @@ type ZkClient struct {
 func (client ZkClient) exists(path string) bool {
 	ok, _, err := client.conn.Exists(path)
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Error(err)
 	}
 	return ok
 }

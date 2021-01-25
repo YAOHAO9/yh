@@ -42,34 +42,38 @@ func GetClientByRouter(serverKind string, rpcMsg *message.RPCMsg, routeRecord *m
 			(*routeRecord)[rpcClient.ServerConfig.Kind] = rpcClient.ServerConfig.ID
 		}
 	}()
+
 	clients := GetClientsByKind(serverKind)
 
 	if len(clients) == 0 {
 		return nil
 	}
 
+	// 根据路由规则获取
 	route := router.Manager.Get(serverKind)
 	if route != nil {
-		client := route(rpcMsg, clients)
-		return client
+		rpcClient = route(rpcMsg, clients)
 	}
 
+	// 根据通用路由规则获取一个连接
 	route = router.Manager.Get("*")
-
-	if route != nil {
-		client := route(rpcMsg, clients)
-		return client
+	if rpcClient == nil && route != nil {
+		rpcClient = route(rpcMsg, clients)
 	}
 
-	if routeRecord != nil {
+	// 根据上一次的routeRecord记录获取一个Rpc连接
+	if rpcClient == nil && routeRecord != nil {
 		if clientID, ok := (*routeRecord)[serverKind]; ok {
-			client := GetClientByID(clientID)
-			return client
+			rpcClient = GetClientByID(clientID)
 		}
 	}
 
-	client := clients[rand.Intn(len(clients))]
-	return client
+	// 随机一个Rpc连接
+	if rpcClient == nil {
+		rpcClient = clients[rand.Intn(len(clients))]
+	}
+
+	return rpcClient
 }
 
 // DelClientByID 删除RPC连接客户端

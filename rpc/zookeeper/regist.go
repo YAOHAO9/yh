@@ -55,6 +55,7 @@ func initNode() {
 
 	// 检查根节点是否存在，不存在则创建
 	rootPath := fmt.Sprint("/", serverConfig.SystemName)
+
 	if !zkClient.exists(rootPath) {
 		zkClient.create(rootPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
 	}
@@ -83,6 +84,8 @@ func initNode() {
 	zkClient.create(nodePath, serializer.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	zkClient.serverID = serverConfig.ID
 	logrus.Info("Node created:", nodePath)
+
+	go recreatedNode(nodePath, serverConfig)
 }
 
 func watch() {
@@ -93,7 +96,15 @@ func watch() {
 		// 遍历所有的serverID
 		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(zkpath)
 		if err != nil {
-			logrus.Panic(err)
+			// if err == zk.ErrNoServer {
+			// 	time.Sleep(time.Millisecond * 100)
+			// 	continue
+			// } else if err == zk.ErrConnectionClosed {
+			// 	return
+			// } else {
+			logrus.Error(err)
+			return
+			// }
 		}
 		// 监听每个server的情况
 		for _, serverID := range serverIDs {
@@ -109,7 +120,8 @@ func watch() {
 					zkpath := fmt.Sprint(zkpath, "/", serverID)
 					isExists, _, err := zkClient.conn.Exists(zkpath)
 					if err != nil {
-						logrus.Panic(err)
+						logrus.Error(err)
+						continue
 					}
 
 					if !isExists {
@@ -121,14 +133,15 @@ func watch() {
 					data, _, err := zkClient.conn.Get(zkpath)
 					if err != nil {
 						clientmanager.DelClientByID(serverID)
-						logrus.Error(err.Error())
-						break
+						logrus.Error(err)
+						continue
 					}
 					// 解析服务器信息
 					serverConfig := &config.ServerConfig{}
 					err = json.Unmarshal(data, serverConfig)
 					if err != nil {
-						logrus.Error(err.Error())
+						logrus.Error(err)
+						continue
 					}
 					// 创建客户端，并与该服务器连接
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
@@ -143,5 +156,41 @@ func watch() {
 		}
 		// 没有新事件，则阻塞
 		<-eventChan
+	}
+}
+
+var isCreatingNode = false
+
+func recreatedNode(nodePath string, serverConfig *config.ServerConfig) {
+
+	defer func() {
+		isCreatingNode = false
+	}()
+
+	if isCreatingNode {
+		return
+	}
+
+	isCreatingNode = true
+
+	for {
+		ok, _, err := zkClient.conn.Exists(nodePath)
+		if err != nil {
+			if err == zk.ErrNoServer || err == zk.ErrConnectionClosed || err == zk.ErrSessionExpired {
+				zkClient.conn.Close()
+				go Start()
+				return
+			}
+			logrus.Panic(err)
+		}
+
+		if ok {
+			time.Sleep(time.Second * 3)
+		} else if zkClient.conn.State() == zk.StateConnected {
+			zkClient.create(nodePath, serializer.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+			logrus.Info("Node recreated:", nodePath)
+		} else {
+			time.Sleep(time.Millisecond * 100)
+		}
 	}
 }
