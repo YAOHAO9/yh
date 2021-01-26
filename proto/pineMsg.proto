@@ -9,3 +9,8 @@ message PineMsg {
     optional int32 RequestID = 2; 
     bytes Data = 3; 
 }
+
+message PineErrResp {
+    int32 Code = 1; 
+    optional string Message = 2; 
+}

@@ -93,22 +93,12 @@ func (connection *Connection) StartReceiveMsg() {
 		err = proto.Unmarshal(data, clientMessage)
 
 		if err != nil {
-			clientMessageResp := &message.PineMsg{
-				Route:     "__Error__",
-				RequestID: clientMessage.RequestID,
-				Data:      serializer.ToBytes(fmt.Sprint("消息解析失败,data:", data, "err:", err)),
-			}
-			connection.response(clientMessageResp)
+			logrus.Error("消息解析失败", err, "Data", data)
 			continue
 		}
 
 		if clientMessage.Route == "" {
-			clientMessageResp := &message.PineMsg{
-				Route:     "__Error__",
-				RequestID: clientMessage.RequestID,
-				Data:      serializer.ToBytes("Route不能为空"),
-			}
-			connection.response(clientMessageResp)
+			logrus.Error("Route不能为空", err, "Data", clientMessage)
 			continue
 		}
 
@@ -141,12 +131,15 @@ func (connection *Connection) StartReceiveMsg() {
 		rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, &connection.routeRecord)
 
 		if rpcClient == nil {
-			tip := fmt.Sprint("找不到任何", serverKind, "服务器", ", Route: ", clientMessage.Route)
 
+			tip := fmt.Sprint("找不到任何", serverKind, "服务器")
 			clientMessageResp := &message.PineMsg{
 				Route:     clientMessage.Route,
 				RequestID: clientMessage.RequestID,
-				Data:      serializer.ToBytes(tip),
+				Data: serializer.ToBytes(&message.PineErrResp{
+					Code:    500,
+					Message: &tip,
+				}),
 			}
 
 			connection.response(clientMessageResp)

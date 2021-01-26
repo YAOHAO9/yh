@@ -88,6 +88,61 @@ func (x *PineMsg) GetData() []byte {
 	return nil
 }
 
+type PineErrResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Code    int32   `protobuf:"varint,1,opt,name=Code,proto3" json:"Code,omitempty"`
+	Message *string `protobuf:"bytes,2,opt,name=Message,proto3,oneof" json:"Message,omitempty"`
+}
+
+func (x *PineErrResp) Reset() {
+	*x = PineErrResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pineMsg_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PineErrResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PineErrResp) ProtoMessage() {}
+
+func (x *PineErrResp) ProtoReflect() protoreflect.Message {
+	mi := &file_pineMsg_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PineErrResp.ProtoReflect.Descriptor instead.
+func (*PineErrResp) Descriptor() ([]byte, []int) {
+	return file_pineMsg_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *PineErrResp) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *PineErrResp) GetMessage() string {
+	if x != nil && x.Message != nil {
+		return *x.Message
+	}
+	return ""
+}
+
 var File_pineMsg_proto protoreflect.FileDescriptor
 
 var file_pineMsg_proto_rawDesc = []byte{
@@ -98,9 +153,14 @@ var file_pineMsg_proto_rawDesc = []byte{
 	0x75, 0x65, 0x73, 0x74, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x48, 0x00, 0x52, 0x09,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x44, 0x88, 0x01, 0x01, 0x12, 0x12, 0x0a, 0x04,
 	0x44, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x44, 0x61, 0x74, 0x61,
-	0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x44, 0x42, 0x10,
-	0x5a, 0x0e, 0x2e, 0x2e, 0x2f, 0x72, 0x70, 0x63, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x44, 0x22, 0x4c,
+	0x0a, 0x0b, 0x50, 0x69, 0x6e, 0x65, 0x45, 0x72, 0x72, 0x52, 0x65, 0x73, 0x70, 0x12, 0x12, 0x0a,
+	0x04, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x43, 0x6f, 0x64,
+	0x65, 0x12, 0x1d, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x48, 0x00, 0x52, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x88, 0x01, 0x01,
+	0x42, 0x0a, 0x0a, 0x08, 0x5f, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x42, 0x10, 0x5a, 0x0e,
+	0x2e, 0x2e, 0x2f, 0x72, 0x70, 0x63, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -115,9 +175,10 @@ func file_pineMsg_proto_rawDescGZIP() []byte {
 	return file_pineMsg_proto_rawDescData
 }
 
-var file_pineMsg_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_pineMsg_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_pineMsg_proto_goTypes = []interface{}{
-	(*PineMsg)(nil), // 0: message.PineMsg
+	(*PineMsg)(nil),     // 0: message.PineMsg
+	(*PineErrResp)(nil), // 1: message.PineErrResp
 }
 var file_pineMsg_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -145,15 +206,28 @@ func file_pineMsg_proto_init() {
 				return nil
 			}
 		}
+		file_pineMsg_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PineErrResp); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_pineMsg_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_pineMsg_proto_msgTypes[1].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pineMsg_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

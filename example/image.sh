@@ -6,6 +6,6 @@ go mod vendor # 将依赖放在项目内，统一打包到docker镜像,后面就
 
 docker build . -t pine # build镜像
 
-docker tag pine 192.168.200.193:5000/pine # 打标签
+docker tag pine 127.0.0.1:5000/pine:0.1 # 打标签
 
-docker push 192.168.200.193:5000/pine # 存放到私有仓库
+docker push 127.0.0.1:5000/pine:0.1 # 存放到私有仓库

@@ -78,7 +78,7 @@ func (rpcCtx *RPCCtx) SendMsg(data interface{}) {
 		if data == nil {
 			return
 		}
-		logrus.Error(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
+		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
 		return
 	}
 	// 重复回复
