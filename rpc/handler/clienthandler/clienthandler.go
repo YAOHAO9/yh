@@ -60,17 +60,40 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 	//加载并解析 proto文件,得到一组 FileDescriptor
 	descriptors, err := (protoparse.Parser{}).ParseFiles(protoFilePath)
 	if err == nil && len(descriptors) != 0 {
-		tip := "请检测第二个参数是否与(" + protoFilePath + ")描述的一致。HandlerName(" + handlerName + ")"
 
-		if handlerValue.NumIn() == 1 {
-			logrus.Panic(tip)
-			return
-		}
+		tip := "请检测第二个参数是否与server.proto(" + protoFilePath + ")中描述的一致。message " + handlerName
 
 		protoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName)
 		if protoDescriptor != nil {
+
+			if handlerValue.NumIn() == 1 {
+				logrus.Panic(tip)
+				return
+			}
+
 			if !checkProtoInstance(handlerType.In(1), protoDescriptor) {
 				logrus.Panic(tip)
+				return
+			}
+		}
+
+		respProtoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName + "Resp")
+
+		if respProtoDescriptor != nil {
+
+			tip := "[server.proto: (" + protoFilePath + ")" + " message " + handlerName + "Resp]"
+
+			Code := respProtoDescriptor.FindFieldByName("Code")
+			codeType := strings.ToLower(strings.Split(Code.GetType().String(), "_")[1])
+			if Code == nil || Code.GetNumber() != 1 || codeType != "int32" {
+				logrus.Panic(tip + ", Code field is required, it's number must be 1 and type must be int32")
+				return
+			}
+
+			Message := respProtoDescriptor.FindFieldByName("Message")
+			messageType := strings.ToLower(strings.Split(Message.GetType().String(), "_")[1])
+			if Message == nil || Message.GetNumber() != 2 || messageType != "string" {
+				logrus.Panic(tip + ", Message field is required, it's number must be 2 and type must be string")
 				return
 			}
 		}
@@ -97,7 +120,7 @@ func checkProtoInstance(structType reflect.Type, protoDescriptor *desc.MessageDe
 	// 遍历每个proto字段
 	for _, protoField := range protoDescriptor.GetFields() {
 
-		// 更加proto中的字段，查找struct中的字段
+		// 根据proto中的字段，查找struct中的字段
 		structField, ok := structType.FieldByName(strings.Title(protoField.GetName()))
 		if !ok {
 			return false
