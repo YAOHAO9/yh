@@ -130,8 +130,8 @@ func checkFileIsExist(filename string) bool {
 func registerProtoHandler() {
 	var serverProtoCentent []byte
 
-	// 获取proto file
-	clienthandler.Manager.Register("__FetchProto__", func(rpcCtx *context.RPCCtx, hash string) {
+	// 获取数据压缩元数据
+	clienthandler.Manager.Register("__CompressMetadata__", func(rpcCtx *context.RPCCtx, hash string) {
 		pwd, _ := os.Getwd()
 
 		serverProto := path.Join(pwd, "/proto/server.proto")

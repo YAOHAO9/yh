@@ -103,6 +103,7 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 	clienthandler.Handler.Register(handlerName, handlerFunc)
 }
 
+// 检查参数是否handler参数与proto中定义的一致
 func checkProtoInstance(structType reflect.Type, protoDescriptor *desc.MessageDescriptor) bool {
 
 	if !structType.Implements(reflect.TypeOf((*proto.Message)(nil)).Elem()) {
@@ -136,9 +137,8 @@ func checkProtoInstance(structType reflect.Type, protoDescriptor *desc.MessageDe
 			if structField.Type.Kind() == reflect.Ptr {
 				// 如果是则递归检查
 				return checkProtoInstance(structField.Type, protoField.GetMessageType())
-			} else {
-				return false
 			}
+			return false
 		}
 
 		// 获取struct的tag

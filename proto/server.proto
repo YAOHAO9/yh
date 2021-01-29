@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ddz; // server kind
+package connector; // server kind
 
 option go_package = "../handlermessage";// 这个可以根据需要自行修改
 

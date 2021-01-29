@@ -29,13 +29,6 @@ var SysHandlerMap = struct {
 	ServerCode:    "__ServerCode__",
 }
 
-//SysEventMap 系统Event枚举
-var SysEventMap = struct {
-	Error string
-}{
-	Error: "__Error__",
-}
-
 func registerConnectorHandler() {
 
 	// 更新Session
