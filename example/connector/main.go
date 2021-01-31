@@ -1,6 +1,7 @@
 package main
 
 import (
+	"connector/handlermessage"
 	"errors"
 	"fmt"
 	_ "net/http/pprof"
@@ -8,12 +9,10 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
-	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
@@ -36,17 +35,17 @@ func main() {
 		return nil
 	})
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx) {
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
-		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", map[string]string{
-			"Name": config.GetServerConfig().ID,
-			"Data": "哈哈哈哈哈",
+		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", &handlermessage.OnMsg{
+			Name: "From onMsg",
+			Data: "哈哈哈哈哈",
 		})
 
-		handlerResp := map[string]string{
-			"Code":    "1",
-			"Name":    config.GetServerConfig().ID,
-			"Message": "HandlerResp Message",
+		// logrus.Warn(data)
+
+		handlerResp := &handlermessage.HandlerResp{
+			Name: "HandlerResp",
 		}
 
 		rpcCtx.SendMsg(handlerResp)
@@ -119,8 +118,8 @@ func main() {
 				if e != nil {
 					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					logrus.Error(serializer.ToBytes("操作太频繁")) // 返回结果
-					return false                              // 停止执行下个before filter以及hanler
+					logrus.Error("操作太频繁") // 返回结果
+					return false          // 停止执行下个before filter以及hanler
 				}
 			}
 

@@ -1,5 +1,5 @@
 Server:
-  SystemName: "example"
+  SystemName: "example_pine_cluster"
   ID: connector-0 # 唯一ID
   Kind: connector # 服务器类型
   Host: 127.0.0.1 
@@ -11,4 +11,4 @@ Server:
 
 Zookeeper:
   Host: 127.0.0.1
-  Port: 2181 
+  Port: 2181

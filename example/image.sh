@@ -1,11 +1,27 @@
-rm -rf vendor # 删除之前的依赖包
+# 构建docker iamge
+tag=0.12
 
-go get -u # 更新依赖
+games=(connector game1)
 
-go mod vendor # 将依赖放在项目内，统一打包到docker镜像,后面就可以不用安装直接使用了
+for game in ${games[@]}
+do 
+    echo -e "\n=====================================================================\n"
 
-docker build . -t pine # build镜像
+    cd $game; echo `pwd`
 
-docker tag pine 127.0.0.1:5000/pine:0.1 # 打标签
+    echo 正在构建${game}镜像;
 
-docker push 127.0.0.1:5000/pine:0.1 # 存放到私有仓库
+    rm -rf vendor # 删除之前的依赖包
+
+    go get -u # 更新依赖
+
+    go mod vendor # 将依赖放在项目内，统一打包到docker镜像,后面就可以不用安装直接使用了
+
+    docker build . -t $game # build镜像
+
+    docker tag $game 127.0.0.1:5000/${game}:${tag} # 打标签
+
+    docker push 127.0.0.1:5000/${game}:${tag}  # 存放到本地私有仓库
+
+    cd ../
+done

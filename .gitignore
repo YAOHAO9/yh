@@ -6,5 +6,6 @@ log
 
 vendor
 handlermessage
+!example/*/handlermessage
 .cache
 dist

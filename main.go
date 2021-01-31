@@ -42,12 +42,10 @@ func main() {
 			Data: "哈哈哈哈哈",
 		})
 
-		logrus.Warn(data)
+		// logrus.Warn(data)
 
 		handlerResp := &handlermessage.HandlerResp{
-			Code:    1,
-			Name:    "HandlerResp",
-			Message: "HandlerResp Message",
+			Name: "HandlerResp",
 		}
 
 		rpcCtx.SendMsg(handlerResp)

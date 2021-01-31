@@ -1,36 +1,44 @@
-import 'regenerator-runtime/runtime'
 import Pine from 'pine-client'
+import { Middleware } from 'pine-client/lib/common'
 
 (async () => {
 
     const pine = Pine.init()
     await pine.connect(`ws://127.0.0.1?id=${Math.random()}&token=ksYNdrAo`)
 
-    pine.on('connector.onMsg', (data) => {
-        // console.warn('connector.onMsg', data)
-    })
 
     pine.on('game1.onMsg', (data) => {
-        // console.warn('game1.onMsg', data)
+        console.warn('game1.onMsg', data)
     })
 
-    const timesI = 100
-    const timesJ = 10000
-
-    await pine.fetchProto('connector') // 第一次访问前先获取protobuf描述文件
-    await pine.fetchProto('game1')
     const requestDataJSON = { Name: 'JSON request', hahahahah: 18 }
-    for (let i = 0; i < timesI; i++) {
-        const tasks = []
-        for (let j = 0; j < timesJ; j++) {
-            const task = pine.request('game1.handler', requestDataJSON)
-            tasks.push(task)
+
+
+    await pine.fetchCompressMetadata('game1')
+    const result1 = await pine.request('game1.handler', requestDataJSON)
+    console.log(result1)
+    // 中间件1
+    const middleware1: Middleware = (data) => {
+        if (data.Code === 200) {
+            console.warn(data.Message)
+            return true
         }
-        const datas = await Promise.all(tasks)
-        console.warn(await pine.request('game1.handler', requestDataJSON))
-        console.warn(await pine.request('connector.handler', requestDataJSON))
+        return false
     }
-    console.warn('finished')
+
+    // 中间件2
+    const middleware2: Middleware = (data) => {
+        if (data.Code.toString().startsWith('4')) {
+            console.error(data.Message)
+            return false
+        }
+        return true
+    }
+
+    // 加入中间件并发
+    const result2 = await pine.request('game1.handler', requestDataJSON, middleware1, middleware2)
+    console.log(result2)
+
 })()
 
 
