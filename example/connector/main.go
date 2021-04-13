@@ -23,7 +23,7 @@ func main() {
 
 	app := application.CreateApp()
 
-	compressservice.Event.AddEventCompressRecords("onMsg", "onMsgJSON") // 需要压缩的Event
+	compressservice.Event.AddRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
 	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
 
