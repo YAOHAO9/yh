@@ -50,7 +50,7 @@ func main() {
 			Message: "这是handler回复的消息",
 		}
 
-		rpcCtx.SendMsg(handlerResp)
+		rpcCtx.Response(handlerResp)
 
 	})
 
@@ -96,7 +96,7 @@ func main() {
 			logrus.Info("收到Rpc的回复：", fmt.Sprint(data))
 		})
 
-		rpcCtx.SendMsg(map[string]interface{}{
+		rpcCtx.Response(map[string]interface{}{
 			"Route":     "onMsgJSON",
 			"heiheihie": "heiheihei",
 		})
@@ -104,7 +104,7 @@ func main() {
 
 	app.RegisteRemoter("getOneRobot", func(rpcCtx *context.RPCCtx, data interface{}) {
 
-		rpcCtx.SendMsg(map[string]interface{}{
+		rpcCtx.Response(map[string]interface{}{
 			"name": "盖伦",
 			"sex":  1,
 			"age":  18,
