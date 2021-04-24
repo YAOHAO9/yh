@@ -146,7 +146,7 @@ func (connection *Connection) StartReceiveMsg() {
 			continue
 		}
 
-		rpcCtx := context.GenRespCtx(conn, rpcMsg, connLock)
+		rpcCtx := context.GenRpcCtx(conn, rpcMsg, connLock)
 
 		if !filter.Before.Exec(rpcCtx) {
 			continue

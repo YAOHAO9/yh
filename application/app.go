@@ -12,7 +12,7 @@ import (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	config.ParseConfig()
-	logger.SetLogMode(config.GetServerConfig().LogType)
+	logger.SetLogMode(config.GetLogConfig().LogType)
 }
 
 // Application app

@@ -21,7 +21,7 @@ func SetLogMode(logType string) {
 	logrus.SetReportCaller(true)
 
 	logLevel := logrus.DebugLevel // Default
-	switch config.GetServerConfig().LogLevel {
+	switch config.GetLogConfig().LogLevel {
 	case LogLevelEnum.Debug: // Debug
 		logLevel = logrus.DebugLevel
 	case LogLevelEnum.Info: // Info

@@ -43,7 +43,7 @@ func genRequestID() *int32 {
 // RPCClient websocket client 连接信息
 type RPCClient struct {
 	Conn         *websocket.Conn
-	ServerConfig *config.ServerConfig
+	ServerConfig *config.RPCServerConfig
 	mutex        sync.Mutex
 }
 
@@ -86,7 +86,7 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 }
 
 // StartClient websocket client
-func StartClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
+func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
 
 	// Dialer
 	dialer := websocket.Dialer{}

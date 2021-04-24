@@ -31,18 +31,20 @@ func Start() {
 	// 注册到zookeeper
 	go registToZk()
 
+
+	rpcServer := http.NewServeMux()
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
 	// RPC server启动
 	logrus.Info("Rpc server started ws://" + serverConfig.Host + ":" + fmt.Sprint(serverConfig.Port))
-	http.HandleFunc("/rpc", webSocketHandler)
+	rpcServer.HandleFunc("/rpc", webSocketHandler)
 
 	// 对客户端暴露的ws接口
 	if serverConfig.IsConnector {
-		http.HandleFunc("/", connector.WebSocketHandler)
+		rpcServer.HandleFunc("/", connector.WebSocketHandler)
 	}
 	// 开启并监听
-	err := http.ListenAndServe(":"+fmt.Sprint(serverConfig.Port), nil)
+	err := http.ListenAndServe(":"+fmt.Sprint(serverConfig.Port), rpcServer)
 	logrus.Error("Rpc server start fail: ", err.Error())
 }
 
@@ -83,7 +85,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcMsg := &message.RPCMsg{}
 		err = proto.Unmarshal(data, rpcMsg)
 
-		rpcCtx := context.GenRespCtx(conn, rpcMsg, connLock)
+		rpcCtx := context.GenRpcCtx(conn, rpcMsg, connLock)
 
 		if err != nil {
 			logrus.Error(err)

@@ -137,7 +137,7 @@ func watch() {
 						continue
 					}
 					// 解析服务器信息
-					serverConfig := &config.ServerConfig{}
+					serverConfig := &config.RPCServerConfig{}
 					err = json.Unmarshal(data, serverConfig)
 					if err != nil {
 						logrus.Error(err)
@@ -147,6 +147,7 @@ func watch() {
 					clientmanager.CreateClient(serverConfig, zkSessionTimeout)
 
 					if config.GetServerConfig().IsConnector {
+						// 将Server加入compressservice，生成一个对应的压缩码
 						compressservice.Server.AddRecord(serverConfig.Kind)
 					}
 
@@ -161,7 +162,7 @@ func watch() {
 
 var isCreatingNode = false
 
-func recreatedNode(nodePath string, serverConfig *config.ServerConfig) {
+func recreatedNode(nodePath string, serverConfig *config.RPCServerConfig) {
 
 	defer func() {
 		isCreatingNode = false

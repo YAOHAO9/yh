@@ -83,7 +83,7 @@ func DelClientByID(id string) {
 }
 
 // CreateClient 创建RPC连接客户端
-func CreateClient(serverConfig *config.ServerConfig, zkSessionTimeout time.Duration) {
+func CreateClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Duration) {
 	defer func() {
 		data := recover()
 		if data != nil {

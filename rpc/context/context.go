@@ -23,8 +23,8 @@ type RPCCtx struct {
 	mutex     *sync.Mutex
 }
 
-// GenRespCtx 创建一个response上下文
-func GenRespCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg, connLock *sync.Mutex) *RPCCtx {
+// GenRpcCtx 创建一个response上下文
+func GenRpcCtx(conn *websocket.Conn, rpcMsg *message.RPCMsg, connLock *sync.Mutex) *RPCCtx {
 	return &RPCCtx{
 		conn:      conn,
 		requestID: rpcMsg.RequestID,

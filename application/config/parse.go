@@ -10,8 +10,10 @@ import (
 )
 
 type ymlConfig struct {
-	Server    *ServerConfig
-	Zookeeper *ZkConfig
+	Log       *LogConfig
+	Zookeeper *ZooKeeperConfig
+	RPCServer *RPCServerConfig
+	Connector *ConnectorConfig
 }
 
 // ParseConfig 解析命令行参数
@@ -27,6 +29,7 @@ func ParseConfig() {
 	if err != nil {
 		logrus.Error("读取配置文件失败: %v", err)
 	}
+
 	for _, key := range viper.AllKeys() {
 		viper.BindEnv(key, strings.ReplaceAll(key, ".", "_"))
 	}
@@ -34,11 +37,13 @@ func ParseConfig() {
 	// 保存配置
 	configYml := &ymlConfig{}
 	viper.Unmarshal(configYml)
-	SetServerConfig(configYml.Server)
+	SetLogConfig(configYml.Log)
 	SetZkConfig(configYml.Zookeeper)
+	SetRPCServerConfig(configYml.RPCServer)
+	SetConnectorConfig(configYml.Connector)
 
 	// 验证
-	if errs := validator.New().Struct(configYml.Server); errs != nil {
+	if errs := validator.New().Struct(configYml.RPCServer); errs != nil {
 		logrus.Panic(errs)
 	}
 	if errs := validator.New().Struct(configYml.Zookeeper); errs != nil {
@@ -46,7 +51,11 @@ func ParseConfig() {
 	}
 
 	// 打印配置
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ServerConfig config: %+v", configYml.Server), 0x1B)
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ZooKeeper config: %+v", configYml.Zookeeper), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("LogConfig: %+v", configYml.Zookeeper), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ZooKeeperConfig: %+v", configYml.Zookeeper), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("RPCServerConfig: %+v", configYml.RPCServer), 0x1B)
+	if configYml.Connector != nil && configYml.Connector.Port != 0 {
+		fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ConnectorConfig: %+v", configYml.Zookeeper), 0x1B)
+	}
 
 }
