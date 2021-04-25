@@ -12,3 +12,12 @@ var LogLevelEnum = struct {
 	Warn:  "Warn",
 	Error: "Error",
 }
+
+// LogTypeEnum 日志类型枚举
+var LogTypeEnum = struct {
+	Console string
+	File    string
+}{
+	Console: "Console",
+	File:    "File",
+}

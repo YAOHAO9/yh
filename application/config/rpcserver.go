@@ -7,7 +7,7 @@ var serverConfig *RPCServerConfig
 
 // RPCServerConfig 服务器配置 配置文件
 type RPCServerConfig struct {
-	SystemName  string `validate:"required"`
+	ClusterName  string `validate:"required"`
 	ID          string `validate:"required"`
 	Kind        string `validate:"required"`
 	Host        string `validate:"required"`

@@ -7,12 +7,12 @@ Zookeeper:
   Port: 2181
 
 RPCServer:
-  SystemName: "awesome_pine"
+  ClusterName: "awesome_pine"
   ID: connector-0 # 唯一ID
   Kind: connector # 服务器类型
   Host: 127.0.0.1 
-  Port: 3114 
+  Port: 3014 
   Token: ksYNdrAo # 集群认证Token
 
 Connector:
-  Port: 3014
+  Port: 3114

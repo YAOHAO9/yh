@@ -1,10 +1,12 @@
 package connector
 
-import "errors"
+import (
+	"github.com/YAOHAO9/pine/logger"
+)
 
 var authFunc = func(uid string, token string, sessionData map[string]string) error {
 	if uid == "" || token == "" {
-		return errors.New("认证失败")
+		return logger.NewError("认证失败")
 	}
 	return nil
 }

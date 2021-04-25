@@ -1,14 +1,17 @@
 package main
 
 import (
-	"connector/handlermessage"
-	"errors"
 	"fmt"
+	"game1/handlermessage"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
 
 	"github.com/YAOHAO9/pine/application"
+	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/connector"
+	wsconnector "github.com/YAOHAO9/pine/connector/ws"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
@@ -16,7 +19,6 @@ import (
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -25,15 +27,18 @@ func main() {
 
 	compressservice.Event.AddRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
-	app.AsConnector(func(uid string, token string, sessionData map[string]string) error {
+	connector.Start(
+		wsconnector.New(config.GetConnectorConfig().Port),
+		func(uid string, token string, sessionData map[string]string) error {
 
-		if uid == "" || token == "" {
-			return errors.New("Invalid token")
-		}
-		sessionData[token] = token
+			if uid == "" || token == "" {
+				return logger.NewError("invalid token")
+			}
 
-		return nil
-	})
+			sessionData[token] = token
+
+			return nil
+		})
 
 	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
@@ -42,7 +47,7 @@ func main() {
 			Data: "哈哈哈哈哈",
 		})
 
-		// logrus.Warn(data)
+		// logger.Warn(data)
 
 		handlerResp := &handlermessage.HandlerResp{
 			Name: "HandlerResp",
@@ -91,7 +96,7 @@ func main() {
 		}
 
 		rpc.Request.ByKind("connector", rpcMsg, func(data map[string]interface{}) {
-			logrus.Info("收到Rpc的回复：", fmt.Sprint(data))
+			logger.Info("收到Rpc的回复：", fmt.Sprint(data))
 		})
 
 		rpcCtx.Response(map[string]interface{}{
@@ -109,28 +114,28 @@ func main() {
 		})
 	})
 
-	app.RegisteHandlerBeforeFilter(func(rpcCtx *context.RPCCtx) (next bool) {
+	app.RegisteHandlerBeforeFilter(func(rpcMsg *message.RPCMsg) error {
 
-		if rpcCtx.GetHandler() == "enterRoom" {
-			lastEnterRoomTimeInterface := rpcCtx.Session.Data["lastEnterRoomTime"]
+		if rpcMsg.Handler == "enterRoom" {
+			lastEnterRoomTimeInterface := rpcMsg.Session.Data["lastEnterRoomTime"]
 			if lastEnterRoomTimeInterface != "" {
 				timestamp, e := strconv.ParseInt(lastEnterRoomTimeInterface, 10, 64)
 				if e != nil {
-					logrus.Error("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
+					return logger.NewError("不能将", lastEnterRoomTimeInterface, "转换成时间戳")
 				} else if time.Now().Sub(time.Unix(timestamp, 0)) < time.Second {
-					logrus.Error("操作太频繁") // 返回结果
-					return false          // 停止执行下个before filter以及hanler
+					logger.Error("操作太频繁")           // 返回结果
+					return logger.NewError("操作太频繁") // 停止执行下个before filter以及hanler
 				}
 			}
 
-			rpcCtx.Session.Set("lastEnterRoomTime", fmt.Sprint(time.Now().Unix()))
-			sessionservice.UpdateSession(rpcCtx.Session, "lastEnterRoomTime")
+			rpcMsg.Session.Set("lastEnterRoomTime", fmt.Sprint(time.Now().Unix()))
+			sessionservice.UpdateSession(rpcMsg.Session, "lastEnterRoomTime")
 		}
-		return true // 继续执行下个before filter直到执行handler
+		return nil // 继续执行下个before filter直到执行handler
 	})
 
-	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMsg) (next bool) {
-		return true // return true继续执行下个after filter, return false停止执行下个after filter
+	app.RegisteHandlerAfterFilter(func(rpcResp *message.PineMsg) error {
+		return nil // return true继续执行下个after filter, return false停止执行下个after filter
 	})
 
 	app.RegisteRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {

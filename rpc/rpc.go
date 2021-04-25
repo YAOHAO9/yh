@@ -2,9 +2,9 @@ package rpc
 
 import (
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/sirupsen/logrus"
 )
 
 type notify struct{}
@@ -19,7 +19,7 @@ func (n notify) ToServer(serverID string, rpcMsg *message.RPCMsg) {
 
 	rpcClient := clientmanager.GetClientByID(serverID)
 	if rpcClient == nil {
-		logrus.Error("Rpc Notify(ToServer) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
+		logger.Error("Rpc Notify(ToServer) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
 		return
 	}
 
@@ -35,7 +35,7 @@ func (n notify) ByKind(serverKind string, rpcMsg *message.RPCMsg) {
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, nil)
 	if rpcClient == nil {
-		logrus.Error("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
+		logger.Error("Rpc Notify(ByKind) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
 		return
 	}
 	rpcClient.SendRPCNotify(rpcMsg)
@@ -55,7 +55,7 @@ func (req request) ToServer(serverID string, rpcMsg *message.RPCMsg, f interface
 	rpcClient := clientmanager.GetClientByID(serverID)
 
 	if rpcClient == nil {
-		logrus.Error("Rpc Request(ToServer) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
+		logger.Error("Rpc Request(ToServer) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (req request) ByKind(serverKind string, rpcMsg *message.RPCMsg, f interface
 	// 根据类型转发
 	rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, nil)
 	if rpcClient == nil {
-		logrus.Error("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
+		logger.Error("Rpc Request(ByKind) 消息发送失败，没有找到对应的服务器 handler:", rpcMsg.Handler)
 		return
 	}
 	rpcClient.SendRPCRequest(rpcMsg, f)

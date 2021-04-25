@@ -2,11 +2,11 @@ package sessionservice
 
 import (
 	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/serializer"
-	"github.com/sirupsen/logrus"
 )
 
 // UpdateSession 注册路由
@@ -16,7 +16,7 @@ func UpdateSession(session *session.Session, keys ...string) {
 	if len(keys) == 0 {
 		rpcMsg := &message.RPCMsg{
 			Session: session,
-			Handler: connector.SysHandlerMap.UpdateSession,
+			Handler: connector.ConnectorHandlerMap.UpdateSession,
 			RawData: serializer.ToBytes(session.Data),
 		}
 		rpc.Notify.ToServer(session.CID, rpcMsg)
@@ -32,13 +32,13 @@ func UpdateSession(session *session.Session, keys ...string) {
 	}
 
 	if len(data) == 0 {
-		logrus.Error("Update session failed. Not any data")
+		logger.Error("Update session failed. Not any data")
 		return
 	}
 
 	rpcMsg := &message.RPCMsg{
 		Session: session,
-		Handler: connector.SysHandlerMap.UpdateSession,
+		Handler: connector.ConnectorHandlerMap.UpdateSession,
 		RawData: serializer.ToBytes(data),
 	}
 	rpc.Notify.ToServer(session.CID, rpcMsg)
@@ -63,7 +63,7 @@ func GetSession(CID, UID string, f func(session *session.Session)) {
 		"CID": CID,
 	}
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.SysHandlerMap.GetSession,
+		Handler: connector.ConnectorHandlerMap.GetSession,
 		RawData: serializer.ToBytes(data),
 	}
 	rpc.Request.ToServer(CID, rpcMsg, f)
@@ -78,7 +78,7 @@ func KickBySession(session *session.Session, data interface{}) {
 // Kick 将玩家踢下线
 func Kick(CID, UID string, data interface{}) {
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.SysHandlerMap.Kick,
+		Handler: connector.ConnectorHandlerMap.Kick,
 		Session: CreateSession(CID, UID),
 		RawData: serializer.ToBytes(data),
 	}

@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -34,24 +34,24 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {
-		logrus.Panic("handler(" + handlerName + ")只能为函数")
+		logger.Panic("handler(" + handlerName + ")只能为函数")
 		return
 	}
 
 	handlerValue := reflect.TypeOf(handlerFunc)
 
 	if handlerValue.NumIn() < 1 {
-		logrus.Panic("handler(" + handlerName + ")参数不能少于1个")
+		logger.Panic("handler(" + handlerName + ")参数不能少于1个")
 		return
 	}
 
 	if handlerType.In(0) != reflect.TypeOf(&context.RPCCtx{}) {
-		logrus.Panic("handler(" + handlerName + ")第一个参数必须为*context.RPCCtx类型")
+		logger.Panic("handler(" + handlerName + ")第一个参数必须为*context.RPCCtx类型")
 		return
 	}
 
 	if handlerValue.NumIn() > 2 {
-		logrus.Panic("handler(" + handlerName + ")参数不能多于2个")
+		logger.Panic("handler(" + handlerName + ")参数不能多于2个")
 		return
 	}
 
@@ -67,12 +67,12 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 		if protoDescriptor != nil {
 
 			if handlerValue.NumIn() == 1 {
-				logrus.Panic(tip)
+				logger.Panic(tip)
 				return
 			}
 
 			if !checkProtoInstance(handlerType.In(1), protoDescriptor) {
-				logrus.Panic(tip)
+				logger.Panic(tip)
 				return
 			}
 		}
@@ -86,14 +86,14 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 			Code := respProtoDescriptor.FindFieldByName("Code")
 			codeType := strings.ToLower(strings.Split(Code.GetType().String(), "_")[1])
 			if Code == nil || Code.GetNumber() != 1 || codeType != "int32" {
-				logrus.Panic(tip + ", Code field is required, it's number must be 1 and type must be int32")
+				logger.Panic(tip + ", Code field is required, it's number must be 1 and type must be int32")
 				return
 			}
 
 			Message := respProtoDescriptor.FindFieldByName("Message")
 			messageType := strings.ToLower(strings.Split(Message.GetType().String(), "_")[1])
 			if Message == nil || Message.GetNumber() != 2 || messageType != "string" {
-				logrus.Panic(tip + ", Message field is required, it's number must be 2 and type must be string")
+				logger.Panic(tip + ", Message field is required, it's number must be 2 and type must be string")
 				return
 			}
 		}

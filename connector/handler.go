@@ -1,17 +1,17 @@
 package connector
 
 import (
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/sirupsen/logrus"
 )
 
-// SysHandlerMap 系统PRC枚举
-var SysHandlerMap = struct {
+// ConnectorHandlerMap 系统PRC枚举
+var ConnectorHandlerMap = struct {
 	PushMessage   string
 	UpdateSession string
 	RouterRecords string
@@ -32,20 +32,20 @@ var SysHandlerMap = struct {
 func registerConnectorHandler() {
 
 	// 更新Session
-	serverhandler.Manager.Register(SysHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
+	serverhandler.Manager.Register(ConnectorHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
 		if rpcCtx.Session == nil {
-			logrus.Error("Session 为 nil")
+			logger.Error("Session 为 nil")
 			return
 		}
 
-		connection := GetConnection(rpcCtx.Session.UID)
-		if connection == nil {
-			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
+		connInfo := GetConnInfo(rpcCtx.Session.UID)
+		if connInfo == nil {
+			logger.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
 			return
 		}
 
 		for key, value := range data {
-			connection.data[key] = value
+			connInfo.data[key] = value
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
@@ -54,10 +54,10 @@ func registerConnectorHandler() {
 	})
 
 	// 推送消息
-	serverhandler.Manager.Register(SysHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
-		connection := GetConnection(rpcCtx.Session.UID)
-		if connection == nil {
-			logrus.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
+	serverhandler.Manager.Register(ConnectorHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
+		connInfo := GetConnInfo(rpcCtx.Session.UID)
+		if connInfo == nil {
+			logger.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
 			return
 		}
 		client := clientmanager.GetClientByID(rpcCtx.From)
@@ -69,48 +69,44 @@ func registerConnectorHandler() {
 			}
 		}
 
-		connection.notify(data)
+		connInfo.notify(data)
 	})
 
 	// 获取路由记录
-	serverhandler.Manager.Register(SysHandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
-		logrus.Warn(hash)
+	serverhandler.Manager.Register(ConnectorHandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
+		logger.Warn(hash)
 	})
 
 	// 获取Session
-	serverhandler.Manager.Register(SysHandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
+	serverhandler.Manager.Register(ConnectorHandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
 		CID string
 		UID string
 	}) {
-		connection := GetConnection(data.UID)
+		connInfo := GetConnInfo(data.UID)
 		var session *session.Session
-		if connection == nil {
+		if connInfo == nil {
 			rpcCtx.Response("")
 		} else {
-			session = connection.GetSession()
+			session = connInfo.GetSession()
 			rpcCtx.Response(session)
 		}
 
 	})
 
 	// 踢下线
-	serverhandler.Manager.Register(SysHandlerMap.Kick, func(rpcCtx *context.RPCCtx, data []byte) {
-		connection := GetConnection(rpcCtx.Session.UID)
-		if connection == nil {
-			return
-		}
-		connection.Kick(data)
+	serverhandler.Manager.Register(ConnectorHandlerMap.Kick, func(rpcCtx *context.RPCCtx, data []byte) {
+		KickByUid(rpcCtx.Session.UID, data)
 	})
 
 	// 广播
-	serverhandler.Manager.Register(SysHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
-		for _, connection := range connStore {
-			connection.notify(notify)
+	serverhandler.Manager.Register(ConnectorHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
+		for _, connInfo := range connInfoStore {
+			connInfo.notify(notify)
 		}
 	})
 
 	// 获取serverCode
-	serverhandler.Manager.Register(SysHandlerMap.ServerCode, func(rpcCtx *context.RPCCtx) {
+	serverhandler.Manager.Register(ConnectorHandlerMap.ServerCode, func(rpcCtx *context.RPCCtx) {
 		client := clientmanager.GetClientByID(rpcCtx.From)
 
 		if client != nil {

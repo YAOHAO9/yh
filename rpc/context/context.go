@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 )
 
 // RPCCtx response context
@@ -78,12 +78,12 @@ func (rpcCtx *RPCCtx) Response(data interface{}) {
 		if data == nil {
 			return
 		}
-		logrus.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
+		logger.Warn(fmt.Sprintf("NotifyHandler(%s)不需要回复消息", rpcCtx.handler))
 		return
 	}
 	// 重复回复
 	if requestID == -1 {
-		logrus.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.handler))
+		logger.Warn(fmt.Sprintf("Handler(%s)请勿重复回复消息", rpcCtx.handler))
 		return
 	}
 	// 标记为已回复消息
@@ -99,7 +99,7 @@ func (rpcCtx *RPCCtx) Response(data interface{}) {
 	defer rpcCtx.mutex.Unlock()
 	err := rpcCtx.conn.WriteMessage(message.TypeEnum.BinaryMessage, serializer.ToBytes(rpcResp))
 	if err != nil {
-		logrus.Error(err)
+		logger.Error(err)
 	}
 
 }

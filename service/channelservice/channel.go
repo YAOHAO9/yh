@@ -81,7 +81,7 @@ func PushMessageBySession(session *session.Session, event string, data interface
 	}
 
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.SysHandlerMap.PushMessage,
+		Handler: connector.ConnectorHandlerMap.PushMessage,
 		RawData: serializer.ToBytes(notify),
 		Session: session,
 	}
@@ -97,7 +97,7 @@ func BroadCast(event string, data interface{}) {
 	}
 
 	rpcMsg := &message.RPCMsg{
-		Handler: connector.SysHandlerMap.BroadCast,
+		Handler: connector.ConnectorHandlerMap.BroadCast,
 		RawData: serializer.ToBytes(pineMsg),
 	}
 

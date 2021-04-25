@@ -18,39 +18,46 @@ import (
 // 35   45   洋红
 // 36   46   青色
 // 37   47   白色
-const (
-	Error = 31
-	Warn  = 33
-	Debug = 34
-	Fatal = 35
-	Info  = 36
-	Trace = 37
-)
+var ColorEnum = struct {
+	Error int
+	Warn  int
+	Debug int
+	Fatal int
+	Info  int
+	Trace int
+}{
+	Error: 31,
+	Warn:  33,
+	Debug: 34,
+	Fatal: 35,
+	Info:  36,
+	Trace: 37,
+}
 
 func getColorByLevel(level logrus.Level) int {
 	switch level {
 	case logrus.ErrorLevel, logrus.PanicLevel:
-		return Error
+		return ColorEnum.Error
 	case logrus.FatalLevel:
-		return Fatal
+		return ColorEnum.Fatal
 	case logrus.WarnLevel:
-		return Warn
+		return ColorEnum.Warn
 	case logrus.DebugLevel:
-		return Debug
+		return ColorEnum.Debug
 	case logrus.TraceLevel:
-		return Trace
+		return ColorEnum.Trace
 	case logrus.InfoLevel:
-		return Info
+		return ColorEnum.Info
 	default:
-		return Info
+		return ColorEnum.Info
 	}
 }
 
-// ErrorFormatter 错误格式化器
-type ErrorFormatter struct{}
+// errorFormatter 错误格式化器
+type errorFormatter struct{}
 
 // Format Format函数
-func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f errorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	// output buffer
 	b := &bytes.Buffer{}
@@ -75,6 +82,13 @@ func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		b.WriteString(" [" + config.GetServerConfig().ID + "]")
 	}
 
+	// Real Stack
+	realStack, hasRealStack := entry.Data["RealStack"]
+	if hasRealStack {
+		delete(entry.Data, "RealStack")
+	}
+
+	// Stack
 	stack, hasStack := entry.Data["Stack"]
 	if hasStack {
 		delete(entry.Data, "Stack")
@@ -83,6 +97,12 @@ func (f ErrorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	// fields
 	for key, value := range entry.Data {
 		b.WriteString(fmt.Sprint(" [", key, ":", value, "] "))
+	}
+
+	if hasRealStack {
+		// real stack
+		b.WriteString(fmt.Sprint("\nReal Call stack:\n", realStack))
+		b.WriteString("\x1b[0m\n")
 	}
 
 	if hasStack {

@@ -1,24 +1,24 @@
-package filter
+package connector_filter
 
-import "github.com/YAOHAO9/pine/rpc/context"
+import "github.com/YAOHAO9/pine/rpc/message"
 
 // BeforeFilterSlice map
-type BeforeFilterSlice []func(rpcCtx *context.RPCCtx) (next bool)
+type BeforeFilterSlice []func(rpcMsg *message.RPCMsg) error
 
 // Register filter
-func (slice *BeforeFilterSlice) Register(f func(rpcCtx *context.RPCCtx) (next bool)) {
+func (slice *BeforeFilterSlice) Register(f func(rpcMsg *message.RPCMsg) error) {
 	*slice = append(*slice, f)
 }
 
 // Exec filter(返回true标识继续往下执行)
-func (slice BeforeFilterSlice) Exec(rpcCtx *context.RPCCtx) (next bool) {
+func (slice BeforeFilterSlice) Exec(rpcMsg *message.RPCMsg) error {
 	for _, f := range slice {
-		next = f(rpcCtx)
-		if !next {
-			return false
+		err := f(rpcMsg)
+		if err != nil {
+			return err
 		}
 	}
-	return true
+	return nil
 }
 
 // Before filter

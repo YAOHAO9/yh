@@ -10,6 +10,7 @@ import (
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
@@ -18,7 +19,6 @@ import (
 	"github.com/YAOHAO9/pine/rpc/zookeeper"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/golang/protobuf/proto"
-	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 )
@@ -31,21 +31,15 @@ func Start() {
 	// 注册到zookeeper
 	go registToZk()
 
-
 	rpcServer := http.NewServeMux()
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
 	// RPC server启动
-	logrus.Info("Rpc server started ws://" + serverConfig.Host + ":" + fmt.Sprint(serverConfig.Port))
-	rpcServer.HandleFunc("/rpc", webSocketHandler)
-
-	// 对客户端暴露的ws接口
-	if serverConfig.IsConnector {
-		rpcServer.HandleFunc("/", connector.WebSocketHandler)
-	}
+	logger.Info("Rpc server started ws://" + serverConfig.Host + ":" + fmt.Sprint(serverConfig.Port))
+	rpcServer.HandleFunc("/", webSocketHandler)
 	// 开启并监听
 	err := http.ListenAndServe(":"+fmt.Sprint(serverConfig.Port), rpcServer)
-	logrus.Error("Rpc server start fail: ", err.Error())
+	logger.Error("Rpc server start fail: ", err.Error())
 }
 
 // WebSocketHandler deal with ws request
@@ -54,7 +48,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	// 建立连接
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logrus.Error("连接失败", err.Error())
+		logger.Error("连接失败", err.Error())
 		return
 	}
 
@@ -69,7 +63,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// token校验
 	if token != config.GetServerConfig().Token {
-		logrus.Error("用户校验失败!!!")
+		logger.Error("用户校验失败!!!")
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}
@@ -88,7 +82,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		rpcCtx := context.GenRpcCtx(conn, rpcMsg, connLock)
 
 		if err != nil {
-			logrus.Error(err)
+			logger.Error(err)
 			continue
 		}
 
@@ -96,9 +90,9 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			ok := clienthandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
-					logrus.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
+					logger.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					logrus.Warn(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler()))
+					logger.Warn(fmt.Sprintf("Handler(%v)不存在", rpcCtx.GetHandler()))
 				}
 			}
 
@@ -106,13 +100,13 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			ok := serverhandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
-					logrus.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
+					logger.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
 				} else {
-					logrus.Warn(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler()))
+					logger.Warn(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler()))
 				}
 			}
 		} else {
-			logrus.Panic("无效的消息类型")
+			logger.Panic("无效的消息类型")
 		}
 	}
 }
@@ -146,7 +140,7 @@ func registerProtoHandler() {
 			serverProtoCentent, err = ioutil.ReadFile(serverProto)
 
 			if err != nil {
-				logrus.Error(err)
+				logger.Error(err)
 				return
 			}
 		}
@@ -163,7 +157,7 @@ func registerProtoHandler() {
 		result["serverKind"] = config.GetServerConfig().Kind
 
 		rpcMsg := &message.RPCMsg{
-			Handler: connector.SysHandlerMap.ServerCode,
+			Handler: connector.ConnectorHandlerMap.ServerCode,
 		}
 
 		rpc.Request.ToServer(rpcCtx.From, rpcMsg, func(serverCode byte) {

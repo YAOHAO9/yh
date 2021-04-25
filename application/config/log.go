@@ -7,8 +7,8 @@ var logConfig *LogConfig
 
 // LogConfig 日志 配置文件
 type LogConfig struct {
-	LogType     string `validate:"oneof=Console File"`
-	LogLevel    string `validate:"oneof=Debug Info Warn Error"`
+	Type     string `validate:"oneof=Console File"`
+	Level    string `validate:"oneof=Debug Info Warn Error"`
 }
 
 // SetLogConfig 保存日志配置

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/client/clientmanager"
 	"github.com/YAOHAO9/pine/serializer"
 	"github.com/YAOHAO9/pine/service/compressservice"
-	"github.com/sirupsen/logrus"
 
 	"github.com/samuel/go-zookeeper/zk"
 )
@@ -37,7 +37,7 @@ func Start() {
 	conn, _, err := zk.Connect([]string{zkConfig.Host + ":" + fmt.Sprint(zkConfig.Port)}, zkSessionTimeout)
 	zkClient = &ZkClient{conn: conn}
 	if err != nil {
-		logrus.Panic(err)
+		logger.Panic(err)
 	}
 
 	// 初始化节点
@@ -54,7 +54,7 @@ func initNode() {
 	serverConfig := config.GetServerConfig()
 
 	// 检查根节点是否存在，不存在则创建
-	rootPath := fmt.Sprint("/", serverConfig.SystemName)
+	rootPath := fmt.Sprint("/", serverConfig.ClusterName)
 
 	if !zkClient.exists(rootPath) {
 		zkClient.create(rootPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
@@ -78,12 +78,12 @@ func initNode() {
 
 	if tryTimes >= maxTryTimes {
 		// 操过最大尝试次数则报错
-		logrus.Panic(fmt.Sprint("Duplicated server."))
+		logger.Panic(fmt.Sprint("Duplicated server."))
 	}
 
 	zkClient.create(nodePath, serializer.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	zkClient.serverID = serverConfig.ID
-	logrus.Info("Node created:", nodePath)
+	logger.Info("Node created:", nodePath)
 
 	go recreatedNode(nodePath, serverConfig)
 }
@@ -91,7 +91,7 @@ func initNode() {
 func watch() {
 	// 服务器配置
 	serverConfig := config.GetServerConfig()
-	zkpath := fmt.Sprint("/", serverConfig.SystemName)
+	zkpath := fmt.Sprint("/", serverConfig.ClusterName)
 	for {
 		// 遍历所有的serverID
 		serverIDs, _, eventChan, err := zkClient.conn.ChildrenW(zkpath)
@@ -102,7 +102,7 @@ func watch() {
 			// } else if err == zk.ErrConnectionClosed {
 			// 	return
 			// } else {
-			logrus.Error(err)
+			logger.Error(err)
 			return
 			// }
 		}
@@ -120,7 +120,7 @@ func watch() {
 					zkpath := fmt.Sprint(zkpath, "/", serverID)
 					isExists, _, err := zkClient.conn.Exists(zkpath)
 					if err != nil {
-						logrus.Error(err)
+						logger.Error(err)
 						continue
 					}
 
@@ -133,14 +133,14 @@ func watch() {
 					data, _, err := zkClient.conn.Get(zkpath)
 					if err != nil {
 						clientmanager.DelClientByID(serverID)
-						logrus.Error(err)
+						logger.Error(err)
 						continue
 					}
 					// 解析服务器信息
 					serverConfig := &config.RPCServerConfig{}
 					err = json.Unmarshal(data, serverConfig)
 					if err != nil {
-						logrus.Error(err)
+						logger.Error(err)
 						continue
 					}
 					// 创建客户端，并与该服务器连接
@@ -182,14 +182,14 @@ func recreatedNode(nodePath string, serverConfig *config.RPCServerConfig) {
 				go Start()
 				return
 			}
-			logrus.Panic(err)
+			logger.Panic(err)
 		}
 
 		if ok {
 			time.Sleep(time.Second * 3)
 		} else if zkClient.conn.State() == zk.StateConnected {
 			zkClient.create(nodePath, serializer.ToBytes(serverConfig), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-			logrus.Info("Node recreated:", nodePath)
+			logger.Info("Node recreated:", nodePath)
 		} else {
 			time.Sleep(time.Millisecond * 100)
 		}

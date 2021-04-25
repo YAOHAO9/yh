@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/context"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -34,10 +35,10 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 		if err := recover(); err != nil {
 			if entry, ok := err.(*logrus.Entry); ok {
 				err, _ := (&logrus.JSONFormatter{}).Format(entry)
-				logrus.Error(err, "\nRpcCtx：", rpcCtx.ToString())
+				logger.Error(err, "\nRpcCtx：", rpcCtx.ToString())
 				return
 			}
-			logrus.Error(err, "\nRpcCtx：", rpcCtx.ToString())
+			logger.Error(err, "\nRpcCtx：", rpcCtx.ToString())
 		}
 	}()
 
@@ -50,7 +51,7 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 	if rpcCtx.GetRequestID() > 0 {
 		go time.AfterFunc(time.Minute, func() {
 			if rpcCtx.GetRequestID() != -1 {
-				logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+				logger.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
 			}
 		})
 	}

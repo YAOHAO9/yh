@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/serializer"
 	"github.com/golang/protobuf/proto"
-	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 )
@@ -78,7 +78,7 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 	// 	_, ok := requestMap[*rpcMsg.RequestID]
 
 	// 	if ok {
-	// 		logrus.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcMsg.Handler))
+	// 		logger.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcMsg.Handler))
 	// 		delete(requestMap, *rpcMsg.RequestID)
 	// 	}
 
@@ -117,16 +117,17 @@ func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Dur
 
 	if tryTimes >= maxTryTimes {
 		// 操过最大尝试次数则报错
-		logrus.Panic(fmt.Sprint("Cannot create connection with ", serverConfig.ID))
+		logger.Panic(fmt.Sprint("Cannot create connection with ", serverConfig.ID))
 	}
 
 	// 如果超过最大尝试次数，任然有错则报错
 	if e != nil {
-		logrus.Panic(e)
+		logger.Panic(e)
 	}
 
 	// 连接成功！！！
-	logrus.Info("连接到", serverConfig.ID, "成功！！！")
+	logger.Info("连接到", serverConfig.ID, "成功！！！")
+
 	// 接收消息
 	go func() {
 		for {
@@ -136,7 +137,7 @@ func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Dur
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
 				closeFunc(serverConfig.ID)
-				logrus.Warn("服务", serverConfig.ID, "掉线")
+				logger.Warn("服务", serverConfig.ID, "掉线")
 				break
 			}
 			// 解析消息
@@ -144,13 +145,13 @@ func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Dur
 			err = proto.Unmarshal(data, rpcResp)
 
 			if err != nil {
-				logrus.Error("Rpc request's response body parse fail", err)
+				logger.Error("Rpc request's response body parse fail", err)
 				continue
 			}
 
 			// Notify消息，不应有回调信息
 			if *rpcResp.RequestID == 0 {
-				logrus.Error("Notify消息，不应有回调信息")
+				logger.Error("Notify消息，不应有回调信息")
 			}
 
 			// 执行回调函数
